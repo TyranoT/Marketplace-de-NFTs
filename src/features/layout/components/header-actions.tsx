@@ -10,7 +10,7 @@ export function HeaderActions({ cartCount }: HeaderActionsProps) {
   return (
     <div className="flex items-center gap-7">
       <button type="button" aria-label="Buscar" className="text-foreground">
-        <Search className="size-5" />
+        <Search className="size-6" />
       </button>
 
       <button

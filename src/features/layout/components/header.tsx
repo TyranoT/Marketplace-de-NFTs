@@ -30,7 +30,7 @@ export function Header({ cartCount = 0 }: HeaderProps) {
         <HeaderActions cartCount={cartCount} />
       </div>
 
-      {hasDivider ? <div className="mt-6 h-px bg-primary/30" /> : null}
+      {hasDivider ? <div className="h-px bg-primary/30" /> : null}
     </Container>
   )
 }

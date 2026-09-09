@@ -6,7 +6,7 @@ import { FooterLinks } from './footer-links'
 
 export function Footer() {
   return (
-    <Container as="footer" className="flex flex-col gap-1.5 pb-10">
+    <Container as="footer" className="flex flex-col pb-10">
       <FooterFeatures />
       <FooterBrand />
 
