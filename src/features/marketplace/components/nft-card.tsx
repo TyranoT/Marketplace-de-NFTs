@@ -1,5 +1,5 @@
 import { cn } from 'cn'
-import { Skeleton } from './ui/skeleton'
+import { Skeleton } from '@/global/components/ui/skeleton'
 
 type NftCardProps = {
   name: string

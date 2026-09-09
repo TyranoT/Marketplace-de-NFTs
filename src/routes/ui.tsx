@@ -1,12 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { ArrowRight, EyeOff } from 'lucide-react'
-import { GoogleIcon } from '../global/components/icons'
-import { NftCard, NftCardSkeleton } from '../global/components/nft-card'
-import { Button } from '../global/components/ui/button'
-import { Input } from '../global/components/ui/input'
-import { Label } from '../global/components/ui/label'
+import { GoogleIcon } from '@/global/components/icons'
+import { NftCard, NftCardSkeleton } from '@/features/marketplace'
+import { Button } from '@/global/components/ui/button'
+import { Input } from '@/global/components/ui/input'
+import { Label } from '@/global/components/ui/label'
 
-export const Route = createFileRoute('/ui')({ component: UiShowcase })
+export const Route = createFileRoute('/ui')({
+  component: UiShowcase,
+  staticData: { header: { active: 'home', divider: true } },
+})
 
 const ARTWORK =
   'https://www.figma.com/api/mcp/asset/8d86e38f-6c1b-481b-af3b-36af455f2735.png'

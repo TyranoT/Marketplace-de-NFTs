@@ -12,10 +12,10 @@
   },
   "aliases": {
     "components": "@/global/components",
-    "utils": "@/lib/utils",
     "ui": "@/global/components/ui",
-    "lib": "",
-    "hooks": ""
+    "utils": "cn",
+    "lib": "@/global",
+    "hooks": "@/global/hooks"
   },
   "iconLibrary": "lucide",
   "rtl": false,

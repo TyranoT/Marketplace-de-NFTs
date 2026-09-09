@@ -1,1 +1,6 @@
+export { FacebookIcon } from './facebook'
 export { GoogleIcon } from './google'
+export { InstagramIcon } from './instagram'
+export { LinkedinIcon } from './linkedin'
+export { TwitterIcon } from './twitter'
+export { YoutubeIcon } from './youtube'

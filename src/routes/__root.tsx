@@ -1,8 +1,8 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import appCss from '../styles.css?url'
-import { Header } from '../global'
+import appCss from '@/styles.css?url'
+import { Header } from '@/features/layout'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -41,7 +41,7 @@ export const Route = createRootRoute({
       {
         name: 'twitter:url',
         content: process.env.PUBLIC_URL || 'http://localhost:3000',
-      }
+      },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
