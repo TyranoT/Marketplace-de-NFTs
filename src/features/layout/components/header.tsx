@@ -20,6 +20,7 @@ export function Header({ cartCount = 0 }: HeaderProps) {
       <div className="flex items-start justify-between">
         <Link
           to="/"
+          aria-label="Kurio, ir para a página inicial"
           className="w-40 text-14 font-bold tracking-[1.4px] text-foreground"
         >
           KURIO

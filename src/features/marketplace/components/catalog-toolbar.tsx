@@ -23,7 +23,7 @@ export function CatalogToolbar({
   onSortChange,
 }: CatalogToolbarProps) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="flex items-start justify-between">
       <div
         role="group"
         aria-label="Filtrar catálogo"
@@ -52,7 +52,7 @@ export function CatalogToolbar({
         })}
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="hidden items-center gap-1 md:flex">
         <label
           htmlFor="catalog-sort"
           className="text-15 text-foreground whitespace-nowrap"

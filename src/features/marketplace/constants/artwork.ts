@@ -1,4 +1,6 @@
-export const ARTWORKS = {
+import type { Artwork } from '../type'
+
+export const ARTWORKS: Record<string, Artwork> = {
   varsity: {
     src: '/nft/ape-varsity-500.webp',
     alt: 'Macaco de jaqueta universitária verde e óculos escuros redondos',

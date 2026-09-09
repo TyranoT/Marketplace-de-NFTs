@@ -28,3 +28,16 @@ export type FilterOption = {
 }
 
 export type PriceRange = [number, number]
+
+export type Artwork = {
+  src: string
+  alt: string
+}
+
+export type PromoCardContent = {
+  id: string
+  titleLines: Array<string>
+  body: string
+  cta: string
+  artwork: Artwork
+}

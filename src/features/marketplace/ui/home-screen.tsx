@@ -1,10 +1,16 @@
 import { Container } from '@/global/components/ui/container'
 import { CATALOG_PAGE_COUNT } from '../constants/catalog'
 import { NFT_FIXTURES } from '../constants/nft-fixtures'
+import { PROMO_CARDS } from '../constants/promos'
 import { CatalogFilters } from '../components/catalog-filters'
 import { CatalogPagination } from '../components/catalog-pagination'
 import { CatalogToolbar } from '../components/catalog-toolbar'
+import { FeaturedBanner } from '../components/featured-banner'
+import { PromoCard } from '../components/promo-card'
 import { Hero } from '../components/hero'
+import { MobileHeroBanner } from '../components/mobile-hero-banner'
+import { MobileSearchBar } from '../components/mobile-search-bar'
+import { MobileTabBar } from '../components/mobile-tab-bar'
 import { NftGrid } from '../components/nft-grid'
 import { useCatalogFilters } from '../hooks/use-catalog-filters'
 import { useCatalogView } from '../hooks/use-catalog-view'
@@ -14,13 +20,18 @@ export function HomeScreen() {
   const filters = useCatalogFilters()
 
   return (
-    <Container as="main" className="flex flex-col gap-16 pt-10">
+    <Container
+      as="main"
+      className="flex flex-col gap-8 pt-4 md:gap-16 md:pt-10"
+    >
+      <MobileSearchBar onOpenFilters={() => view.changePage(1)} />
+      <MobileHeroBanner />
       <Hero />
 
       <section className="flex flex-col gap-12 lg:flex-row">
         <aside
           aria-label="Filtros do catálogo"
-          className="hidden shrink-0 lg:block lg:w-[310px]"
+          className="hidden shrink-0 flex-col gap-6 lg:flex lg:w-77.5"
         >
           <CatalogFilters
             collections={filters.collections}
@@ -31,6 +42,8 @@ export function HomeScreen() {
             onPriceRangeChange={filters.setPriceRange}
             onApplyPriceRange={() => view.changePage(1)}
           />
+
+          <FeaturedBanner />
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col gap-8">
@@ -50,6 +63,17 @@ export function HomeScreen() {
           />
         </div>
       </section>
+
+      <section
+        aria-label="Destaques"
+        className="hidden gap-7 lg:grid lg:grid-cols-2"
+      >
+        {PROMO_CARDS.map((promo) => (
+          <PromoCard key={promo.id} promo={promo} />
+        ))}
+      </section>
+
+      <MobileTabBar />
     </Container>
   )
 }
