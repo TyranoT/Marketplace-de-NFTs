@@ -1,4 +1,4 @@
-import { cn } from 'cn'
+import { cn } from '@/global/helpers/cn'
 
 type ContainerProps = React.ComponentProps<'div'> & {
   as?: 'div' | 'header' | 'footer' | 'main' | 'section' | 'nav'

@@ -25,7 +25,9 @@ export function Hero() {
               </p>
             </div>
 
-            <Button className="w-35 text-16 font-bold text-background">{cta}</Button>
+            <Button className="w-35 text-16 font-bold text-background">
+              {cta}
+            </Button>
           </div>
 
           <div aria-hidden="true" className="flex gap-2">

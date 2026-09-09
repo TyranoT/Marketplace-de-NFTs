@@ -1,4 +1,4 @@
-import { cn } from 'cn'
+import { cn } from '@/global/helpers/cn'
 import { NAV_ITEMS } from '../constants/nav'
 import type { NavKey } from '../type'
 

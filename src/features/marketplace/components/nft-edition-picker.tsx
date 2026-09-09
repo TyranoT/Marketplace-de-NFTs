@@ -1,4 +1,4 @@
-import { cn } from 'cn'
+import { cn } from '@/global/helpers/cn'
 import { NFT_DETAIL_COPY } from '../constants/nft-detail-copy'
 import type { NftEdition, NftEditionId } from '@/global/type'
 

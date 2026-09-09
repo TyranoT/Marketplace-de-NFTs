@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Search } from 'lucide-react'
-import { cn } from 'cn'
+import { cn } from '@/global/helpers/cn'
 import { NFT_DETAIL_COPY } from '../constants/nft-detail-copy'
 import type { Artwork } from '@/global/type'
 

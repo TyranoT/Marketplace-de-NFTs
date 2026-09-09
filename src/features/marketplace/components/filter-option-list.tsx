@@ -1,4 +1,4 @@
-import { cn } from 'cn'
+import { cn } from '@/global/helpers/cn'
 import { Checkbox } from '@/global/components/ui/checkbox'
 import { Label } from '@/global/components/ui/label'
 import type { FilterOption } from '../type'

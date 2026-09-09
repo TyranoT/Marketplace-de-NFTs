@@ -1,4 +1,4 @@
-import { cn } from 'cn'
+import { cn } from '@/global/helpers/cn'
 import { Skeleton } from '@/global/components/ui/skeleton'
 
 type NftCardProps = {

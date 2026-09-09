@@ -1,4 +1,4 @@
-import { cn } from 'cn'
+import { cn } from '@/global/helpers/cn'
 import {
   Select,
   SelectContent,
@@ -27,7 +27,7 @@ export function CatalogToolbar({
       <div
         role="group"
         aria-label="Filtrar catálogo"
-        className="flex items-start gap-5"
+        className="flex items-start gap-2.5 md:gap-5"
       >
         {CATALOG_TABS.map(({ key, label }) => {
           const isActive = key === activeTab
@@ -39,13 +39,13 @@ export function CatalogToolbar({
               aria-pressed={isActive}
               onClick={() => onTabChange(key)}
               className={cn(
-                'relative text-15 leading-4 font-medium whitespace-nowrap',
+                'relative text-14 leading-4 font-medium whitespace-nowrap md:text-15',
                 isActive ? 'text-highlight' : 'text-foreground',
               )}
             >
               {label}
               {isActive ? (
-                <span className="absolute top-5.75 right-0 left-0 h-0.5 bg-primary" />
+                <span className="absolute top-4.25 right-0 left-0 h-0.5 bg-primary md:top-5.75" />
               ) : null}
             </button>
           )

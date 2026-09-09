@@ -1,4 +1,4 @@
-import { cn } from 'cn'
+import { cn } from '@/global/helpers/cn'
 import {
   NFT_DETAIL_COPY,
   RELATED_ACTIVE_SLIDE,

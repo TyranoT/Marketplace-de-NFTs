@@ -2,8 +2,9 @@ import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import appCss from '@/styles.css?url'
-import { Header } from '@/features/layout'
+import { Header, MobileTabBar } from '@/features/layout'
 import { SITE, absoluteUrl } from '@/global/config/site'
+import { useDeviceTier } from '@/global'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -19,7 +20,13 @@ export const Route = createRootRoute({
       { property: 'og:locale', content: SITE.locale },
       { property: 'og:title', content: SITE.title },
       { property: 'og:description', content: SITE.description },
-      { property: 'og:url', content: process.env.NODE_ENV === 'production' ? SITE.url : 'http://localhost:3000' },
+      {
+        property: 'og:url',
+        content:
+          process.env.NODE_ENV === 'production'
+            ? SITE.url
+            : 'http://localhost:3000',
+      },
       { property: 'og:image', content: absoluteUrl(SITE.ogImage.path) },
       { property: 'og:image:width', content: String(SITE.ogImage.width) },
       { property: 'og:image:height', content: String(SITE.ogImage.height) },
@@ -30,7 +37,13 @@ export const Route = createRootRoute({
       { name: 'twitter:description', content: SITE.description },
       { name: 'twitter:image', content: absoluteUrl(SITE.ogImage.path) },
       { name: 'twitter:image:alt', content: SITE.ogImage.alt },
-      { name: 'twitter:url', content: process.env.NODE_ENV === 'production' ? SITE.url : 'http://localhost:3000' },
+      {
+        name: 'twitter:url',
+        content:
+          process.env.NODE_ENV === 'production'
+            ? SITE.url
+            : 'http://localhost:3000',
+      },
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
@@ -49,23 +62,28 @@ export const Route = createRootRoute({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const isMobile = useDeviceTier() === 'mobile'
+
   return (
     <html lang="pt-BR" className="dark">
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="pb-32 md:pb-0">
         <Header />
         {children}
-        <TanStackDevtools
-          config={{ position: 'bottom-right' }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
+        <MobileTabBar />
+        {isMobile ? null : (
+          <TanStackDevtools
+            config={{ position: 'bottom-right' }}
+            plugins={[
+              {
+                name: 'Tanstack Router',
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+            ]}
+          />
+        )}
         <Scripts />
       </body>
     </html>

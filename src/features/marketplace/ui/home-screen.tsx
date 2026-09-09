@@ -11,7 +11,6 @@ import { Hero } from '../components/hero'
 import { JournalSection } from '../components/journal-section'
 import { MobileHeroBanner } from '../components/mobile-hero-banner'
 import { MobileSearchBar } from '../components/mobile-search-bar'
-import { MobileTabBar } from '../components/mobile-tab-bar'
 import { NftGrid } from '../components/nft-grid'
 import { useCatalogFilters } from '../hooks/use-catalog-filters'
 import { useCatalogView } from '../hooks/use-catalog-view'
@@ -76,8 +75,6 @@ export function HomeScreen() {
       </section>
 
       <JournalSection />
-
-      <MobileTabBar />
     </Container>
   )
 }

@@ -1,5 +1,5 @@
 import { Heart } from 'lucide-react'
-import { cn } from 'cn'
+import { cn } from '@/global/helpers/cn'
 import { Button } from '@/global/components/ui/button'
 import { NFT_DETAIL_COPY } from '../constants/nft-detail-copy'
 import { useNftPurchase } from '../hooks/use-nft-purchase'

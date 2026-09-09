@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { cn } from 'cn'
+import { cn } from '@/global/helpers/cn'
 import { NFT_DETAIL_COPY } from '../constants/nft-detail-copy'
 import { NftDetailFacts } from './nft-detail-facts'
 import type { NftDetail } from '@/global/type'

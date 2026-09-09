@@ -1,5 +1,6 @@
 export { FacebookIcon } from './facebook'
 export { GoogleIcon } from './google'
+export { HouseSolidIcon } from './house-solid'
 export { InstagramIcon } from './instagram'
 export { LinkedinIcon, LinkedinGlyph } from './linkedin'
 export { TwitterIcon, TwitterGlyph } from './twitter'

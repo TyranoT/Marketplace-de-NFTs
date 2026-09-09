@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { cn } from 'cn'
+import { cn } from '@/global/helpers/cn'
 
 import { Button } from '@/global/components/ui/button'
 import {

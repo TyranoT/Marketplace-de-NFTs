@@ -1,5 +1,5 @@
 import { Star } from 'lucide-react'
-import { cn } from 'cn'
+import { cn } from '@/global/helpers/cn'
 import { formatRatingLabel } from '../helpers/format-rating-label'
 import type { NftRating } from '@/global/type'
 

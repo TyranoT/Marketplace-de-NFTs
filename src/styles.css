@@ -35,6 +35,12 @@
 /* Bridge Tailwind + shadcn ================================================ */
 
 @theme inline {
+  /* Faixas de dispositivo ------------------------------------------------ */
+  /* Espelhadas em src/global/config/breakpoints.ts. */
+  --breakpoint-tablet: 768px;
+  --breakpoint-notebook: 1024px;
+  --breakpoint-desktop: 1440px;
+
   /* Tipografia ----------------------------------------------------------- */
   --font-sans:
     'Roboto Mono Variable', ui-monospace, SFMono-Regular, Menlo, Monaco,

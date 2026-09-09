@@ -20,7 +20,7 @@ function NftDetailRoute() {
   const { nft, related } = Route.useLoaderData()
 
   return (
-    <div className="flex flex-col gap-24 pb-32 md:pb-0">
+    <div className="flex flex-col gap-24">
       <NftDetailScreen key={nft.id} nft={nft} related={related} />
       <Footer />
     </div>
@@ -29,7 +29,7 @@ function NftDetailRoute() {
 
 function NftNotFoundRoute() {
   return (
-    <div className="flex flex-col gap-24 pb-32 md:pb-0">
+    <div className="flex flex-col gap-24">
       <NftNotFound />
       <Footer />
     </div>
