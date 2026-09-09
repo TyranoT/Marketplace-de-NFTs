@@ -24,7 +24,7 @@ export function HeaderActions({ cartCount }: HeaderActionsProps) {
         </span>
       </button>
 
-      <Button className="h-8.75 w-25 gap-1 px-0 text-16">
+      <Button className="h-8.75 w-25 gap-1 px-0 text-16 text-background">
         <LogOut className="size-5" />
         Entrar
       </Button>
