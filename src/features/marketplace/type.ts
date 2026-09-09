@@ -41,3 +41,13 @@ export type PromoCardContent = {
   cta: string
   artwork: Artwork
 }
+
+export type JournalPost = {
+  id: string
+  date: string
+  readTime: string
+  title: string
+  excerpt: string
+  cta: string
+  artwork: Artwork
+}

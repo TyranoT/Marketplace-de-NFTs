@@ -8,6 +8,7 @@ import { CatalogToolbar } from '../components/catalog-toolbar'
 import { FeaturedBanner } from '../components/featured-banner'
 import { PromoCard } from '../components/promo-card'
 import { Hero } from '../components/hero'
+import { JournalSection } from '../components/journal-section'
 import { MobileHeroBanner } from '../components/mobile-hero-banner'
 import { MobileSearchBar } from '../components/mobile-search-bar'
 import { MobileTabBar } from '../components/mobile-tab-bar'
@@ -22,7 +23,7 @@ export function HomeScreen() {
   return (
     <Container
       as="main"
-      className="flex flex-col gap-8 pt-4 md:gap-16 md:pt-10"
+      className="flex flex-col gap-8 pt-4 md:gap-24 md:pt-10"
     >
       <MobileSearchBar onOpenFilters={() => view.changePage(1)} />
       <MobileHeroBanner />
@@ -46,15 +47,16 @@ export function HomeScreen() {
           <FeaturedBanner />
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-8">
-          <CatalogToolbar
-            activeTab={view.tab}
-            sort={view.sort}
-            onTabChange={view.changeTab}
-            onSortChange={view.changeSort}
-          />
-
-          <NftGrid items={NFT_FIXTURES} />
+        <div className="flex min-w-0 flex-1 flex-col gap-22">
+          <div className="flex flex-col gap-8 w-full">
+            <CatalogToolbar
+              activeTab={view.tab}
+              sort={view.sort}
+              onTabChange={view.changeTab}
+              onSortChange={view.changeSort}
+            />
+            <NftGrid items={NFT_FIXTURES} />
+          </div>
 
           <CatalogPagination
             page={view.page}
@@ -72,6 +74,8 @@ export function HomeScreen() {
           <PromoCard key={promo.id} promo={promo} />
         ))}
       </section>
+
+      <JournalSection />
 
       <MobileTabBar />
     </Container>

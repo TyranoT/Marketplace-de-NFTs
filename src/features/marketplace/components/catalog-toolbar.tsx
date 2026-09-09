@@ -23,7 +23,7 @@ export function CatalogToolbar({
   onSortChange,
 }: CatalogToolbarProps) {
   return (
-    <div className="flex items-start justify-between">
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
       <div
         role="group"
         aria-label="Filtrar catálogo"
@@ -52,7 +52,7 @@ export function CatalogToolbar({
         })}
       </div>
 
-      <div className="hidden items-center gap-1 md:flex">
+      <div className="ml-auto hidden shrink-0 items-center gap-1 md:flex">
         <label
           htmlFor="catalog-sort"
           className="text-15 text-foreground whitespace-nowrap"
@@ -65,13 +65,13 @@ export function CatalogToolbar({
         >
           <SelectTrigger
             id="catalog-sort"
-            className="h-auto border-0 bg-transparent px-0 text-15 text-foreground shadow-none"
+            className="h-auto min-w-30 shrink-0 border-0 bg-transparent pl-2 pr-0 text-15 text-foreground shadow-none"
           >
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent align="end">
             {CATALOG_SORT_OPTIONS.map(({ value, label }) => (
-              <SelectItem key={value} value={value}>
+              <SelectItem key={value} value={value} className="text-15">
                 {label}
               </SelectItem>
             ))}

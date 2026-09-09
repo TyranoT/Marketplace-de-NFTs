@@ -27,7 +27,7 @@ export function NftGrid({ items, isLoading = false }: NftGridProps) {
   }
 
   return (
-    <ul className="grid grid-cols-2 gap-x-4 gap-y-8 max-lg:[&>li:nth-child(even)]:mt-8 lg:grid-cols-3 lg:gap-x-8.5">
+    <ul className="grid grid-cols-2 gap-x-8 gap-y-8 max-lg:[&>li:nth-child(even)]:mt-8 lg:grid-cols-3 lg:gap-x-8">
       {items.map((item) => (
         <li key={item.id}>
           <NftCard

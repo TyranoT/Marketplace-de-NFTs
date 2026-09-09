@@ -4,8 +4,8 @@ export function FooterBrand() {
   const { email, phone, phoneHref, tagline } = FOOTER_CONTACT
 
   return (
-    <div className="bg-surface-dark p-8">
-      <div className="flex flex-col gap-6 text-14 text-foreground lg:flex-row lg:items-center lg:gap-23">
+    <div className="w-full bg-surface-dark p-8">
+      <div className="flex h-22 w-full flex-col gap-10 text-14 text-foreground lg:flex-row lg:items-center lg:justify-between lg:gap-10">
         <span className="flex-1 font-bold tracking-[1.4px]">KURIO</span>
 
         <p className="flex-1 leading-5.5">

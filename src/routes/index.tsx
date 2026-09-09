@@ -9,7 +9,7 @@ export const Route = createFileRoute('/')({
 
 function HomeRoute() {
   return (
-    <div className="pb-32 md:pb-0">
+    <div className="flex flex-col gap-24 pb-32 md:pb-0">
       <HomeScreen />
       <Footer />
     </div>
