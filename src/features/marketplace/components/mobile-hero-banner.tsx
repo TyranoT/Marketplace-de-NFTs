@@ -1,69 +1,114 @@
+import { useId } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { HERO_SLIDE_COUNT } from '../constants/hero'
-import { MOBILE_HERO } from '../constants/mobile'
+import { MOBILE_HERO, MOBILE_HERO_ORBS } from '../constants/mobile'
 
+/**
+ * Banner do hero mobile, em proporção fixa 366x190 como no Figma.
+ *
+ * A altura vem do `aspect-ratio`, então nenhuma medida interna pode ser fixa:
+ * num card mais estreito que os 366px do frame, o texto ganharia uma linha e
+ * estouraria a altura travada. Todo tamanho aqui é múltiplo de `--u`, o pixel
+ * de design — `100cqw / 366`, ou seja 1px quando o card mede 366 e menos que
+ * isso proporcionalmente. Assim a coluna de texto guarda sempre as mesmas
+ * ~26 letras por linha e a composição só muda de escala, nunca de arranjo.
+ *
+ * `--u` mora no filho, não na `<section>`: um container não consulta a si
+ * mesmo, e é a `<section>` que declara `@container`.
+ */
 export function MobileHeroBanner() {
   const { eyebrow, titleLines, body, cta, feature, thumbnail } = MOBILE_HERO
+  const orbFillId = useId()
 
   return (
-    <section className="relative aspect-366/190 overflow-hidden rounded-[22px] bg-surface-card md:hidden">
-      <div
-        aria-hidden="true"
-        className="absolute top-[-16%] left-[-22%] size-[68%] rounded-full bg-line-soft"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute top-[-5%] left-[20%] size-[68%] rounded-full bg-line-soft"
-      />
+    <section className="@container relative aspect-366/190 md:hidden">
+      <div className="absolute inset-0 overflow-hidden rounded-[calc(var(--u)*28)] bg-linear-to-r from-[#3c2818] to-[#291b11] [--u:calc(100cqw/366)]">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 366 190"
+          preserveAspectRatio="none"
+          className="absolute inset-0 size-full"
+        >
+          <defs>
+            <linearGradient
+              id={orbFillId}
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="190"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0" stopColor="var(--brand)" stopOpacity="0.45" />
+              <stop offset="1" stopColor="var(--brand)" stopOpacity="0.11" />
+            </linearGradient>
+          </defs>
 
-      <div className="relative flex h-full gap-3 px-4 pt-2">
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <p className="text-10 leading-4 font-medium tracking-[1px] text-foreground">
-            {eyebrow}
-          </p>
+          {MOBILE_HERO_ORBS.map(({ cx, cy, rx, ry }) => (
+            <ellipse
+              key={cx}
+              cx={cx}
+              cy={cy}
+              rx={rx}
+              ry={ry}
+              fill={`url(#${orbFillId})`}
+            />
+          ))}
+        </svg>
 
-          <h1 className="text-18 leading-6 font-bold text-foreground">
-            {titleLines[0]}
-            <br />
-            {titleLines[1]}
-          </h1>
+        <div className="relative flex h-full gap-[calc(var(--u)*8)] px-[calc(var(--u)*16)] pt-[calc(var(--u)*6)]">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <p className="text-[calc(var(--u)*12)] leading-[calc(var(--u)*16)] font-medium text-foreground">
+              {eyebrow}
+            </p>
 
-          <p className="text-10 leading-4 text-text-secondary">{body}</p>
+            <h1 className="mt-[calc(var(--u)*4.5)] text-[calc(var(--u)*18)] leading-[calc(var(--u)*29)] font-bold text-foreground">
+              {titleLines[0]}
+              <br />
+              {titleLines[1]}
+            </h1>
 
-          <button
-            type="button"
-            className="flex items-center gap-2 text-10 leading-4 font-bold tracking-[1px] text-highlight"
-          >
-            {cta}
-            <ArrowRight className="size-3.5" />
-          </button>
+            <p className="mt-[calc(var(--u)*7)] text-[calc(var(--u)*12)] leading-[calc(var(--u)*18)] text-text-secondary">
+              {body}
+            </p>
+
+            <button
+              type="button"
+              className="flex items-center gap-[calc(var(--u)*10)] text-[calc(var(--u)*12)] leading-[calc(var(--u)*16)] font-bold text-highlight"
+            >
+              {cta}
+              <ArrowRight className="size-[calc(var(--u)*16)]" />
+            </button>
+          </div>
+
+          <div className="relative w-[calc(var(--u)*138)] shrink-0 self-start pt-[calc(var(--u)*4)]">
+            <img
+              src={feature.src}
+              alt={feature.alt}
+              loading="lazy"
+              decoding="async"
+              className="aspect-square w-full rounded-[calc(var(--u)*15)] object-cover"
+            />
+            <img
+              src={thumbnail.src}
+              alt={thumbnail.alt}
+              loading="lazy"
+              decoding="async"
+              className="absolute -bottom-[calc(var(--u)*8)] left-[calc(var(--u)*14)] size-[calc(var(--u)*57)] rounded-[calc(var(--u)*15)] object-cover"
+            />
+          </div>
         </div>
 
-        <div className="relative w-26 shrink-0 self-start pt-1">
-          <img
-            src={feature.src}
-            alt={feature.alt}
-            loading="lazy"
-            decoding="async"
-            className="aspect-square w-full rounded-[10px] object-cover"
-          />
-          <img
-            src={thumbnail.src}
-            alt={thumbnail.alt}
-            loading="lazy"
-            decoding="async"
-            className="absolute -bottom-2 -left-6 w-11 rounded-lg object-cover"
-          />
+        <div
+          aria-hidden="true"
+          className="absolute bottom-[calc(var(--u)*6)] left-1/2 flex -translate-x-1/2 gap-[calc(var(--u)*6)]"
+        >
+          {Array.from({ length: HERO_SLIDE_COUNT }, (_, index) => (
+            <span
+              key={index}
+              className="size-[calc(var(--u)*7)] rounded-full bg-primary"
+            />
+          ))}
         </div>
-      </div>
-
-      <div
-        aria-hidden="true"
-        className="absolute bottom-2.5 left-1/2 flex -translate-x-1/2 gap-2"
-      >
-        {Array.from({ length: HERO_SLIDE_COUNT }, (_, index) => (
-          <span key={index} className="size-1.5 rounded-full bg-primary" />
-        ))}
       </div>
     </section>
   )

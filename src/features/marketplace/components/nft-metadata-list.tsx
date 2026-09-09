@@ -6,7 +6,7 @@ type NftMetadataListProps = {
 
 export function NftMetadataList({ metadata }: NftMetadataListProps) {
   return (
-    <dl className="flex flex-col gap-3.5 text-15 leading-4 text-text-secondary">
+    <dl className="flex flex-col gap-4 text-15 leading-4 text-text-secondary md:gap-3.5">
       {metadata.map(({ label, value }) => (
         <div key={label} className="flex gap-1.5">
           <dt>{label}:</dt>

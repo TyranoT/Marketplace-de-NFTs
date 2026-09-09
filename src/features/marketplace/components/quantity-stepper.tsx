@@ -8,7 +8,7 @@ type QuantityStepperProps = {
 }
 
 const BUTTON_CLASS =
-  'flex size-8 items-center justify-center rounded-full bg-primary text-ink disabled:opacity-50'
+  'flex h-7 w-7 items-center justify-center rounded-full bg-primary text-ink disabled:opacity-50 md:size-8'
 
 export function QuantityStepper({
   value,
@@ -24,7 +24,7 @@ export function QuantityStepper({
         disabled={value <= 1}
         className={BUTTON_CLASS}
       >
-        <Minus className="size-4" />
+        <Minus className="size-3.5 md:size-4" />
       </button>
 
       <output
@@ -40,7 +40,7 @@ export function QuantityStepper({
         onClick={onIncrease}
         className={BUTTON_CLASS}
       >
-        <Plus className="size-4" />
+        <Plus className="size-3.5 md:size-4" />
       </button>
     </div>
   )

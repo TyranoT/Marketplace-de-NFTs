@@ -4,7 +4,10 @@ import { NftDetailScreen, NftNotFound } from '@/features/marketplace'
 import { getNftById, getRelatedNfts } from '@/global/data'
 
 export const Route = createFileRoute('/nft/$nftId')({
-  staticData: { header: { active: 'market', divider: true } },
+  staticData: {
+    header: { active: 'market', divider: true },
+    mobileTabBar: false,
+  },
   loader: ({ params }) => {
     const nft = getNftById(params.nftId)
 
@@ -22,7 +25,10 @@ function NftDetailRoute() {
   return (
     <div className="flex flex-col gap-24">
       <NftDetailScreen key={nft.id} nft={nft} related={related} />
-      <Footer />
+
+      <div className="hidden md:block">
+        <Footer />
+      </div>
     </div>
   )
 }

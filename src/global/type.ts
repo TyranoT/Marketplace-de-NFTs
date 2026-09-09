@@ -20,6 +20,8 @@ export type NftFact = {
 export type NftRating = {
   /** Estrelas acesas de 5. */
   value: number
+  /** Nota exibida no selo do mobile, que mostra o número em vez das estrelas. */
+  score: number
   count: number
 }
 

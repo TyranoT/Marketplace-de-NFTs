@@ -9,7 +9,10 @@ export function FooterLinks() {
     <div className="bg-surface-card p-8">
       <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_228px] lg:gap-31">
         {FOOTER_LINK_COLUMNS.map(({ title, items }) => (
-          <div key={title} className="flex flex-col gap-2 text-foreground">
+          <div
+            key={title}
+            className="flex flex-col items-center gap-2 text-center text-foreground sm:items-start sm:text-left"
+          >
             <h2 className="text-18 leading-4 font-bold">{title}</h2>
             <ul className="text-14">
               {items.map((item) => (
@@ -21,8 +24,8 @@ export function FooterLinks() {
           </div>
         ))}
 
-        <div className="flex flex-col gap-8">
-          <div className="flex flex-col gap-5">
+        <div className="flex flex-col items-center gap-8 sm:items-start">
+          <div className="flex flex-col items-center gap-5 sm:items-start">
             <h2 className="text-18 leading-4 font-bold text-foreground">
               Redes sociais
             </h2>
@@ -37,7 +40,7 @@ export function FooterLinks() {
             </ul>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col items-center gap-3 sm:items-start">
             <h2 className="text-18 leading-4 font-bold text-foreground">
               Carteiras compatíveis
             </h2>

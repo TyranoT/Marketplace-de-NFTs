@@ -28,4 +28,4 @@ export const GALLERY_SIZE = 4
 export const RELATED_LIMIT = 5
 
 /** Avaliação do único NFT redigido no Figma, reaproveitada como fixture. */
-export const DEFAULT_RATING = { value: 4, count: 19 }
+export const DEFAULT_RATING = { value: 4, score: 4.8, count: 19 }

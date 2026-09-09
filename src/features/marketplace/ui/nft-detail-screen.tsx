@@ -8,6 +8,7 @@ import { NftPurchasePanel } from '../components/nft-purchase-panel'
 import { NftRating } from '../components/nft-rating'
 import { NftRelatedSection } from '../components/nft-related-section'
 import { NftShare } from '../components/nft-share'
+import { NftDetailMobile } from './nft-detail-mobile'
 import type { NftDetail, NftSummary } from '@/global/type'
 
 type NftDetailScreenProps = {
@@ -17,8 +18,10 @@ type NftDetailScreenProps = {
 
 export function NftDetailScreen({ nft, related }: NftDetailScreenProps) {
   return (
-    <Container as="main" className="flex flex-col gap-8 pt-4 md:gap-24 md:pt-8">
-      <div className="flex flex-col gap-3.5">
+    <Container as="main" className="flex flex-col gap-8 md:gap-24 md:pt-8">
+      <NftDetailMobile nft={nft} />
+
+      <div className="hidden flex-col gap-3.5 md:flex">
         <NftBreadcrumb />
 
         <section className="flex flex-col gap-8 lg:flex-row lg:gap-8.25">
@@ -59,8 +62,13 @@ export function NftDetailScreen({ nft, related }: NftDetailScreenProps) {
         </section>
       </div>
 
-      <NftDetailTabs nft={nft} />
-      <NftRelatedSection items={related} />
+      <div className="hidden md:block">
+        <NftDetailTabs nft={nft} />
+      </div>
+
+      <div className="hidden md:block">
+        <NftRelatedSection items={related} />
+      </div>
     </Container>
   )
 }

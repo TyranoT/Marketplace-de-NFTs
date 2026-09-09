@@ -6,7 +6,10 @@ export function FooterFeatures() {
     <div className="bg-surface-card p-8">
       <div className="grid gap-10 lg:grid-cols-[1fr_1fr_1fr_357px] lg:gap-0 lg:[&>*+*]:border-l lg:[&>*+*]:border-primary">
         {FOOTER_FEATURES.map(({ medallion, title, body }) => (
-          <div key={title} className="flex flex-col gap-3 lg:px-4">
+          <div
+            key={title}
+            className="flex flex-col items-center gap-3 text-center lg:items-start lg:px-4 lg:text-left"
+          >
             <div
               aria-hidden="true"
               className="flex size-18.5 items-center justify-center rounded-full bg-primary text-24 font-bold text-ink"

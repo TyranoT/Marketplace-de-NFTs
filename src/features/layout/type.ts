@@ -43,5 +43,11 @@ export type SocialLink = {
 declare module '@tanstack/react-router' {
   interface StaticDataRouteOption {
     header?: HeaderConfig
+    /**
+     * Desliga a barra de navegação inferior do mobile. Telas que trazem a
+     * própria barra fixa — a de compra, no detalhe do NFT — declaram `false`
+     * para as duas não se sobreporem.
+     */
+    mobileTabBar?: boolean
   }
 }

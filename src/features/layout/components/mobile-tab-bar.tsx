@@ -1,3 +1,4 @@
+import { useRouterState } from '@tanstack/react-router'
 import { ScanLine } from 'lucide-react'
 import {
   MOBILE_NAV_ITEMS,
@@ -17,6 +18,12 @@ import { MobileTabItem } from './mobile-tab-item'
  * larguras fracionárias.
  */
 export function MobileTabBar() {
+  const isEnabled = useRouterState({
+    select: (state) => state.matches.at(-1)?.staticData.mobileTabBar ?? true,
+  })
+
+  if (!isEnabled) return null
+
   return (
     <nav
       aria-label="Navegação principal"

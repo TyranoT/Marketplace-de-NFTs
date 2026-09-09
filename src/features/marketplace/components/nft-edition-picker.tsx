@@ -14,7 +14,7 @@ export function NftEditionPicker({
   onChange,
 }: NftEditionPickerProps) {
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-1.5 md:gap-2.5">
       <p
         id="nft-edition-label"
         className="text-15 leading-4 font-bold text-foreground"
@@ -25,7 +25,7 @@ export function NftEditionPicker({
       <div
         role="radiogroup"
         aria-labelledby="nft-edition-label"
-        className="flex flex-wrap gap-1.5"
+        className="flex flex-wrap gap-3 md:gap-1.5"
       >
         {editions.map(({ id, label }) => {
           const isSelected = id === value
@@ -38,7 +38,7 @@ export function NftEditionPicker({
               aria-checked={isSelected}
               onClick={() => onChange(id)}
               className={cn(
-                'h-6.5 rounded-full border px-1.5 text-14 leading-4',
+                'h-7 rounded-full border px-1.5 text-14 leading-4 md:h-6.5',
                 isSelected
                   ? 'border-highlight text-highlight'
                   : 'border-line-soft text-text-secondary',
