@@ -47,7 +47,7 @@ export function NftCardSkeleton({ className }: { className?: string }) {
     <div className={cn('flex flex-col gap-3', className)}>
       <Skeleton className="aspect-258/300 w-full rounded-none" />
       <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-[87px]" />
+      <Skeleton className="h-4 w-21.75" />
     </div>
   )
 }

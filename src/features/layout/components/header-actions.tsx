@@ -1,13 +1,9 @@
 import { LogOut, Search, ShoppingCart } from 'lucide-react'
 import { Button } from '@/global/components/ui/button'
+import { buildCartLabel } from '../helpers/build-cart-label'
 
 type HeaderActionsProps = {
   cartCount: number
-}
-
-function buildCartLabel(cartCount: number) {
-  const noun = cartCount === 1 ? 'item' : 'itens'
-  return `Carrinho com ${cartCount} ${noun}`
 }
 
 export function HeaderActions({ cartCount }: HeaderActionsProps) {

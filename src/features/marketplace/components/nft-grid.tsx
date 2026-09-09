@@ -10,7 +10,7 @@ type NftGridProps = {
 export function NftGrid({ items, isLoading = false }: NftGridProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-3 lg:gap-x-[34px]">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-3 lg:gap-x-8.5">
         {Array.from({ length: CATALOG_PAGE_SIZE }, (_, index) => (
           <NftCardSkeleton key={index} />
         ))}
@@ -27,7 +27,7 @@ export function NftGrid({ items, isLoading = false }: NftGridProps) {
   }
 
   return (
-    <ul className="grid grid-cols-2 gap-x-4 gap-y-8 max-lg:[&>li:nth-child(even)]:mt-8 lg:grid-cols-3 lg:gap-x-[34px]">
+    <ul className="grid grid-cols-2 gap-x-4 gap-y-8 max-lg:[&>li:nth-child(even)]:mt-8 lg:grid-cols-3 lg:gap-x-8.5">
       {items.map((item) => (
         <li key={item.id}>
           <NftCard

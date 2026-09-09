@@ -15,7 +15,7 @@ export function MobileTabBar() {
       aria-label="Navegação principal"
       className="fixed inset-x-0 bottom-0 z-40 md:hidden"
     >
-      <div className="relative mx-auto aspect-414/126 w-full max-w-[414px]">
+      <div className="relative mx-auto aspect-414/126 w-full max-w-103.5">
         <svg
           aria-hidden="true"
           viewBox="30 40 414 94.95"

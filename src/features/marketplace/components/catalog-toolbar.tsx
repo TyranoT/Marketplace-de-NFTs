@@ -45,7 +45,7 @@ export function CatalogToolbar({
             >
               {label}
               {isActive ? (
-                <span className="absolute top-[23px] right-0 left-0 h-0.5 bg-primary" />
+                <span className="absolute top-5.75 right-0 left-0 h-0.5 bg-primary" />
               ) : null}
             </button>
           )

@@ -8,7 +8,7 @@ type MobileSearchBarProps = {
 export function MobileSearchBar({ onOpenFilters }: MobileSearchBarProps) {
   return (
     <div className="flex items-center gap-2 md:hidden">
-      <div className="flex h-[45px] min-w-0 flex-1 items-center gap-3 rounded-lg bg-surface-card px-3">
+      <div className="flex h-11.25 min-w-0 flex-1 items-center gap-3 rounded-lg bg-surface-card px-3">
         <Search className="size-5 shrink-0 text-text-secondary" />
         <label htmlFor="catalog-search" className="sr-only">
           Buscar NFTs e coleções
@@ -25,9 +25,9 @@ export function MobileSearchBar({ onOpenFilters }: MobileSearchBarProps) {
         type="button"
         onClick={onOpenFilters}
         aria-label="Abrir filtros"
-        className="flex size-[45px] shrink-0 items-center justify-center rounded-[9px] bg-primary text-ink"
+        className="flex size-11.25 shrink-0 items-center justify-center rounded-[9px] bg-primary text-ink"
       >
-        <SlidersHorizontal className="size-[22px]" />
+        <SlidersHorizontal className="size-5.5" />
       </button>
     </div>
   )

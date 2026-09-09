@@ -10,16 +10,16 @@ export function PromoCard({ promo }: PromoCardProps) {
   const { titleLines, body, cta, artwork } = promo
 
   return (
-    <article className="relative h-[250px] overflow-hidden rounded-lg bg-surface-card">
+    <article className="relative h-62.5 overflow-hidden rounded-lg bg-surface-card">
       <img
         src={artwork.src}
         alt={artwork.alt}
         loading="lazy"
         decoding="async"
-        className="absolute inset-y-0 left-0 h-full w-[287px] object-cover"
+        className="absolute inset-y-0 left-0 h-full w-71.75 object-cover"
       />
 
-      <div className="absolute top-[37px] right-[30px] flex w-[263px] flex-col items-end gap-2 text-right">
+      <div className="absolute top-9.25 right-7.5 flex w-65.75 flex-col items-end gap-2 text-right">
         <h3 className="text-18 leading-6 font-bold text-foreground">
           {titleLines[0]}
           <br />

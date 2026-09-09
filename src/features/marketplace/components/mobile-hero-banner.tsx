@@ -9,11 +9,11 @@ export function MobileHeroBanner() {
     <section className="relative aspect-366/190 overflow-hidden rounded-[22px] bg-surface-card md:hidden">
       <div
         aria-hidden="true"
-        className="absolute -top-[16%] -left-[22%] size-[68%] rounded-full bg-line-soft"
+        className="absolute top-[-16%] left-[-22%] size-[68%] rounded-full bg-line-soft"
       />
       <div
         aria-hidden="true"
-        className="absolute -top-[5%] left-[20%] size-[68%] rounded-full bg-line-soft"
+        className="absolute top-[-5%] left-[20%] size-[68%] rounded-full bg-line-soft"
       />
 
       <div className="relative flex h-full gap-3 px-4 pt-2">
@@ -39,7 +39,7 @@ export function MobileHeroBanner() {
           </button>
         </div>
 
-        <div className="relative w-[104px] shrink-0 self-start pt-1">
+        <div className="relative w-26 shrink-0 self-start pt-1">
           <img
             src={feature.src}
             alt={feature.alt}
@@ -52,7 +52,7 @@ export function MobileHeroBanner() {
             alt={thumbnail.alt}
             loading="lazy"
             decoding="async"
-            className="absolute -bottom-2 -left-6 w-11 rounded-[6px] object-cover"
+            className="absolute -bottom-2 -left-6 w-11 rounded-lg object-cover"
           />
         </div>
       </div>

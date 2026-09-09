@@ -5,7 +5,7 @@ export function Hero() {
   const { eyebrow, titleLines, body, cta } = HERO_CONTENT
 
   return (
-    <section className="relative hidden h-[450px] items-center pl-10 md:flex">
+    <section className="relative hidden h-112.5 items-center pl-10 md:flex">
       <div className="flex w-full items-center justify-between gap-10">
         <div className="flex flex-col items-end gap-11 lg:w-150">
           <div className="flex w-full flex-col items-start gap-8">
@@ -14,13 +14,13 @@ export function Hero() {
                 <p className="text-14 leading-4 font-medium tracking-[1.4px]">
                   {eyebrow}
                 </p>
-                <h1 className="text-43 leading-[70px] font-bold">
+                <h1 className="text-43 leading-17.5 font-bold">
                   {titleLines[0]}
                   <br />
                   {titleLines[1]}
                 </h1>
               </div>
-              <p className="text-14 leading-6 text-text-secondary lg:max-w-[557px]">
+              <p className="text-14 leading-6 text-text-secondary lg:max-w-139.25">
                 {body}
               </p>
             </div>
@@ -35,7 +35,7 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="relative hidden size-[450px] shrink-0 lg:block">
+        <div className="relative hidden size-112.5 shrink-0 lg:block">
           <img
             src={HERO_ARTWORK.feature}
             alt={HERO_ARTWORK.featureAlt}

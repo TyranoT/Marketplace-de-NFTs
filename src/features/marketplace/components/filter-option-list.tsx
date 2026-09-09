@@ -35,7 +35,7 @@ export function FilterOptionList({
                 id={inputId}
                 checked={isSelected}
                 onCheckedChange={() => onToggle(id)}
-                className="size-[15px]"
+                className="size-3.75"
               />
               <Label
                 htmlFor={inputId}
