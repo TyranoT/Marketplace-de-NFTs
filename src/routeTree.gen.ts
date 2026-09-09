@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UiRouteImport } from './routes/ui'
+import { Route as NftNftIdRouteImport } from './routes/nft.$nftId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const UiRoute = UiRouteImport.update({
   path: '/ui',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NftNftIdRoute = NftNftIdRouteImport.update({
+  id: '/nft/$nftId',
+  path: '/nft/$nftId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ui': typeof UiRoute
+  '/nft/$nftId': typeof NftNftIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ui': typeof UiRoute
+  '/nft/$nftId': typeof NftNftIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ui': typeof UiRoute
+  '/nft/$nftId': typeof NftNftIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ui'
+  fullPaths: '/' | '/ui' | '/nft/$nftId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ui'
-  id: '__root__' | '/' | '/ui'
+  to: '/' | '/ui' | '/nft/$nftId'
+  id: '__root__' | '/' | '/ui' | '/nft/$nftId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   UiRoute: typeof UiRoute
+  NftNftIdRoute: typeof NftNftIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/nft/$nftId': {
+      id: '/nft/$nftId'
+      path: '/nft/$nftId'
+      fullPath: '/nft/$nftId'
+      preLoaderRoute: typeof NftNftIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   UiRoute: UiRoute,
+  NftNftIdRoute: NftNftIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

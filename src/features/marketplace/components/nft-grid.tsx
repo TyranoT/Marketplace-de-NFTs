@@ -1,6 +1,7 @@
 import { CATALOG_PAGE_SIZE } from '../constants/catalog'
-import type { NftSummary } from '../type'
-import { NftCard, NftCardSkeleton } from './nft-card'
+import type { NftSummary } from '@/global/type'
+import { NftCardSkeleton } from './nft-card'
+import { NftCardLink } from './nft-card-link'
 
 type NftGridProps = {
   items: Array<NftSummary>
@@ -30,13 +31,7 @@ export function NftGrid({ items, isLoading = false }: NftGridProps) {
     <ul className="grid grid-cols-2 gap-x-8 gap-y-8 max-lg:[&>li:nth-child(even)]:mt-8 lg:grid-cols-3 lg:gap-x-8">
       {items.map((item) => (
         <li key={item.id}>
-          <NftCard
-            name={item.name}
-            price={item.price}
-            secondaryPrice={item.secondaryPrice}
-            imageUrl={item.imageUrl}
-            imageAlt={item.imageAlt}
-          />
+          <NftCardLink nft={item} />
         </li>
       ))}
     </ul>

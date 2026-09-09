@@ -1,3 +1,5 @@
+import type { Artwork } from '@/global/type'
+
 export type CatalogTabKey = 'all' | 'new' | 'trending'
 
 export type CatalogTab = {
@@ -12,15 +14,6 @@ export type CatalogSortOption = {
   label: string
 }
 
-export type NftSummary = {
-  id: string
-  name: string
-  price: string
-  secondaryPrice?: string
-  imageUrl: string
-  imageAlt: string
-}
-
 export type FilterOption = {
   id: string
   label: string
@@ -28,11 +21,6 @@ export type FilterOption = {
 }
 
 export type PriceRange = [number, number]
-
-export type Artwork = {
-  src: string
-  alt: string
-}
 
 export type PromoCardContent = {
   id: string
@@ -50,4 +38,13 @@ export type JournalPost = {
   excerpt: string
   cta: string
   artwork: Artwork
+}
+
+export type NftShareTarget = {
+  label: string
+  /**
+   * `ComponentType` em vez do tipo de função usado em `SocialLink`: os ícones
+   * do lucide são forwardRef e não são atribuíveis àquela assinatura.
+   */
+  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
 }

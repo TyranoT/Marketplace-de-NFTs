@@ -1,4 +1,4 @@
-import { ARTWORKS } from './artwork'
+import { ARTWORKS } from '@/global/data/artwork'
 
 export const FEATURED_BANNER = {
   eyebrow: 'NFT EM DESTAQUE',

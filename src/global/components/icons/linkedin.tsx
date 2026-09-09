@@ -1,6 +1,11 @@
 import type { SVGProps } from 'react'
 
-export function LinkedinIcon(props: SVGProps<SVGSVGElement>) {
+type IconProps = SVGProps<SVGSVGElement> & {
+  /** Moldura arredondada do rodapé. O compartilhar da tela de NFT usa o glifo puro. */
+  framed?: boolean
+}
+
+export function LinkedinIcon({ framed = true, ...props }: IconProps) {
   return (
     <svg
       viewBox="0 0 32 32"
@@ -9,14 +14,16 @@ export function LinkedinIcon(props: SVGProps<SVGSVGElement>) {
       {...props}
     >
       <g>
-        <rect
-          x="0.5"
-          y="0.5"
-          width="31"
-          height="31"
-          rx="4.5"
-          stroke="#D28A4C"
-        />
+        {framed ? (
+          <rect
+            x="0.5"
+            y="0.5"
+            width="31"
+            height="31"
+            rx="4.5"
+            stroke="#D28A4C"
+          />
+        ) : null}
         <path
           d="M12.3333 10.6667C12.3333 11.6 11.6 12.3333 10.6667 12.3333C9.73333 12.3333 9 11.6 9 10.6667C9 9.73333 9.73333 9 10.6667 9C11.6 9 12.3333 9.73333 12.3333 10.6667ZM12.3333 13.6667H9V24.3333H12.3333V13.6667ZM17.6667 13.6667H14.3333V24.3333H17.6667V18.7333C17.6667 15.6 21.6667 15.3333 21.6667 18.7333V24.3333H25V17.6C25 12.3333 19.0667 12.5333 17.6667 15.1333V13.6667Z"
           fill="currentColor"
@@ -24,4 +31,9 @@ export function LinkedinIcon(props: SVGProps<SVGSVGElement>) {
       </g>
     </svg>
   )
+}
+
+/** Glifo sem a moldura, para uso inline (ex.: compartilhar na tela de NFT). */
+export function LinkedinGlyph(props: SVGProps<SVGSVGElement>) {
+  return <LinkedinIcon {...props} framed={false} />
 }

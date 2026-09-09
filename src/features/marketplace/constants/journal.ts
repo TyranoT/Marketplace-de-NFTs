@@ -1,4 +1,4 @@
-import { ARTWORKS } from './artwork'
+import { ARTWORKS } from '@/global/data/artwork'
 import type { JournalPost } from '../type'
 
 export const JOURNAL_SECTION = {

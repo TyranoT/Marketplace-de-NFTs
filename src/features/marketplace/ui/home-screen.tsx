@@ -1,6 +1,6 @@
 import { Container } from '@/global/components/ui/container'
+import { getNftSummaries } from '@/global/data'
 import { CATALOG_PAGE_COUNT } from '../constants/catalog'
-import { NFT_FIXTURES } from '../constants/nft-fixtures'
 import { PROMO_CARDS } from '../constants/promos'
 import { CatalogFilters } from '../components/catalog-filters'
 import { CatalogPagination } from '../components/catalog-pagination'
@@ -55,7 +55,7 @@ export function HomeScreen() {
               onTabChange={view.changeTab}
               onSortChange={view.changeSort}
             />
-            <NftGrid items={NFT_FIXTURES} />
+            <NftGrid items={getNftSummaries()} />
           </div>
 
           <CatalogPagination

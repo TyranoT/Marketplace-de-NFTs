@@ -1,4 +1,4 @@
-import { ARTWORKS } from './artwork'
+import { ARTWORKS } from '@/global/data/artwork'
 
 export const MOBILE_SEARCH_PLACEHOLDER = 'Explorar coleções'
 
