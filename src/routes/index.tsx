@@ -1,15 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Footer } from '@/features/layout'
+import { HomeScreen } from '@/features/marketplace'
 
 export const Route = createFileRoute('/')({
-  component: App,
+  component: HomeRoute,
   staticData: { header: { active: 'home', divider: true } },
 })
 
-function App() {
+function HomeRoute() {
   return (
     <>
-      <main />
+      <HomeScreen />
       <Footer />
     </>
   )

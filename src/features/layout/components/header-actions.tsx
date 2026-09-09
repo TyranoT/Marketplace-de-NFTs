@@ -1,4 +1,3 @@
-import { Link } from '@tanstack/react-router'
 import { LogOut, Search, ShoppingCart } from 'lucide-react'
 import { Button } from '@/global/components/ui/button'
 
@@ -18,8 +17,8 @@ export function HeaderActions({ cartCount }: HeaderActionsProps) {
         <Search className="size-5" />
       </button>
 
-      <Link
-        to="/"
+      <button
+        type="button"
         aria-label={buildCartLabel(cartCount)}
         className="relative size-6 text-foreground"
       >
@@ -27,7 +26,7 @@ export function HeaderActions({ cartCount }: HeaderActionsProps) {
         <span className="absolute top-0 left-3.75 flex size-4 items-center justify-center rounded-full bg-primary text-10 font-medium text-ink ring-2 ring-ink">
           {cartCount}
         </span>
-      </Link>
+      </button>
 
       <Button className="h-8.75 w-25 gap-1 px-0 text-16">
         <LogOut className="size-5" />

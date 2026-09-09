@@ -6,6 +6,7 @@ type NftCardProps = {
   price: string
   secondaryPrice?: string
   imageUrl: string
+  imageAlt?: string
   className?: string
 }
 
@@ -14,6 +15,7 @@ export function NftCard({
   price,
   secondaryPrice,
   imageUrl,
+  imageAlt,
   className,
 }: NftCardProps) {
   return (
@@ -21,7 +23,7 @@ export function NftCard({
       <div className="relative aspect-258/300 w-full bg-surface-card">
         <img
           src={imageUrl}
-          alt={name}
+          alt={imageAlt ?? name}
           loading="lazy"
           decoding="async"
           className="absolute top-[8.33%] right-[1.55%] left-[1.55%] aspect-square rounded-xl object-cover"
