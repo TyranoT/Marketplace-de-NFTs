@@ -16,6 +16,32 @@ export const Route = createRootRoute({
         content:
           'Descubra, colecione e negocie NFTs de artistas independentes na Kurio.',
       },
+      {
+        name: 'og:title',
+        content: 'Kurio · Marketplace de NFTs',
+      },
+      {
+        name: 'og:description',
+        content:
+          'Descubra, colecione e negocie NFTs de artistas independentes na Kurio.',
+      },
+      {
+        name: 'og:url',
+        content: process.env.PUBLIC_URL || 'http://localhost:3000',
+      },
+      {
+        name: 'twitter:title',
+        content: 'Kurio · Marketplace de NFTs',
+      },
+      {
+        name: 'twitter:description',
+        content:
+          'Descubra, colecione e negocie NFTs de artistas independentes na Kurio.',
+      },
+      {
+        name: 'twitter:url',
+        content: process.env.PUBLIC_URL || 'http://localhost:3000',
+      }
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
   }),

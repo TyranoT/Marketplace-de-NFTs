@@ -1,5 +1,1 @@
-
-
-export const Hero = () => {
-    
-}
+export const Hero = () => {}
