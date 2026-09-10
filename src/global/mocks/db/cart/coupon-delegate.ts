@@ -1,12 +1,6 @@
-export type MockCoupon = {
-  label: string
-  percentOff?: string
-  amountOff?: string
-  /** ISO. Comparado com `Date.now()`, então o relógio do Playwright controla. */
-  expiresAt: string
-  /** Subtotal mínimo em ETH para o cupom valer. */
-  minSubtotal?: string
-}
+import { ModelDelegate } from '../core/model-delegate'
+import { Coupon } from './coupon'
+import type { CouponRule } from './coupon'
 
 const FAR_FUTURE = '2099-01-01T00:00:00.000Z'
 const PAST = '2020-01-01T00:00:00.000Z'
@@ -16,7 +10,7 @@ const PAST = '2020-01-01T00:00:00.000Z'
  * sucesso percentual, sucesso por valor fixo, expirado e não aplicável.
  * Qualquer código fora desta tabela é inválido.
  */
-export const MOCK_COUPONS: Record<string, MockCoupon> = {
+const COUPON_RULES: Record<string, CouponRule> = {
   KURIO10: {
     label: 'Desconto do lançamento',
     percentOff: '10',
@@ -45,6 +39,19 @@ export const MOCK_COUPONS: Record<string, MockCoupon> = {
   },
 }
 
-export function findCoupon(code: string): MockCoupon | undefined {
-  return MOCK_COUPONS[code.trim().toUpperCase()]
+export type CouponWhere = {
+  code?: string
+}
+
+export class CouponDelegate extends ModelDelegate<Coupon, CouponWhere> {
+  protected list(): Array<Coupon> {
+    return Object.entries(COUPON_RULES).map(
+      ([code, rule]) => new Coupon(code, rule),
+    )
+  }
+
+  /** O código do usuário chega com espaço e caixa livres; a tabela é maiúscula. */
+  protected matches(coupon: Coupon, where: CouponWhere): boolean {
+    return !where.code || coupon.code === where.code.trim().toUpperCase()
+  }
 }

@@ -14,8 +14,8 @@ const stepperButton = cva(
         pill: 'rounded-full',
       },
       size: {
-        sm: '',
-        md: '',
+        sm: 'size-6 md:size-7',
+        md: 'size-7 md:size-8',
       },
     },
     compoundVariants: [

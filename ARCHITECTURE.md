@@ -128,10 +128,40 @@ desliga e libera o caminho para uma API real.
 
 ### Onde a regra de negócio mora
 
-Inteiramente em `mocks/db/cart-repository.ts`. Os handlers só traduzem HTTP ↔
-repositório. É o que mantém componentes, hooks e cliente Axios livres de
-caminhos alternativos de negócio, e o que permite a interface otimista
-reproduzir o cálculo do servidor sem duplicar a regra.
+Tudo em `mocks/db/`, dividido por domínio: `core/` (o cliente do banco e sua
+persistência), `nft/` (catálogo, preço e disponibilidade) e `cart/` (carrinho,
+cupom, totais e o contrato de saída). A raiz do `db/` guarda só o `index.ts`,
+que é a API pública consumida pelos handlers.
+
+**As operações seguem o formato do Prisma Client.** `MockDbClient` expõe um
+delegate por modelo e as operações de sessão prefixadas com `$`:
+
+```ts
+mockDb.cartItem.findFirst({ where: { nftId, editionId } })
+mockDb.cartItem.update({ where: { id }, data: { quantity } })
+mockDb.coupon.findUnique({ where: { code } })
+mockDb.$transaction(() => { ... })
+```
+
+O vocabulário de leitura — `findMany`, `findFirst`, `findUnique`, `count` — é
+escrito uma vez só, na classe abstrata `ModelDelegate`: cada modelo declara
+apenas de onde vêm suas linhas e como uma linha casa com o filtro. Quem aceita
+escrita implementa também a interface `WritableDelegate` (`create`, `update`,
+`delete`). A familiaridade do formato é a documentação: quem já usou Prisma lê
+o serviço sem precisar aprender uma API inventada para este projeto.
+
+Toda escrita passa por `$transaction`, que persiste uma vez só no fim e desfaz
+o que já tinha mudado se a regra recusar no meio do caminho.
+
+A regra de negócio fica em `CartService`, como num app real em que o service
+usa o client: disponibilidade, cupom e quantidade são decididos lá e em nenhum
+outro lugar. `MockDb` guarda só as linhas, `MockDbStore` cuida do
+`localStorage` e `CartContractMapper` é a única classe que conhece o formato de
+wire. Os handlers só traduzem HTTP ↔ serviço.
+
+É o que mantém componentes, hooks e cliente Axios livres de caminhos
+alternativos de negócio, e o que permite a interface otimista reproduzir o
+cálculo do servidor sem duplicar a regra.
 
 ### Estado e reset
 

@@ -1,5 +1,5 @@
 import { HttpResponse, http } from 'msw'
-import { resetDb } from '../db/store'
+import { mockDb } from '../db'
 import { getScenario, resetScenario, setScenario } from '../scenario/config'
 import type { MockScenario } from '../scenario/config'
 
@@ -17,7 +17,7 @@ export const scenarioHandlers = [
     const body = (await request.json().catch(() => ({}))) as ResetBody
 
     resetScenario()
-    resetDb()
+    mockDb.$reset()
 
     if (body.scenario) setScenario(body.scenario)
 
