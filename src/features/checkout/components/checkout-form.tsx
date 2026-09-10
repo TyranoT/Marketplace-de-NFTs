@@ -1,11 +1,11 @@
 import { Controller } from 'react-hook-form'
 import { Input } from '@/global/components/ui/input'
-import { Radio, RadioGroup } from '@/global/components/ui/radio-group'
 import { Textarea } from '@/global/components/ui/textarea'
 import { ENS_SUFFIXES, NETWORKS, WALLET_TYPES } from '@/global/data'
 import { CHECKOUT_COPY } from '../constants/checkout-copy'
-import { CheckoutField, fieldProps } from './checkout-field'
-import { CheckoutSelect } from './checkout-select'
+import { FormField, fieldProps } from '@/global/components/ui/form-field'
+import { OptionSelect } from '@/global/components/ui/option-select'
+import { CheckoutToggle } from './checkout-toggle'
 import type { UseFormReturn } from 'react-hook-form'
 import type { CheckoutFormValues } from '../helpers/checkout-schema'
 
@@ -31,7 +31,7 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
       onSubmit={onSubmit}
       className="grid gap-x-6 gap-y-5 md:grid-cols-2"
     >
-      <CheckoutField
+      <FormField
         id="displayName"
         label={CHECKOUT_COPY.displayNameLabel}
         required
@@ -42,9 +42,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
           {...fieldProps('displayName', errors.displayName?.message)}
           autoComplete="name"
         />
-      </CheckoutField>
+      </FormField>
 
-      <CheckoutField
+      <FormField
         id="username"
         label={CHECKOUT_COPY.usernameLabel}
         required
@@ -55,9 +55,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
           {...fieldProps('username', errors.username?.message)}
           autoComplete="username"
         />
-      </CheckoutField>
+      </FormField>
 
-      <CheckoutField
+      <FormField
         id="network"
         label={CHECKOUT_COPY.networkLabel}
         required
@@ -67,7 +67,7 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
           name="network"
           control={control}
           render={({ field }) => (
-            <CheckoutSelect
+            <OptionSelect
               id="network"
               value={field.value}
               options={NETWORKS}
@@ -77,9 +77,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
             />
           )}
         />
-      </CheckoutField>
+      </FormField>
 
-      <CheckoutField
+      <FormField
         id="profileName"
         label={CHECKOUT_COPY.profileNameLabel}
         required
@@ -89,9 +89,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
           {...register('profileName')}
           {...fieldProps('profileName', errors.profileName?.message)}
         />
-      </CheckoutField>
+      </FormField>
 
-      <CheckoutField
+      <FormField
         id="walletAddress"
         label={CHECKOUT_COPY.walletAddressLabel}
         required
@@ -105,7 +105,7 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
           autoComplete="off"
           className="placeholder:text-brand-muted"
         />
-      </CheckoutField>
+      </FormField>
 
       {/** No frame este campo não tem rótulo: o placeholder já o descreve. */}
       <div className="flex flex-col justify-end gap-1.5">
@@ -120,7 +120,7 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
         />
       </div>
 
-      <CheckoutField
+      <FormField
         id="walletType"
         label={CHECKOUT_COPY.walletTypeLabel}
         required
@@ -130,7 +130,7 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
           name="walletType"
           control={control}
           render={({ field }) => (
-            <CheckoutSelect
+            <OptionSelect
               id="walletType"
               value={field.value}
               options={WALLET_TYPES}
@@ -140,9 +140,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
             />
           )}
         />
-      </CheckoutField>
+      </FormField>
 
-      <CheckoutField
+      <FormField
         id="referralCode"
         label={CHECKOUT_COPY.referralCodeLabel}
         required
@@ -153,9 +153,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
           {...fieldProps('referralCode', errors.referralCode?.message)}
           autoComplete="off"
         />
-      </CheckoutField>
+      </FormField>
 
-      <CheckoutField
+      <FormField
         id="email"
         label={CHECKOUT_COPY.emailLabel}
         required
@@ -167,50 +167,46 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
           type="email"
           autoComplete="email"
         />
-      </CheckoutField>
+      </FormField>
 
-      <CheckoutField
-        id="ensName"
+      <FormField
+        id="ensSuffix"
         label={CHECKOUT_COPY.ensNameLabel}
         required
-        error={errors.ensName?.message}
+        error={errors.ensSuffix?.message}
       >
         <Controller
-          name="ensName"
+          name="ensSuffix"
           control={control}
           render={({ field }) => (
-            <CheckoutSelect
-              id="ensName"
+            <OptionSelect
+              id="ensSuffix"
               value={field.value}
               options={ENS_SUFFIXES}
               placeholder={ENS_SUFFIXES[0].label}
-              error={errors.ensName?.message}
+              error={errors.ensSuffix?.message}
               onValueChange={field.onChange}
               className="w-19.5"
             />
           )}
         />
-      </CheckoutField>
+      </FormField>
 
       <Controller
         name="useAnotherWallet"
         control={control}
         render={({ field }) => (
-          <RadioGroup
-            value={field.value ? 'yes' : 'no'}
-            onValueChange={(next) => field.onChange(next === 'yes')}
-            aria-label={CHECKOUT_COPY.useAnotherWalletLabel}
+          <CheckoutToggle
+            id="useAnotherWallet"
+            label={CHECKOUT_COPY.useAnotherWalletLabel}
+            checked={field.value}
+            onCheckedChange={field.onChange}
             className="md:col-span-2"
-          >
-            <label className="flex w-fit cursor-pointer items-center gap-3 text-15 leading-4 text-foreground">
-              <Radio value="yes" />
-              {CHECKOUT_COPY.useAnotherWalletLabel}
-            </label>
-          </RadioGroup>
+          />
         )}
       />
 
-      <CheckoutField
+      <FormField
         id="note"
         label={CHECKOUT_COPY.noteLabel}
         className="md:col-span-2"
@@ -221,7 +217,7 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
           rows={6}
           className="md:max-w-87.5"
         />
-      </CheckoutField>
+      </FormField>
     </form>
   )
 }

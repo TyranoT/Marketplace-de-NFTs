@@ -1,8 +1,9 @@
 # Arquitetura
 
 Decisões de projeto do marketplace **Kurio**, com o raciocínio por trás delas.
-Este documento cresce a cada entrega; hoje cobre a camada de dados e a tela de
-carrinho.
+Este documento cresce a cada entrega; hoje cobre a camada de dados, a tela de
+carrinho, o checkout, a conta do colecionador, a autenticação e a área de
+perfil.
 
 ## Stack
 
@@ -21,7 +22,7 @@ carrinho.
 
 ```
 src/global/     código compartilhado: api, mocks, componentes de UI, dados, helpers
-src/features/   uma pasta por domínio (layout, marketplace, cart)
+src/features/   uma pasta por domínio (layout, marketplace, cart, checkout, auth, profile)
 src/routes/     rotas finas, que delegam para uma composição da feature
 ```
 
@@ -129,9 +130,10 @@ desliga e libera o caminho para uma API real.
 ### Onde a regra de negócio mora
 
 Tudo em `mocks/db/`, dividido por domínio: `core/` (o cliente do banco e sua
-persistência), `nft/` (catálogo, preço e disponibilidade) e `cart/` (carrinho,
-cupom, totais e o contrato de saída). A raiz do `db/` guarda só o `index.ts`,
-que é a API pública consumida pelos handlers.
+persistência), `nft/` (catálogo, preço e disponibilidade), `cart/` (carrinho,
+cupom, totais e o contrato de saída), `order/` (a compra) e `user/` (conta,
+carteiras e sessão). A raiz do `db/` guarda só o `index.ts`, que é a API
+pública consumida pelos handlers.
 
 **As operações seguem o formato do Prisma Client.** `MockDbClient` expõe um
 delegate por modelo e as operações de sessão prefixadas com `$`:
@@ -165,9 +167,18 @@ cálculo do servidor sem duplicar a regra.
 
 ### Estado e reset
 
-`localStorage['kurio.mock.db.v1']`, com `seedVersion`: formato divergente é
-descartado e ressemeado, em vez de quebrar em silêncio. É o que sustenta
-"manter o carrinho após refresh".
+`localStorage['kurio.mock.db.v1']`, com duas guardas. `seedVersion` cobre
+mudança de **formato**; `seedFingerprint` — um resumo do conteúdo da semente —
+cobre mudança de **dado**. Divergência em qualquer uma descarta e ressemeia, em
+vez de quebrar em silêncio. É o que sustenta "manter o carrinho após refresh".
+
+A impressão digital existe porque a versão sozinha era uma pegadinha: trocar o
+nome do colecionador ou o preço de um NFT na semente não tinha efeito visível,
+porque o `localStorage` seguia válido e derivado da semente anterior. Custava
+uma sessão de depuração até alguém lembrar de limpar o navegador. Por isso a
+semente também é **determinística** — o sal da senha do colecionador é fixo,
+senão o banco-semente seria diferente de si mesmo a cada carga e o resumo
+nunca fecharia.
 
 O cenário-semente reproduz **exatamente** o frame do Figma — Emerald Ape #042
 (2), Violet Nomad #314 (6), Ivory Baron #088 (9), subtotal 26.83 ETH, taxa
@@ -345,10 +356,309 @@ Duas divergências conscientes:
   não é fiel a um design — não havia design a seguir. A tabela começa em `lg`, e
   não em `md`, porque suas colunas foram medidas para os 782px que só existem a
   partir dali; espremida em tablet ela trunca os nomes.
-- **"Conectar e finalizar"** fica desabilitado enquanto `/pagamento` não
-  existir: uma ação fora do escopo não pode aparentar sucesso funcional.
+- **"Conectar e finalizar"** leva a `/pagamento`. Enquanto essa tela não
+  existia o botão ficava desabilitado, porque uma ação fora do escopo não pode
+  aparentar sucesso funcional.
 
 ---
+
+## Checkout
+
+`/pagamento`, também `ssr: false` e pelo mesmo motivo do carrinho: o que se
+está pagando vive no `localStorage` do visitante e é servido pelo Service
+Worker.
+
+### A compra é uma transação
+
+| Método | Rota            | Erros de negócio                                                                                                                  |
+| ------ | --------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/api/checkout` | 422 `CART_EMPTY`, 422 `CHECKOUT_INVALID`, 422 `WALLET_NOT_SUPPORTED`, 409 `QUANTITY_EXCEEDS_AVAILABILITY`, 409 `EDITION_SOLD_OUT` |
+
+`CheckoutService` (`mocks/db/order/`) roda tudo dentro de
+`mockDb.$transaction`: valida o perfil, **revalida o estoque**, baixa as
+unidades, cria o pedido e esvazia itens e cupom. Ou o pedido nasce com tudo
+isso feito, ou nada aconteceu — a transação restaura o snapshot anterior
+quando uma regra recusa no meio do caminho.
+
+O pedido **congela** nome, arte, edição e valores de cada linha, em vez de
+apontar para o catálogo: uma mudança de preço não pode reescrever uma compra
+que já aconteceu. Ele é persistido, então `orders` entrou no snapshot e
+`SEED_VERSION` subiu para **2** — um `localStorage` no formato antigo é
+descartado e ressemeado, como já era a regra.
+
+`transactionHash` é derivado do próprio pedido por FNV-1a, e não de
+`Math.random`: a mesma compra produz o mesmo hash, o que mantém o cenário
+reproduzível.
+
+**A validação do perfil existe nos dois lados de propósito.** O zod recusa no
+formulário para o colecionador não esperar uma ida ao servidor; o
+`CheckoutService` recusa de novo porque quem decide se uma compra vale é o
+servidor, e é esse caminho de erro que o cliente precisa saber tratar.
+
+### Formulário
+
+`react-hook-form` + `zod`, com um detalhe: **o resolver é escrito à mão**
+(`helpers/checkout-schema.ts`, doze linhas). `@hookform/resolvers` ainda
+declara peer de zod 3 por causa de `@typeschema`, e conflita com o zod 4 que já
+estava na árvore via `@tanstack/router-generator`. Entre forçar
+`--legacy-peer-deps` no projeto inteiro e escrever uma função pura que chama
+`safeParse`, a função sai mais barata e não mente sobre a árvore de
+dependências.
+
+`CheckoutField` amarra rótulo, controle e mensagem por `aria-describedby` num
+lugar só — a alternativa era repetir a amarração em doze campos, e é
+exatamente o tipo de coisa que se esquece num deles.
+
+O botão de submit vive na coluna direita, fora do `<form>`: o atributo
+`form="checkout-form"` é o que permite a um botão fora da árvore submetê-lo,
+sem duplicar estado entre as colunas.
+
+**"Usar outra carteira?"** é um checkbox redondo. O frame desenha um círculo,
+mas a pergunta é de sim ou não: um rádio de opção única nunca desmarca, e
+deixaria o colecionador preso na escolha. A semântica é de checkbox — só a
+pintura é redonda.
+
+### Confirmação
+
+É um diálogo sobre a página, como no frame `Confirmação de Pedido`, e não uma
+rota. Fechar leva ao início: o carrinho comprado não existe mais, e não há a
+que voltar naquela tela.
+
+Uma divergência consciente: **o recibo mostra a linha de desconto** quando há
+cupom. O frame não a tem porque seu cenário não tem cupom; omiti-la numa compra
+com desconto exibiria um total menor sem dizer por quê.
+
+"Ver no Etherscan" aponta para o hash simulado e carrega um `title` dizendo que
+a transação é de demonstração — o gesto do frame sem a promessa que ele faria.
+
+### Fidelidade e provisório
+
+Medidas do PNG em 2x (2880×3314): conteúdo 1200 em colunas de **762 / 33 /
+405**, formulário em duas sub-colunas de **369 + 24**, controles de **40**,
+cards do resumo **405×70** e o diálogo **578×821** com barra da marca de 10px
+no rodapé.
+
+O frame mobile de pagamento não foi exportado. Abaixo de `lg` a tela empilha —
+formulário e depois o resumo, deixando a ação no fim da leitura como no
+desktop; na faixa de metadados do diálogo os quatro campos caem em 2×2, porque
+num card de 360px eles não cabem em uma linha. Funciona, mas não é fiel a um
+design: não havia design a seguir.
+
+## Conta do colecionador
+
+`mocks/db/user/` traz três modelos — usuário, carteira e sessão — no mesmo
+formato de delegate dos outros domínios.
+
+### Contrato
+
+| Método         | Rota                        | Erros de negócio                                                              |
+| -------------- | --------------------------- | ----------------------------------------------------------------------------- |
+| POST           | `/api/session`              | 401 `INVALID_CREDENTIALS`                                                     |
+| DELETE         | `/api/session`              | —                                                                             |
+| GET            | `/api/me`                   | 401 `NOT_AUTHENTICATED`                                                       |
+| PATCH          | `/api/me`                   | 422 `PROFILE_INVALID`                                                         |
+| PATCH          | `/api/me/password`          | 422 `PASSWORD_INCORRECT`, 422 `PASSWORD_MISMATCH`, 422 `PASSWORD_TOO_SHORT`   |
+| PATCH          | `/api/me/avatar`            | 422 `AVATAR_INVALID`, 422 `AVATAR_TOO_LARGE`                                  |
+| GET / POST     | `/api/me/wallets`           | 422 `WALLET_INVALID`, 409 `WALLET_ADDRESS_TAKEN`, 409 `PRIMARY_WALLET_EXISTS` |
+| PATCH / DELETE | `/api/me/wallets/:walletId` | 404 `WALLET_NOT_FOUND`, 409 `PRIMARY_WALLET_REQUIRED`                         |
+
+Toda escrita passa por `requireUser()` **antes** de qualquer validação de
+campo: responder "e-mail inválido" a quem não está autenticado é contar o que
+não deveria. Pela mesma razão, e-mail inexistente e senha errada devolvem o
+mesmo `INVALID_CREDENTIALS` — distinguir os dois entrega ao curioso a lista de
+quem tem conta.
+
+### Senha
+
+Guardada como digesto com sal, nunca em texto claro — nem em memória depois de
+recebida, nem no `localStorage`. `MockUser` não expõe digesto nem sal: a senha
+entra e sai por `matchesPassword` e `replacePassword`, o que torna impossível um
+mapper ou um handler deixá-la escapar por descuido.
+
+**O digesto não é criptografia**, e o arquivo diz isso. `crypto.subtle` seria o
+caminho honesto e existe nos dois lados, mas é assíncrono e contaminaria de
+`await` uma camada inteira que hoje é síncrona, do delegate ao handler. Um
+backend real usaria argon2id ou bcrypt.
+
+### Credenciais da demonstração
+
+`colecionador@kurio.art` / `kurio2026`. Ficam no código de propósito
+(`db/user/user-seed.ts`): sem elas ninguém entra na própria aplicação. A
+semente traz **uma** carteira principal e nenhuma secundária, que é o estado
+exato do frame de carteiras.
+
+### Carteiras alimentam o pagamento
+
+O frame de carteiras diz que elas ficam disponíveis no pagamento, e o
+formulário desenhado ali é o do checkout mais o apelido. Não é acidente: uma
+carteira guarda exatamente o conjunto que a compra pede, então o preenchimento
+do checkout é uma cópia, e não um mapeamento inventado.
+
+Com sessão, as opções de "Carteira e rede" são as carteiras salvas e o
+formulário nasce preenchido pela principal. **Sem conta, valem as três opções
+fixas do frame de pagamento** — comprar não pode exigir cadastro. O
+`CheckoutService` aceita as duas origens e devolve `WALLET_NOT_SUPPORTED`
+quando o id não é nenhuma delas.
+
+A carteira principal não é removível: sem ela não há para onde mandar o NFT
+comprado.
+
+### O escopo do carrinho passou a existir de verdade
+
+`useCartScope()` devolve o id do usuário quando há sessão, e `guest` quando não
+há. Era o encaixe que `cart-keys.ts` documentava desde o início; os oito hooks
+do carrinho consomem essa função e nenhum deles mudou. Sair limpa o cache
+inteiro, não só as chaves de usuário: deixar no cache o que foi lido como
+autenticado mostraria dados da conta a quem já saiu dela.
+
+### Divergências e leituras dos frames
+
+1. **"Apelido da carteira" no frame de perfil** edita o apelido da carteira
+   principal, e não um segundo campo de mesmo nome no usuário — guardar o mesmo
+   conceito em dois lugares é como eles divergem. `PATCH /api/me` aceita
+   `primaryWalletNickname` e escreve na carteira.
+2. **"Nome ENS"** aparece no perfil como sufixo **e** nome; no frame de
+   pagamento, só o sufixo. O usuário e a carteira guardam os dois; o checkout
+   manda só o sufixo, e por isso o campo do contrato passou a se chamar
+   `ensSuffix` — que é o que ele sempre foi.
+
+## Entrar e criar conta
+
+Um diálogo só, com duas abas, aberto pelo "Entrar" do cabeçalho — como nos
+frames `Login` e `Cadastro`. Card de 500 centrado, `#241612`, barra da marca no
+rodapé: a mesma linguagem do modal de confirmação de pedido.
+
+| Método | Rota           | Erros de negócio                                                                                                  |
+| ------ | -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| POST   | `/api/users`   | 409 `EMAIL_TAKEN`, 409 `USERNAME_TAKEN`, 422 `PASSWORD_MISMATCH`, 422 `PASSWORD_TOO_SHORT`, 422 `PROFILE_INVALID` |
+| POST   | `/api/session` | 401 `INVALID_CREDENTIALS`                                                                                         |
+
+**O cadastro cria conta de verdade.** `MockDb` guarda `users: Map`, e não uma
+conta única: a conta-semente continua existindo depois de alguém criar a sua,
+então as credenciais da demonstração seguem valendo. `SEED_VERSION` subiu para
+4 por isso. E-mail e apelido são identidade — dois donos quebrariam o login —,
+então a unicidade vale tanto no cadastro quanto na edição de perfil, ignorando
+o próprio dono.
+
+Cadastrar já inicia a sessão: quem acabou de escolher uma senha não precisa
+digitá-la de novo na tela seguinte. A conta nasce **sem carteira**, e o
+pagamento cai nas opções fixas do frame até o colecionador cadastrar a dele.
+
+**O cabeçalho de quem entrou não foi desenhado em nenhum frame.** Sem sinal de
+sessão e sem caminho de saída, entrar não teria efeito visível nem volta —
+então o botão passa a mostrar o apelido, com "Sair" ao lado.
+
+A dica com as credenciais da demonstração fica no pé do modal, de propósito:
+sem ela ninguém descobre como entrar na conta de exemplo.
+
+### Consultas do cabeçalho e o SSR
+
+`useMe` e `useWallets` nascem com `enabled: typeof window !== 'undefined'`,
+pela mesma razão já registrada no carrinho: o cabeçalho é renderizado no
+servidor, e uma consulta iniciada ali fica suspensa — sem rede, o servidor não
+tem o que buscar. Esse estado suspenso viaja na desidratação e o cliente
+hidrata travado, sem nunca disparar a busca.
+
+## Área de perfil
+
+`/perfil` e `/perfil/carteiras`, sobre a primeira **rota de layout** do
+projeto: a sidebar "Meu perfil" é a mesma nas duas telas, então vive em
+`routes/perfil.tsx` com um `<Outlet />`, em vez de ser repetida em cada uma.
+`ssr: false` pelo motivo já conhecido — sessão e perfil vivem no `localStorage`
+servido pelo Service Worker.
+
+### Fidelidade ao Figma
+
+Medidas do PNG em 2x (2880×2160): conteúdo 1200 em **310 / 28,5 / 862**,
+formulário em duas sub-colunas de **416 + 29**, card da sidebar 310×**407**,
+título "Meu perfil" em 20px bold, itens com pitch de ~44,5 e divisor `#915E36`
+antes de "Sair". Campos de 40, como no checkout.
+
+Duas leituras registradas:
+
+1. **O item ativo do cabeçalho.** Os dois frames mostram "Início" sublinhado
+   numa tela de perfil. A implementação segue o frame (`active: 'home'`), ainda
+   que o perfil não seja o início.
+2. **"Adicionar".** O link aparece duas vezes no frame — ao lado de "Carteira
+   principal" e de "Carteira secundária". Ambos abrem o formulário de uma
+   carteira **secundária**: com uma principal já existente, criar outra é
+   recusado por `PRIMARY_WALLET_EXISTS`, e um botão não deve prometer o
+   contrário. "Igual à carteira principal" copia os campos dela, deixando o
+   apelido em branco — duas carteiras com o mesmo apelido seriam
+   indistinguíveis na hora de pagar.
+
+### Um botão, dois pedidos
+
+O frame tem um "Salvar" só, abaixo dos campos de senha, mas são dois endpoints.
+A tela salva o perfil sempre e, **se o trio de senha vier preenchido**, troca a
+senha em seguida. Vazio é o caso normal, e o zod trata os três campos como um
+bloco: preencher um exige os três, senão o botão mandaria metade de uma troca
+de senha.
+
+A ordem importa. Se a senha falhar, o perfil **já está salvo** — e a mensagem
+diz isso ("Seus dados foram salvos, mas a senha não foi alterada") em vez de
+deixar a pessoa salvar de novo o que já foi gravado.
+
+### Sem sessão, sem redirect
+
+`/perfil` deslogado mostra um painel com botão que abre o modal de login. Nada
+de `beforeLoad` mandando para o início: quem entra pelo modal continua na
+página que pediu, e o endereço segue compartilhável.
+
+### O que a sidebar declara
+
+Dos sete itens do frame, dois têm tela. Os outros cinco — Atividade, Lista de
+interesse, Ofertas, Arquivos baixados e Suporte — aparecem porque são o mapa da
+área, e ficam inertes com "em breve" ao lado, anunciado junto pelo `aria-label`.
+Mesmo tratamento do botão de pagamento enquanto o checkout não existia.
+
+### Promoções para `global`
+
+Três coisas nasceram no checkout e ganharam um segundo consumidor aqui.
+Duplicar seria pior, e importar de feature para feature também:
+
+| Agora em                  | Antes                                              |
+| ------------------------- | -------------------------------------------------- |
+| `ui/form-field.tsx`       | `features/checkout/components/checkout-field.tsx`  |
+| `ui/option-select.tsx`    | `features/checkout/components/checkout-select.tsx` |
+| `helpers/zod-resolver.ts` | copiado no checkout **e** no auth                  |
+
+O resolver estava escrito duas vezes e o perfil seria a terceira. Os
+primitivos que faltavam entraram na vitrine `/ui`: campo de formulário, select
+de opções, senha, textarea, radio e menu.
+
+### Provisório declarado
+
+Não há frame mobile destas telas. Abaixo de `lg` a sidebar vira uma faixa acima
+do conteúdo, com os itens rolando na horizontal, e as sub-colunas do formulário
+viram uma. Funciona, mas não é fiel a um design — não havia design a seguir.
+
+## Dificuldades declaradas
+
+Coisas que a demonstração **não** faz, e por quê. Nenhuma delas está escondida
+atrás de um botão que finge funcionar.
+
+1. **Entrar com Google ou Facebook.** Os dois botões aparecem, porque são parte
+   do frame, mas dependem de um provedor de identidade real: OAuth exige
+   redirecionamento, `client_secret` e um servidor que troque o código pelo
+   token. Um Service Worker não tem como fazer isso, e simular a volta do
+   provedor seria inventar uma sessão que ninguém autorizou. O clique explica
+   isso em texto.
+2. **Recuperação de senha.** "Esqueceu a senha?" depende de envio de e-mail com
+   token de uso único. Sem servidor de e-mail, o fluxo não tem como se
+   completar — o clique diz isso em vez de abrir uma tela que não leva a nada.
+3. **O digesto de senha não é criptografia.** Está descrito em "Conta do
+   colecionador": `crypto.subtle` é assíncrono e contaminaria de `await` uma
+   camada inteira que é síncrona. Um backend real usaria argon2id ou bcrypt.
+4. **A sessão não expira e não é assinada.** É uma linha no `localStorage`, sem
+   `httpOnly`, sem CSRF, sem prazo. Autenticação de verdade não moraria no
+   navegador; o que existe aqui é o suficiente para a interface distinguir
+   visitante de colecionador.
+5. **O hash da transação é simulado.** "Ver no Etherscan" aponta para um hash
+   que nenhuma rede conhece, e o botão carrega um `title` dizendo isso.
+6. **Não há carteira Web3 conectada.** MetaMask, WalletConnect e Coinbase
+   aparecem como escolha e como endereço digitado, não como conexão real: nada
+   aqui assina transação nem lê saldo.
 
 ## Dívidas conhecidas
 

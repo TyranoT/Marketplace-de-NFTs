@@ -1,8 +1,12 @@
+import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { LogOut, Search, ShoppingCart } from 'lucide-react'
 import { Button } from '@/global/components/ui/button'
 import { useCartCount } from '@/global/api/cart'
+import { useCurrentUser } from '@/global/api/user'
+import { AUTH_COPY, AuthDialog } from '@/features/auth'
 import { buildCartLabel } from '../helpers/build-cart-label'
+import { HeaderUserMenu } from './header-user-menu'
 
 type HeaderActionsProps = {
   /** Sobrepõe a contagem real. Usado pela vitrine de componentes. */
@@ -15,6 +19,9 @@ const MAX_BADGE = 9
 export function HeaderActions({ cartCount }: HeaderActionsProps) {
   const resolved = useCartCount()
   const count = cartCount ?? resolved
+
+  const user = useCurrentUser()
+  const [isAuthOpen, setIsAuthOpen] = useState(false)
 
   return (
     <div className="flex items-center gap-7">
@@ -36,10 +43,24 @@ export function HeaderActions({ cartCount }: HeaderActionsProps) {
         ) : null}
       </Link>
 
-      <Button className="h-8.75 w-25 gap-1 px-0 text-16 text-background">
-        <LogOut className="size-5" />
-        Entrar
-      </Button>
+      {/**
+       * Nenhum frame desenhou o cabeçalho de quem já entrou. Sem um sinal de
+       * sessão e um caminho de saída, entrar não teria efeito visível nem
+       * volta — então o botão dá lugar ao cartão da conta.
+       */}
+      {user ? (
+        <HeaderUserMenu user={user} />
+      ) : (
+        <Button
+          onClick={() => setIsAuthOpen(true)}
+          className="h-8.75 w-25 gap-1 px-0 text-16 text-background"
+        >
+          <LogOut className="size-5" />
+          {AUTH_COPY.loginTab}
+        </Button>
+      )}
+
+      <AuthDialog open={isAuthOpen} onOpenChange={setIsAuthOpen} />
     </div>
   )
 }

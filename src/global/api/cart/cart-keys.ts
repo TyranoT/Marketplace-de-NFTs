@@ -1,7 +1,9 @@
+import { useCurrentUser } from '../user'
+
 /**
- * Identificador do dono do carrinho. Hoje é sempre o visitante, mas a chave
- * já nasce com o escopo para que autenticação e logout não exijam reescrever
- * o cache — trocar o escopo isola os dados de cada usuário por construção.
+ * Identificador do dono do carrinho. Nasceu com escopo justamente para que
+ * autenticação e logout não exigissem reescrever o cache — trocar o escopo
+ * isola os dados de cada usuário por construção.
  */
 export type CartScope = string
 
@@ -13,5 +15,5 @@ export const cartKeys = {
 }
 
 export function useCartScope(): CartScope {
-  return GUEST_SCOPE
+  return useCurrentUser()?.id ?? GUEST_SCOPE
 }

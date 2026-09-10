@@ -3,8 +3,13 @@ import { MockCart } from '../cart/mock-cart'
 import { MockCartItem } from '../cart/mock-cart-item'
 import { AvailabilityDelegate, PriceDelegate } from '../nft'
 import { MockOrder } from '../order/mock-order'
+import { MockUser } from '../user/mock-user'
+import { MockWallet } from '../user/mock-wallet'
+import { buildSeedUsers, buildSeedWallets } from '../user/user-seed'
+import { seedFingerprint } from './seed-fingerprint'
 import { SEED_VERSION } from './snapshot'
 import type { MockDbSnapshot } from './snapshot'
+import type { SessionSnapshot } from '../user/user-snapshot'
 
 const SEED_CART_ID = 'cart-guest'
 
@@ -30,6 +35,9 @@ export class MockDb {
     readonly availability: Map<string, number>,
     readonly prices: Map<string, string>,
     readonly orders: Map<string, MockOrder>,
+    readonly users: Map<string, MockUser>,
+    readonly wallets: Map<string, MockWallet>,
+    private currentSession?: SessionSnapshot,
   ) {}
 
   static seed(): MockDb {
@@ -46,6 +54,8 @@ export class MockDb {
       AvailabilityDelegate.seed(),
       PriceDelegate.seed(),
       new Map(),
+      buildSeedUsers(),
+      buildSeedWallets(),
     )
   }
 
@@ -60,16 +70,38 @@ export class MockDb {
           MockOrder.fromSnapshot(order),
         ]),
       ),
+      new Map(
+        snapshot.users.map((user) => [user.id, MockUser.fromSnapshot(user)]),
+      ),
+      new Map(
+        snapshot.wallets.map((wallet) => [
+          wallet.id,
+          MockWallet.fromSnapshot(wallet),
+        ]),
+      ),
+      snapshot.session,
     )
+  }
+
+  get session(): SessionSnapshot | undefined {
+    return this.currentSession
+  }
+
+  setSession(session: SessionSnapshot | undefined): void {
+    this.currentSession = session
   }
 
   toSnapshot(): MockDbSnapshot {
     return {
       seedVersion: SEED_VERSION,
+      seedFingerprint: seedFingerprint(),
       cart: this.cart.toSnapshot(),
       availability: Object.fromEntries(this.availability),
       prices: Object.fromEntries(this.prices),
       orders: [...this.orders.values()].map((order) => order.toSnapshot()),
+      users: [...this.users.values()].map((user) => user.toSnapshot()),
+      wallets: [...this.wallets.values()].map((wallet) => wallet.toSnapshot()),
+      session: this.currentSession,
     }
   }
 }

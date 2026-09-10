@@ -1,11 +1,12 @@
 import { Radio, RadioGroup } from '@/global/components/ui/radio-group'
 import { cn } from '@/global/helpers/cn'
-import { CHECKOUT_WALLETS } from '@/global/data'
-import { errorId } from './checkout-field'
+import { errorId } from '@/global/components/ui/form-field'
+import type { CheckoutWallet } from '@/global/data'
 
 const FIELD_ID = 'walletId'
 
 type CheckoutWalletOptionsProps = {
+  wallets: Array<CheckoutWallet>
   value: string
   error?: string
   headingId: string
@@ -14,6 +15,7 @@ type CheckoutWalletOptionsProps = {
 
 /** Linhas de 405×44,5; a selecionada troca a borda de `--line` por `--brand`. */
 export function CheckoutWalletOptions({
+  wallets,
   value,
   error,
   headingId,
@@ -29,7 +31,7 @@ export function CheckoutWalletOptions({
         aria-describedby={error ? errorId(FIELD_ID) : undefined}
         className="gap-4"
       >
-        {CHECKOUT_WALLETS.map((wallet) => (
+        {wallets.map((wallet) => (
           <label
             key={wallet.id}
             className={cn(

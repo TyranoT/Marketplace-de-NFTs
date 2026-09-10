@@ -7,7 +7,12 @@ import {
   DialogTitle,
 } from '@/global/components/ui/dialog'
 import { ThankYouEnvelopeIcon } from '@/global/components/icons'
-import { formatMoney } from '@/global/helpers/eth-amount'
+import { cn } from '@/global/helpers/cn'
+import {
+  formatEthAmount,
+  formatMoney,
+  parseEth,
+} from '@/global/helpers/eth-amount'
 import { CART_COPY } from '@/features/cart'
 import { CHECKOUT_COPY } from '../constants/checkout-copy'
 import {
@@ -36,11 +41,18 @@ export function OrderConfirmationDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-144.5 border-b-10 border-primary">
         <div className="relative flex flex-col px-11 pt-5">
+          {/**
+           * Medidas do frame: traço de 12px, a 17 da borda direita e 19,5 do
+           * topo do card. O ícone do lucide desenha o X em metade da própria
+           * caixa, então `size-6` é o que resulta nos 12px de tinta — e o
+           * `after` estende a área de clique aos 40px do alvo mínimo sem
+           * deslocar o desenho.
+           */}
           <DialogClose
             aria-label={CHECKOUT_COPY.confirmationClose}
-            className="absolute top-5 right-0 text-brand transition-colors hover:text-highlight"
+            className="absolute top-3.5 right-2.75 text-brand transition-colors after:absolute after:-inset-2 hover:text-highlight"
           >
-            <X className="size-5" />
+            <X className="size-6" />
           </DialogClose>
 
           <ThankYouEnvelopeIcon className="mt-4 h-20 self-center text-brand" />
@@ -50,7 +62,8 @@ export function OrderConfirmationDialog({
           </DialogTitle>
         </div>
 
-        <dl className="mt-5 grid grid-cols-[1fr_auto_1fr_auto] gap-x-6 gap-y-1 border-y border-primary px-9 py-4.5 text-14 leading-5 md:grid-cols-4 md:divide-x md:divide-line-soft">
+        {/** No card estreito os quatro metadados não caem em uma linha: 2×2. */}
+        <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 border-y border-primary px-9 py-4.5 text-14 leading-5 md:grid-cols-4 md:gap-y-1 md:divide-x md:divide-line-soft">
           <ConfirmationMeta
             label={CHECKOUT_COPY.transactionIdLabel}
             value={shortenHash(order.transactionHash)}
@@ -91,19 +104,28 @@ export function OrderConfirmationDialog({
           </ul>
 
           <dl className="mt-3 flex flex-col gap-2 border-b border-line-soft pb-3 text-15 leading-4">
-            <div className="flex items-baseline justify-between gap-4 pl-30">
-              <dt className="text-foreground">{CART_COPY.networkFeeLabel}</dt>
-              <dd className="text-foreground">
-                {formatMoney(order.totals.networkFee, 3)}
-              </dd>
-            </div>
+            {/**
+             * O frame não tem esta linha porque seu cenário não tem cupom.
+             * Omiti-la numa compra com desconto mostraria um total menor sem
+             * dizer por quê — o recibo tem de fechar a conta que cobrou.
+             */}
+            {hasDiscount(order) ? (
+              <ConfirmationTotalRow
+                label={discountLabel(order)}
+                value={`(-) ${formatEthAmount(parseEth(order.totals.discount.amount))}`}
+              />
+            ) : null}
 
-            <div className="flex items-baseline justify-between gap-4 pl-30 font-bold">
-              <dt className="text-text-primary">{CART_COPY.totalLabel}</dt>
-              <dd className="text-highlight">
-                {formatMoney(order.totals.total, 3)}
-              </dd>
-            </div>
+            <ConfirmationTotalRow
+              label={CART_COPY.networkFeeLabel}
+              value={formatMoney(order.totals.networkFee, 3)}
+            />
+
+            <ConfirmationTotalRow
+              label={CART_COPY.totalLabel}
+              value={formatMoney(order.totals.total, 3)}
+              isTotal
+            />
           </dl>
 
           <p className="mt-4 px-4 text-center text-14 leading-6 text-brand-muted">
@@ -126,6 +148,45 @@ export function OrderConfirmationDialog({
         </div>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function hasDiscount(order: Order): boolean {
+  return parseEth(order.totals.discount.amount) > 0n
+}
+
+/** Com cupom, o código entra no rótulo: é o que explica o abatimento. */
+function discountLabel(order: Order): string {
+  return order.couponCode
+    ? `${CART_COPY.discountLabel} · ${order.couponCode}`
+    : CART_COPY.discountLabel
+}
+
+type ConfirmationTotalRowProps = {
+  label: string
+  value: string
+  isTotal?: boolean
+}
+
+function ConfirmationTotalRow({
+  label,
+  value,
+  isTotal,
+}: ConfirmationTotalRowProps) {
+  return (
+    <div
+      className={cn(
+        'flex items-baseline justify-between gap-4 md:pl-30',
+        isTotal && 'font-bold',
+      )}
+    >
+      <dt className={isTotal ? 'text-text-primary' : 'text-foreground'}>
+        {label}
+      </dt>
+      <dd className={isTotal ? 'text-highlight' : 'text-foreground'}>
+        {value}
+      </dd>
+    </div>
   )
 }
 

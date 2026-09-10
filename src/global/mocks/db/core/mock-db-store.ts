@@ -1,4 +1,5 @@
 import { MockDb } from './mock-db'
+import { seedFingerprint } from './seed-fingerprint'
 import { SEED_VERSION } from './snapshot'
 import type { MockDbSnapshot } from './snapshot'
 
@@ -46,8 +47,12 @@ export class MockDbStore {
 
       const parsed = JSON.parse(raw) as MockDbSnapshot
 
-      /** Formato antigo é descartado em vez de migrado: é dado de simulação. */
-      return parsed.seedVersion === SEED_VERSION ? parsed : undefined
+      /** Formato ou conteúdo divergente é descartado, não migrado. */
+      const isCurrent =
+        parsed.seedVersion === SEED_VERSION &&
+        parsed.seedFingerprint === seedFingerprint()
+
+      return isCurrent ? parsed : undefined
     } catch {
       return undefined
     }

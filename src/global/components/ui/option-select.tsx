@@ -4,12 +4,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/global/components/ui/select'
+} from './select'
+import { fieldProps } from './form-field'
 import { cn } from '@/global/helpers/cn'
-import { fieldProps } from './checkout-field'
 import type { CheckoutOption } from '@/global/data'
 
-type CheckoutSelectProps = {
+type OptionSelectProps = {
   id: string
   value: string
   options: Array<CheckoutOption>
@@ -20,10 +20,10 @@ type CheckoutSelectProps = {
 }
 
 /**
- * O `Select` do projeto nasceu com a altura de 32 do shadcn; no frame de
- * pagamento os controles têm 40, como os inputs ao lado.
+ * O `Select` do projeto nasceu com a altura de 32 do shadcn; nos frames de
+ * formulário os controles têm 40, como os inputs ao lado.
  */
-export function CheckoutSelect({
+export function OptionSelect({
   id,
   value,
   options,
@@ -31,7 +31,7 @@ export function CheckoutSelect({
   error,
   className,
   onValueChange,
-}: CheckoutSelectProps) {
+}: OptionSelectProps) {
   return (
     <Select
       value={value || null}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { Breadcrumb } from '@/global/components/ui/breadcrumb'
@@ -6,6 +6,7 @@ import { Container } from '@/global/components/ui/container'
 import { Skeleton } from '@/global/components/ui/skeleton'
 import { useApplyCoupon, useCart } from '@/global/api/cart'
 import { useCheckout } from '@/global/api/checkout'
+import { useCurrentUser, useWallets } from '@/global/api/user'
 import { CartEmpty, toCartErrorMessage } from '@/features/cart'
 import { CHECKOUT_BREADCRUMB, CHECKOUT_COPY } from '../constants/checkout-copy'
 import {
@@ -14,6 +15,11 @@ import {
   toCheckoutInput,
 } from '../helpers/checkout-schema'
 import { toCheckoutErrorMessage } from '../helpers/to-checkout-error-message'
+import {
+  findPrimary,
+  toCheckoutWallets,
+  toFormValues,
+} from '../helpers/to-checkout-wallets'
 import { CheckoutError } from '../components/checkout-error'
 import { CheckoutForm } from '../components/checkout-form'
 import { CheckoutSummary } from '../components/checkout-summary'
@@ -46,6 +52,24 @@ export function CheckoutScreen() {
   })
 
   const walletId = form.watch('walletId')
+
+  const user = useCurrentUser()
+  const wallets = useWallets()
+  const primaryWallet = findPrimary(wallets.data)
+
+  /**
+   * Com conta, o formulário nasce com a carteira principal — ela guarda
+   * exatamente os campos que o pagamento pede. `keepDirtyValues` protege o
+   * que o colecionador já digitou antes da lista chegar.
+   */
+  useEffect(() => {
+    if (!primaryWallet || !user) return
+
+    form.reset(
+      { ...CHECKOUT_DEFAULTS, ...toFormValues(primaryWallet, user.username) },
+      { keepDirtyValues: true },
+    )
+  }, [form, primaryWallet, user])
 
   function handleSubmit(values: CheckoutFormValues) {
     checkout.mutate(toCheckoutInput(values), {
@@ -95,6 +119,7 @@ export function CheckoutScreen() {
             <CheckoutSummary
               cart={cart.data}
               formId={FORM_ID}
+              wallets={toCheckoutWallets(wallets.data)}
               walletId={walletId}
               walletError={form.formState.errors.walletId?.message}
               isSubmitting={checkout.isPending}

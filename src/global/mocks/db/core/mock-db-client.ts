@@ -3,6 +3,9 @@ import { CartItemDelegate } from '../cart/cart-item-delegate'
 import { CouponDelegate } from '../cart/coupon-delegate'
 import { AvailabilityDelegate, NftDelegate, PriceDelegate } from '../nft'
 import { OrderDelegate } from '../order/order-delegate'
+import { SessionDelegate } from '../user/session-delegate'
+import { UserDelegate } from '../user/user-delegate'
+import { WalletDelegate } from '../user/wallet-delegate'
 import { MockDb } from './mock-db'
 import { mockDbStore } from './mock-db-store'
 import type { MockDbStore } from './mock-db-store'
@@ -20,6 +23,9 @@ export class MockDbClient {
   readonly availability: AvailabilityDelegate
   readonly price: PriceDelegate
   readonly order: OrderDelegate
+  readonly user: UserDelegate
+  readonly wallet: WalletDelegate
+  readonly session: SessionDelegate
 
   constructor(private readonly store: MockDbStore) {
     this.cart = new CartDelegate(store)
@@ -27,6 +33,9 @@ export class MockDbClient {
     this.availability = new AvailabilityDelegate(store)
     this.price = new PriceDelegate(store)
     this.order = new OrderDelegate(store)
+    this.user = new UserDelegate(store)
+    this.wallet = new WalletDelegate(store)
+    this.session = new SessionDelegate(store)
   }
 
   /**

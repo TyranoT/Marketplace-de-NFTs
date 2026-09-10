@@ -1,15 +1,9 @@
 import { z } from 'zod'
-import {
-  CHECKOUT_WALLETS,
-  ENS_SUFFIXES,
-  NETWORKS,
-  WALLET_TYPES,
-} from '@/global/data'
+import { ENS_SUFFIXES, NETWORKS, WALLET_TYPES } from '@/global/data'
+import { isWalletAddress } from '@/global/helpers/wallet-address'
+import { buildZodResolver } from '@/global/helpers/zod-resolver'
 import type { CheckoutOption } from '@/global/data'
 import type { CheckoutInput } from '@/global/api'
-import type { FieldErrors, Resolver } from 'react-hook-form'
-
-const WALLET_ADDRESS = /^0x[a-fA-F0-9]{40}$/
 
 function optionId(options: Array<CheckoutOption>, message: string) {
   return z.string().refine((id) => options.some((o) => o.id === id), message)
@@ -20,18 +14,33 @@ export const checkoutSchema = z.object({
   username: z.string().trim().min(1, 'Informe o nome de usuário.'),
   network: optionId(NETWORKS, 'Selecione uma rede.'),
   profileName: z.string().trim().min(1, 'Informe o nome do perfil.'),
+  /**
+   * Três vereditos em vez de um: dizer só "endereço inválido" obriga o
+   * colecionador a adivinhar se errou o prefixo, o tamanho ou um caractere.
+   * O prefixo é checado antes do corpo, senão quem escreve `0x` no fim recebe
+   * uma reclamação sobre tamanho e não sobre posição.
+   */
   walletAddress: z
     .string()
     .trim()
-    .regex(WALLET_ADDRESS, 'Informe um endereço 0x com 40 caracteres.'),
+    .min(1, 'Informe o endereço da carteira.')
+    .refine(
+      (value) => value.startsWith('0x'),
+      'O endereço começa com 0x — o prefixo vem na frente.',
+    )
+    .refine(
+      (value) => !value.startsWith('0x') || isWalletAddress(value),
+      'Depois do 0x vêm 40 caracteres hexadecimais (0-9, a-f).',
+    ),
   secondaryWallet: z.string().trim(),
   walletType: optionId(WALLET_TYPES, 'Selecione o tipo de carteira.'),
   referralCode: z.string().trim().min(1, 'Informe o código de indicação.'),
   email: z.email('Informe um e-mail válido.'),
-  ensName: optionId(ENS_SUFFIXES, 'Selecione o sufixo ENS.'),
+  ensSuffix: optionId(ENS_SUFFIXES, 'Selecione o sufixo ENS.'),
   useAnotherWallet: z.boolean(),
   note: z.string().trim(),
-  walletId: optionId(CHECKOUT_WALLETS, 'Escolha uma carteira para pagar.'),
+  /** A lista vem da API quando há conta, então quem julga o id é o servidor. */
+  walletId: z.string().min(1, 'Escolha uma carteira para pagar.'),
 })
 
 export type CheckoutFormValues = z.infer<typeof checkoutSchema>
@@ -46,32 +55,13 @@ export const CHECKOUT_DEFAULTS: CheckoutFormValues = {
   walletType: '',
   referralCode: '',
   email: '',
-  ensName: ENS_SUFFIXES[0].id,
+  ensSuffix: ENS_SUFFIXES[0].id,
   useAnotherWallet: false,
   note: '',
   walletId: '',
 }
 
-/**
- * `@hookform/resolvers` ainda declara peer de zod 3 e conflita com o zod 4 já
- * presente na árvore. O resolver é uma função pura de uma dúzia de linhas —
- * a dependência custaria mais do que escrevê-la.
- */
-export const checkoutResolver: Resolver<CheckoutFormValues> = (values) => {
-  const parsed = checkoutSchema.safeParse(values)
-
-  if (parsed.success) return { values: parsed.data, errors: {} }
-
-  const errors: Record<string, { type: string; message: string }> = {}
-
-  for (const issue of parsed.error.issues) {
-    const field = issue.path.join('.')
-
-    errors[field] ??= { type: issue.code, message: issue.message }
-  }
-
-  return { values: {}, errors: errors as FieldErrors<CheckoutFormValues> }
-}
+export const checkoutResolver = buildZodResolver(checkoutSchema)
 
 /** Do formulário para o corpo da requisição, sem os campos que só existem na tela. */
 export function toCheckoutInput(values: CheckoutFormValues): CheckoutInput {

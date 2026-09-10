@@ -35,7 +35,7 @@ export type CollectorProfileSnapshot = {
   walletType: string
   referralCode: string
   email: string
-  ensName: string
+  ensSuffix: string
   note?: string
 }
 

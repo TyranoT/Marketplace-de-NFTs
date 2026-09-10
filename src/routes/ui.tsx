@@ -5,6 +5,19 @@ import { NftCard, NftCardSkeleton } from '@/features/marketplace'
 import { Button } from '@/global/components/ui/button'
 import { Input } from '@/global/components/ui/input'
 import { Label } from '@/global/components/ui/label'
+import { FormField, fieldProps } from '@/global/components/ui/form-field'
+import { OptionSelect } from '@/global/components/ui/option-select'
+import { PasswordInput } from '@/global/components/ui/password-input'
+import { Textarea } from '@/global/components/ui/textarea'
+import { Radio, RadioGroup } from '@/global/components/ui/radio-group'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/global/components/ui/dropdown-menu'
+import { NETWORKS } from '@/global/data'
 
 export const Route = createFileRoute('/ui')({
   component: UiShowcase,
@@ -103,6 +116,93 @@ function UiShowcase() {
             <Input id="invalido" aria-invalid defaultValue="valor inválido" />
           </div>
         </div>
+      </Section>
+
+      <Section
+        title="Campo de formulário"
+        spec="rótulo 15 · asterisco em --destructive · erro 12 ligado por aria-describedby"
+      >
+        <div className="grid w-104.25 gap-5">
+          <FormField id="vitrine-nome" label="Nome de exibição" required>
+            <Input {...fieldProps('vitrine-nome')} />
+          </FormField>
+
+          <FormField
+            id="vitrine-erro"
+            label="Endereço da carteira"
+            required
+            error="O endereço começa com 0x — o prefixo vem na frente."
+          >
+            <Input
+              {...fieldProps('vitrine-erro', 'erro')}
+              defaultValue="00000x"
+            />
+          </FormField>
+        </div>
+      </Section>
+
+      <Section
+        title="Select de opções"
+        spec="40 alto · placeholder em --text-secondary"
+      >
+        <div className="w-104.25">
+          <OptionSelect
+            id="vitrine-rede"
+            value=""
+            options={NETWORKS}
+            placeholder="Selecione uma rede"
+            onValueChange={() => undefined}
+          />
+        </div>
+      </Section>
+
+      <Section
+        title="Senha"
+        spec="olho com tabIndex -1 · alterna type entre password e text"
+      >
+        <div className="w-104.25">
+          <PasswordInput
+            id="vitrine-senha"
+            defaultValue="kurio2026"
+            aria-label="Senha"
+          />
+        </div>
+      </Section>
+
+      <Section title="Textarea" spec="radius 3 · px 16 py 12 · texto 14 lh 20">
+        <div className="w-104.25">
+          <Textarea rows={4} placeholder="Observação do colecionador" />
+        </div>
+      </Section>
+
+      <Section title="Radio" spec="16 · indicador 8 em --brand">
+        <RadioGroup defaultValue="metamask" className="flex-row gap-6">
+          {['MetaMask', 'Coinbase'].map((label) => (
+            <label
+              key={label}
+              className="flex items-center gap-3 text-15 text-foreground"
+            >
+              <Radio value={label.toLowerCase()} />
+              {label}
+            </label>
+          ))}
+        </RadioGroup>
+      </Section>
+
+      <Section
+        title="Menu"
+        spec="card --surface-card · borda --line · item destacado em --muted"
+      >
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex h-10 items-center gap-2 rounded-md border border-line bg-card px-4 text-14 text-foreground">
+            Abrir menu
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>Meu perfil</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-brand">Sair</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </Section>
 
       <Section

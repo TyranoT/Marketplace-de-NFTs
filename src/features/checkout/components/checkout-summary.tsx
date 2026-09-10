@@ -10,6 +10,7 @@ import { CheckoutCouponDisclosure } from './checkout-coupon-disclosure'
 import { CheckoutSummaryItem } from './checkout-summary-item'
 import { CheckoutWalletOptions } from './checkout-wallet-options'
 import type { Cart } from '@/global/api'
+import type { CheckoutWallet } from '@/global/data'
 
 const HEADING_ID = 'checkout-summary'
 const WALLETS_HEADING_ID = 'checkout-wallets'
@@ -17,6 +18,7 @@ const WALLETS_HEADING_ID = 'checkout-wallets'
 type CheckoutSummaryProps = {
   cart: Cart
   formId: string
+  wallets: Array<CheckoutWallet>
   walletId: string
   walletError?: string
   isSubmitting: boolean
@@ -34,6 +36,7 @@ type CheckoutSummaryProps = {
 export function CheckoutSummary({
   cart,
   formId,
+  wallets,
   walletId,
   walletError,
   isSubmitting,
@@ -107,6 +110,7 @@ export function CheckoutSummary({
 
       <div className="mt-5">
         <CheckoutWalletOptions
+          wallets={wallets}
           value={walletId}
           error={walletError}
           headingId={WALLETS_HEADING_ID}

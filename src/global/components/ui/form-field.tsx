@@ -1,7 +1,7 @@
-import { Label } from '@/global/components/ui/label'
+import { Label } from './label'
 import { cn } from '@/global/helpers/cn'
 
-type CheckoutFieldProps = {
+type FormFieldProps = {
   id: string
   label: string
   required?: boolean
@@ -12,17 +12,17 @@ type CheckoutFieldProps = {
 
 /**
  * Rótulo, controle e mensagem de erro amarrados por `aria-describedby`. Sem
- * este componente a mesma ligação se repetiria em doze campos, e é exatamente
- * o tipo de amarração que se esquece num deles.
+ * este componente a mesma ligação se repetiria em cada campo de cada
+ * formulário, e é exatamente o tipo de amarração que se esquece num deles.
  */
-export function CheckoutField({
+export function FormField({
   id,
   label,
   required,
   error,
   className,
   children,
-}: CheckoutFieldProps) {
+}: FormFieldProps) {
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
       <Label htmlFor={id} className="gap-0 text-15 leading-4 text-foreground">
@@ -53,7 +53,7 @@ export function errorId(fieldId: string) {
   return `${fieldId}-error`
 }
 
-/** Props que todo controle do formulário repete para se ligar ao rótulo. */
+/** Props que todo controle repete para se ligar ao rótulo e ao erro. */
 export function fieldProps(id: string, error?: string) {
   return {
     id,

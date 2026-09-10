@@ -19,3 +19,14 @@ export type {
   Order,
   OrderItem,
 } from './contracts/order'
+export type {
+  AvatarInput,
+  ChangePasswordInput,
+  LoginInput,
+  RegisterInput,
+  UpdateProfileInput,
+  User,
+  Wallet,
+  WalletInput,
+  WalletRole,
+} from './contracts/user'

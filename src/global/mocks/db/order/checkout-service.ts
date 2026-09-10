@@ -4,6 +4,7 @@ import {
   WALLET_TYPES,
   findCheckoutWallet,
 } from '../../../data'
+import { isWalletAddress } from '../../../helpers/wallet-address'
 import { CartRuleError } from '../cart/cart-rule-error'
 import { cartService } from '../cart/cart-service'
 import { mockDb } from '../core'
@@ -18,7 +19,6 @@ import type {
 import type { Cart, CartItem } from '../../../api/contracts/cart'
 import type { Order } from '../../../api/contracts/order'
 
-const WALLET_ADDRESS = /^0x[a-fA-F0-9]{40}$/
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 type CheckoutData = {
@@ -41,16 +41,14 @@ export class CheckoutService {
 
       if (cart.items.length === 0) throw CheckoutRuleError.cartEmpty()
 
-      const wallet = findCheckoutWallet(data.walletId)
-
-      if (!wallet) throw CheckoutRuleError.walletNotSupported()
+      const walletLabel = this.walletLabelFor(data.walletId)
 
       this.assertProfile(data.profile)
       this.assertStock(cart.items)
       this.consumeStock(cart.items)
 
       const order = mockDb.order.create({
-        data: this.buildSnapshot(cart, data, wallet.label),
+        data: this.buildSnapshot(cart, data, walletLabel),
       })
 
       mockDb.cartItem.deleteMany()
@@ -67,6 +65,23 @@ export class CheckoutService {
     })
   }
 
+  /**
+   * A carteira pode ser uma das opções fixas do frame ou uma carteira salva
+   * pelo colecionador — o frame de carteiras diz que elas ficam disponíveis
+   * no pagamento. Nenhuma das duas: a compra não sabe para onde mandar o NFT.
+   */
+  private walletLabelFor(walletId: string): string {
+    const fixed = findCheckoutWallet(walletId)
+
+    if (fixed) return fixed.label
+
+    const saved = mockDb.wallet.findUnique({ where: { id: walletId } })
+
+    if (saved) return saved.nickname
+
+    throw CheckoutRuleError.walletNotSupported()
+  }
+
   private assertProfile(profile: CollectorProfileSnapshot): void {
     const required = [
       ['Nome de exibição', profile.displayName],
@@ -81,10 +96,10 @@ export class CheckoutService {
       }
     }
 
-    if (!WALLET_ADDRESS.test(profile.walletAddress)) {
+    if (!isWalletAddress(profile.walletAddress)) {
       throw CheckoutRuleError.invalidProfile(
         'Endereço da carteira',
-        'informe um endereço 0x válido',
+        'use 0x seguido de 40 caracteres hexadecimais',
       )
     }
 
@@ -103,7 +118,7 @@ export class CheckoutService {
       )
     }
 
-    if (!ENS_SUFFIXES.some(({ id }) => id === profile.ensName)) {
+    if (!ENS_SUFFIXES.some(({ id }) => id === profile.ensSuffix)) {
       throw CheckoutRuleError.invalidProfile('Nome ENS', 'sufixo inválido')
     }
   }
