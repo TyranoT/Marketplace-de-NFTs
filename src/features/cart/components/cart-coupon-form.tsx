@@ -61,7 +61,7 @@ export function CartCouponForm({
         className={cn(
           'flex',
           isInline &&
-            'items-center gap-2 rounded-full border border-line-soft p-1.5',
+            'items-center rounded-full border border-line-soft',
         )}
       >
         <Input
@@ -85,7 +85,7 @@ export function CartCouponForm({
           type="submit"
           disabled={isApplying}
           className={cn(
-            'shrink-0 font-bold',
+            'shrink-0 font-bold border-0 bg-linear-120 from-brand to-highlight text-foreground',
             isInline
               ? 'h-11 rounded-full px-6 text-16'
               : 'w-25.5 rounded-l-none rounded-r-md text-15',
