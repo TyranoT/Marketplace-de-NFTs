@@ -10,11 +10,12 @@ import {
   useRemoveCoupon,
   useUpdateCartItem,
 } from '@/global/api/cart'
-import { getCartRecommendations } from '@/global/data'
-import { NftRelatedSection } from '@/features/marketplace'
+import { useRealtime } from '@/global/realtime'
+import { CartRecommendations } from '@/features/marketplace'
 import { CART_BREADCRUMB, CART_COPY } from '../constants/cart-copy'
 import { toCartErrorMessage } from '../helpers/to-cart-error-message'
 import { useCartFocus } from '../hooks/use-cart-focus'
+import { CartChangeNotice } from '../components/cart-change-notice'
 import { CartEmpty } from '../components/cart-empty'
 import { CartError } from '../components/cart-error'
 import { CartMobileList } from '../components/cart-mobile-list'
@@ -41,6 +42,7 @@ export function CartScreen() {
   const applyCoupon = useApplyCoupon()
   const removeCoupon = useRemoveCoupon()
   const focus = useCartFocus()
+  const realtime = useRealtime()
 
   const [actionError, setActionError] = useState<string>()
 
@@ -106,6 +108,12 @@ export function CartScreen() {
             {actionError ?? backgroundError}
           </p>
         ) : null}
+
+        {/** O que mudou por evento, no mesmo lugar das outras mensagens. */}
+        <CartChangeNotice
+          alerts={realtime.alerts}
+          onDismiss={realtime.dismissAlert}
+        />
 
         <p role="status" className="sr-only">
           {focus.status}
@@ -193,8 +201,7 @@ export function CartScreen() {
        * atrás do painel fixo, disputando a rolagem com a ação principal.
        */}
       <div className="hidden md:block">
-        <NftRelatedSection
-          items={getCartRecommendations()}
+        <CartRecommendations
           heading={CART_COPY.recommendationsHeading}
           headingId="cart-recommendations"
         />

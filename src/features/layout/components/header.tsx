@@ -17,7 +17,10 @@ export function Header({ cartCount }: HeaderProps) {
   const hasDivider = config?.divider ?? true
 
   return (
-    <Container as="header" className="hidden pt-6 md:block">
+    <Container
+      as="header"
+      className="hidden pt-6 sticky top-0 bg-ink z-20 md:block"
+    >
       <div className="flex items-start justify-between">
         <Link
           to="/"

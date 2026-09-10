@@ -1,30 +1,53 @@
-import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { Footer } from '@/features/layout'
-import { NftDetailScreen, NftNotFound } from '@/features/marketplace'
-import { getNftById, getRelatedNfts } from '@/global/data'
+import {
+  NftDetailScreen,
+  NftDetailSkeleton,
+  NftNotFound,
+  toDetailView,
+} from '@/features/marketplace'
+import { useNftDetail } from '@/global/api/nft'
 
 export const Route = createFileRoute('/nft/$nftId')({
+  /**
+   * Client-only pelo mesmo motivo do carrinho: o catálogo passou a vir da
+   * rede, e a rede é o Service Worker do MSW — que não existe no servidor.
+   */
+  ssr: false,
   staticData: {
     header: { active: 'market', divider: true },
     mobileTabBar: false,
   },
-  loader: ({ params }) => {
-    const nft = getNftById(params.nftId)
-
-    if (!nft) throw notFound()
-
-    return { nft, related: getRelatedNfts(params.nftId) }
-  },
   component: NftDetailRoute,
-  notFoundComponent: NftNotFoundRoute,
+  pendingComponent: NftDetailPending,
 })
 
 function NftDetailRoute() {
-  const { nft, related } = Route.useLoaderData()
+  const { nftId } = Route.useParams()
+  const nft = useNftDetail(nftId)
+
+  /**
+   * 404 é resposta, não falha: o `retry` da política já não repete
+   * `not_found`, então o NFT inexistente cai aqui de imediato.
+   */
+  if (nft.error?.kind === 'not_found') {
+    return (
+      <div className="flex flex-col gap-24">
+        <NftNotFound />
+        <Footer />
+      </div>
+    )
+  }
+
+  if (!nft.data) return <NftDetailPending />
 
   return (
     <div className="flex flex-col gap-24">
-      <NftDetailScreen key={nft.id} nft={nft} related={related} />
+      <NftDetailScreen
+        key={nft.data.id}
+        nft={toDetailView(nft.data)}
+        categoryId={nft.data.categoryId}
+      />
 
       <div className="hidden md:block">
         <Footer />
@@ -33,11 +56,10 @@ function NftDetailRoute() {
   )
 }
 
-function NftNotFoundRoute() {
+function NftDetailPending() {
   return (
     <div className="flex flex-col gap-24">
-      <NftNotFound />
-      <Footer />
+      <NftDetailSkeleton />
     </div>
   )
 }

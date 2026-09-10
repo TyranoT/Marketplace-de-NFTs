@@ -23,6 +23,19 @@ export class CheckoutRuleError extends RuleError {
     )
   }
 
+  /**
+   * O carrinho mudou entre a revisão e o envio. 409 e não 422: não é um
+   * campo malformado, é um conflito com o estado atual do servidor — e o
+   * cliente resolve mostrando a nova cotação, não corrigindo o formulário.
+   */
+  static quoteOutdated(currentVersion: number): CheckoutRuleError {
+    return new CheckoutRuleError(
+      409,
+      'CART_VERSION_MISMATCH',
+      `O valor do pedido mudou (versão ${currentVersion}). Revise o resumo antes de confirmar.`,
+    )
+  }
+
   static walletNotSupported(): CheckoutRuleError {
     return new CheckoutRuleError(
       422,

@@ -6,6 +6,8 @@ import type {
   WalletSnapshot,
 } from '../user/user-snapshot'
 
+export type IdempotencyRecord = { requestHash: string; orderId: string }
+
 export type MockDbSnapshot = {
   /**
    * Sobe junto com qualquer mudança de formato do seed. Divergência força
@@ -22,13 +24,24 @@ export type MockDbSnapshot = {
   availability: Record<string, number>
   /** Preço corrente por NFT, em string decimal. Muda com `nft.updated`. */
   prices: Record<string, string>
-  /** Compras concluídas, na ordem em que aconteceram. */
+  /**
+   * Versão de cada NFT. É o que viaja nos eventos e o que permite descartar
+   * um `nft.updated` duplicado ou atrasado sem regredir o estado.
+   */
+  nftRevisions: Record<string, { version: number; updatedAt: string }>
+  /** Compras, na ordem em que aconteceram. */
   orders: Array<OrderSnapshot>
+  /**
+   * Chaves de idempotência já usadas. `requestHash` guarda o conteúdo da
+   * tentativa: a mesma chave com o mesmo corpo devolve o mesmo pedido, e com
+   * corpo diferente é conflito.
+   */
+  idempotency: Record<string, IdempotencyRecord>
   /** Só digesto e sal da senha; texto claro não é persistido. */
   users: Array<UserSnapshot>
   wallets: Array<WalletSnapshot>
   session?: SessionSnapshot
 }
 
-/** 4: uma conta deixou de ser a única — o cadastro cria contas novas. */
-export const SEED_VERSION = 4
+/** 6: o pedido ganhou ciclo de vida e o checkout, chave de idempotência. */
+export const SEED_VERSION = 6

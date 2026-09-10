@@ -64,11 +64,15 @@ export const CHECKOUT_DEFAULTS: CheckoutFormValues = {
 export const checkoutResolver = buildZodResolver(checkoutSchema)
 
 /** Do formulário para o corpo da requisição, sem os campos que só existem na tela. */
-export function toCheckoutInput(values: CheckoutFormValues): CheckoutInput {
+export function toCheckoutInput(
+  values: CheckoutFormValues,
+  cartVersion: number,
+): CheckoutInput {
   const { walletId, secondaryWallet, note, ...profile } = values
 
   return {
     walletId,
+    cartVersion,
     profile: {
       ...profile,
       secondaryWallet: secondaryWallet || undefined,

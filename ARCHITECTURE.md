@@ -418,10 +418,11 @@ Worker.
 | POST   | `/api/checkout` | 422 `CART_EMPTY`, 422 `CHECKOUT_INVALID`, 422 `WALLET_NOT_SUPPORTED`, 409 `QUANTITY_EXCEEDS_AVAILABILITY`, 409 `EDITION_SOLD_OUT` |
 
 `CheckoutService` (`mocks/db/order/`) roda tudo dentro de
-`mockDb.$transaction`: valida o perfil, **revalida o estoque**, baixa as
-unidades, cria o pedido e esvazia itens e cupom. Ou o pedido nasce com tudo
-isso feito, ou nada aconteceu — a transação restaura o snapshot anterior
-quando uma regra recusa no meio do caminho.
+`mockDb.$transaction`: valida o perfil, **revalida o estoque**, reserva as
+unidades e cria o pedido **pendente**. Ou o pedido nasce com tudo isso feito,
+ou nada aconteceu — a transação restaura o snapshot anterior quando uma regra
+recusa no meio do caminho. O carrinho não é esvaziado aqui: ver "Ciclo de vida
+do pedido".
 
 O pedido **congela** nome, arte, edição e valores de cada linha, em vez de
 apontar para o catálogo: uma mudança de preço não pode reescrever uma compra
@@ -464,8 +465,11 @@ pintura é redonda.
 ### Confirmação
 
 É um diálogo sobre a página, como no frame `Confirmação de Pedido`, e não uma
-rota. Fechar leva ao início: o carrinho comprado não existe mais, e não há a
-que voltar naquela tela.
+rota. Tem três composições: pendente (espera, sem promessa), confirmado (o
+frame) e recusado (com o motivo). Fechar leva ao início só quando a compra foi
+confirmada — o carrinho comprado não existe mais. Numa recusa a tela fica onde
+está: os itens foram preservados, e mandar embora quem acabou de falhar tiraria
+dele o caminho de tentar de novo.
 
 Uma divergência consciente: **o recibo mostra a linha de desconto** quando há
 cupom. O frame não a tem porque seu cenário não tem cupom; omiti-la numa compra
@@ -723,6 +727,292 @@ de `md` as sub-colunas do formulário viram uma e a lista de seções faz a
 navegação — funciona e segue o padrão das outras telas mobile, mas o desenho
 dessas duas telas não existe.
 
+## Tempo real com Socket.IO
+
+`socket.io-client` de verdade no cliente, e um servidor simulado sobre
+`ws.link()` do MSW com `@mswjs/socket.io-binding`. Substituir o socket por
+chamadas diretas a setters ou ao cache é eliminatório no enunciado, então o
+transporte é real dos dois lados — o painel de simulação existe em parte para
+tornar isso visível.
+
+### O caminho é `/realtime`, e não `/socket.io`
+
+O `WebSocketHandler` do MSW reescreve `^/socket.io/` para `/` antes de casar a
+rota. Com o caminho padrão, o link teria de interceptar a raiz — que é
+exatamente a URL do WebSocket de HMR do Vite (`ws://localhost:3000/`).
+Interceptá-la derruba o recarregamento em desenvolvimento, e o sintoma não
+aponta para a causa. `path: '/realtime'` no cliente e `ws.link('/realtime')` no
+servidor deixam o pathname intacto.
+
+### `transports: ['websocket']` é obrigatório
+
+Por padrão o `socket.io-client` abre o handshake por _long-polling_, que é
+HTTP. O `ws` do MSW intercepta a classe `WebSocket`, não aquele GET: ele
+escaparia pelo `onUnhandledRequest: 'bypass'`, bateria em 404 real e o cliente
+entraria em `xhr poll error` reencaminhado indefinidamente.
+
+### O batimento é nosso
+
+O binding responde o handshake anunciando `pingInterval: 25000` e
+`pingTimeout: 5000`, mas **nunca envia PING**. O `engine.io-client` arma um
+temporizador de 30s reiniciado a cada pacote recebido; sem tráfego, ele derruba
+a conexão por `ping timeout` e reconecta — em laço, a cada 30s, para sempre.
+`RealtimeClient` envia o pacote `'2'` a cada 20s e limpa o intervalo ao
+desconectar. Verificado com 50s de conexão ociosa sem queda.
+
+### Broadcast é nosso também
+
+O binding não tem rooms, namespaces (`nsp: '/'` é fixo no código dele) nem
+broadcast; o `broadcast()` do `ws.link()` envia bytes crus, sem o enquadramento
+do Socket.IO. `RealtimeServer` mantém o registro das conexões vivas — é isso
+que permite a um handler HTTP emitir um evento, que é como o painel funciona.
+
+### `socket.io-client` fora do bundle do servidor
+
+Import dinâmico não bastou: o provider é alcançável a partir do `__root.tsx`,
+que renderiza no servidor, e o Rollup emitia o chunk dos dois lados — 227kB que
+o servidor nunca executa. A guarda é `if (import.meta.env.SSR) return` no topo
+do efeito: o Vite substitui isso por uma constante em cada build, e no do
+servidor tudo abaixo vira código morto. Conferir `.output/server/_libs` ao
+mexer nesse arquivo.
+
+### Emitir só depois do commit
+
+`$transaction` restaura o snapshot anterior quando uma regra recusa no meio do
+caminho. Emitir de dentro anunciaria uma mudança que não aconteceu, e o cliente
+passaria a mostrar um preço que o servidor não tem. Todo `emitNftUpdated` sai
+do handler, depois que a transação retornou.
+
+Pela mesma razão, `NftService.applyChange` **não** abre transação própria nem
+chama `cartService.commit()`: uma transação aninhada persistiria estado parcial
+no `localStorage`. Uma transação por requisição, no ponto de entrada.
+
+### Ordem, duplicata e escopo
+
+Cada NFT tem versão própria (`NftRevisionDelegate`), incrementada por qualquer
+mudança de preço ou disponibilidade. Uma só, e não uma por campo: o recurso que
+o evento anuncia é o NFT, e duas versões obrigariam o cliente a decidir qual
+delas ordena. `CATALOG_ITEM_VERSION = 1`, que era constante no mapper do
+carrinho, deixou de existir. `SEED_VERSION` subiu para **5**, e as revisões
+entraram em `seedSignature()` — sem isso a impressão digital deixaria de cobrir
+o novo estado, que é a pegadinha que o próprio arquivo já documentava.
+
+`EventLedger` responde duas perguntas diferentes, porque uma não implica a
+outra: "já vi este evento?" (id, num FIFO de 500) e "este é mais novo que o que
+tenho?" (versão por recurso). Um evento inédito pode chegar atrasado, e um
+repetido pode trazer a versão corrente. Só eventos o alimentam — `record()` existe, mas nenhuma
+resposta REST o chama ainda. É por isso que o reset do cenário precisa avisar
+(`mock.reset`): ele devolve as versões a 1, e sem o aviso o cliente, que
+lembra das versões mais altas que já viu, descartaria como antigas todas as
+mudanças seguintes.
+
+Evento com `scope` diferente do escopo da sessão é descartado antes de tudo.
+O escopo entra nas dependências do efeito do provider: entrar, sair ou trocar
+de conta refaz a conexão e zera o registro.
+
+### Onde cada evento aterrissa
+
+| Alvo     | Estratégia                                                                        | Por quê                                                                                                                                                                                                                                                                                              |
+| -------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Detalhe  | `setQueryData`                                                                    | O evento traz preço, disponibilidade e versão — tudo que muda. Ir à rede seria pedir de volta o que acabou de chegar.                                                                                                                                                                                |
+| Catálogo | remenda todas as páginas em cache + `invalidateQueries` com `refetchType: 'none'` | Remendar evita reordenar a grade sob o cursor de quem está lendo; marcar obsoleto deixa a próxima leitura natural corrigir ordenação e pertinência ao filtro de preço. As páginas **inativas** também são remendadas: com `keepPreviousData`, voltar a uma página já vista mostraria o preço antigo. |
+| Carrinho | `invalidateQueries`, e só se o NFT estiver nele                                   | Mudar o preço de uma linha muda subtotal, desconto, taxa e total — cálculo que pertence ao servidor e que este projeto decidiu nunca duplicar na interface.                                                                                                                                          |
+
+Na reconexão, `refetchQueries({ type: 'active' })` reconcilia com o REST:
+enquanto esteve fora, eventos se perderam, e só o servidor sabe o estado atual.
+
+### Cotação desatualizada no checkout
+
+Três camadas, e as três são necessárias:
+
+1. **Interface.** `useQuoteGuard` congela a `cart.version` que o colecionador
+   revisou. Divergindo, um bloco `role="alert"` explica e o envio trava até
+   "Revisar novo valor" reconhecer o novo total. É o "mudanças devem exigir
+   nova confirmação" do enunciado.
+2. **Servidor.** `CheckoutInput.cartVersion` é comparado com a versão corrente
+   e recusado com **409 `CART_VERSION_MISMATCH`**. O portão da interface é
+   conforto; este é quem decide.
+3. **Gatilho.** `applyChange` sobe a versão do carrinho quando o NFT alterado
+   está nele. Sem isso `cartVersion` não mudaria e o 409 nunca dispararia.
+
+O botão desabilitado mantém o rótulo "Confirmar compra": reaproveitar o estado
+de envio mostraria "Confirmando...", descrevendo uma compra em voo que não
+existe e deixando quem lê esperando um resultado.
+
+### Limitações do ambiente de mocks
+
+1. Só o transporte `websocket`; o handshake por long-polling não é
+   interceptável.
+2. Handshake sintético, com `sid: "test"` igual para todos. A identidade real
+   vem de `connection.client.id`.
+3. Sem namespaces, rooms, acks ou `volatile`.
+4. **A interceptação acontece na página, não no Service Worker.** Cada aba
+   roda o seu próprio servidor simulado e o seu próprio banco em memória,
+   todos gravando no mesmo `localStorage`. Duas pontes mantêm as abas em dia:
+   o `RealtimeServer` repassa cada evento às outras abas por
+   `BroadcastChannel`, descartando antes a cópia em memória delas, e o evento
+   `storage` (`mocks/cross-tab.ts`) invalida a cópia quando outra aba grava
+   algo que não gera evento, como o carrinho. Antes disso, um preço mudado no
+   `/dev` numa aba não aparecia no catálogo aberto em outra — nem pelo evento,
+   nem pelo REST.
+5. Autenticação por query string (`?scope=`): o payload `auth` do Socket.IO
+   viaja no pacote `40`, que o binding responde sozinho e não expõe.
+6. `@mswjs/socket.io-binding` é um projeto pequeno e depende de
+   `@mswjs/interceptors@^0.39`, enquanto `msw@2.15` usa `^0.41`. O `overrides`
+   do `package.json` unifica em 0.41 — conferir com
+   `npm ls @mswjs/interceptors` ao atualizar qualquer um dos dois.
+
+---
+
+## Ciclo de vida do pedido
+
+| Método | Rota                   | Erros de negócio                                                        |
+| ------ | ---------------------- | ----------------------------------------------------------------------- |
+| POST   | `/api/checkout`        | os de antes + 409 `CART_VERSION_MISMATCH`, 409 `IDEMPOTENCY_KEY_REUSED` |
+| GET    | `/api/orders/:orderId` | 404 `ORDER_NOT_FOUND`                                                   |
+| GET    | `/api/orders`          | —                                                                       |
+
+O pedido nasce **`pending`** e sai dali por `order.updated`, para `confirmed`
+ou `declined`. Os dois são terminais: `OrderService.settle` recusa reabrir com
+409 `ORDER_ALREADY_SETTLED`, e o cliente ignora evento para pedido que já não
+está pendente — mesmo com versão maior, porque "terminal" é uma regra
+diferente de "mais recente".
+
+### Reservar na criação, efetivar na confirmação
+
+A criação reserva o estoque mas **não** esvazia o carrinho. A confirmação
+remove só os itens e quantidades comprados; a recusa devolve as unidades e
+deixa o carrinho como estava. É o "preservar os itens em falhas; após
+confirmação, remover do carrinho apenas os itens e quantidades comprados" do
+enunciado, sem ter de reconstruir um carrinho que já tinha sido apagado.
+
+### A liquidação é preguiçosa
+
+`settleAt` fica gravado no pedido. Toda leitura (`GET /api/orders*`) liquida
+os pendentes vencidos antes de responder. O temporizador de
+`order-events.ts` só existe para a transição parecer imediata a quem está com
+a tela aberta — um `setTimeout` não sobrevive ao recarregar, e depender dele
+deixaria o pedido preso em `pending` para sempre depois de um F5.
+
+O desfecho vem do cenário: `orderOutcome` (`confirmed`, `declined` ou
+`manual`) e `orderSettleDelayMs`, também por `?mockOrder=` e
+`?mockOrderDelay=`. Em `manual` o relógio não decide nada e só o painel
+liquida — é como a recusa fica demonstrável sem depender de tempo. O reset
+cancela os temporizadores em curso, para um pedido de antes não liquidar
+sobre o banco novo.
+
+### Idempotência
+
+Header `Idempotency-Key`, gerado **uma vez por tentativa de compra** e
+reusado nas retentativas — ao contrário do `x-request-id`, que muda a cada
+requisição. O servidor guarda, por chave, o pedido e um FNV do conteúdo
+(`walletId`, `cartVersion`, perfil):
+
+- mesma chave, mesmo conteúdo → o mesmo pedido, sem julgar de novo contra um
+  estoque que a própria tentativa já reservou;
+- mesma chave, conteúdo diferente → 409 `IDEMPOTENCY_KEY_REUSED`;
+- sem chave → segue sem deduplicar.
+
+O FNV estava escrito duas vezes (impressão digital da semente e hash da
+transação); virou `db/core/fnv.ts` antes de ganhar a terceira cópia.
+`SEED_VERSION` subiu para **6**.
+
+### Recuperação após refresh
+
+O pedido deixou de viver no `useState` da tela. `useOrderAttempt` guarda
+`{ orderId, idempotencyKey }` em `kurio.checkout.pending.v1` — chave da
+aplicação, não do mock, porque descreve o que este navegador estava fazendo.
+Ao montar, a tela de pagamento lê essa entrada, busca o pedido e reabre o
+diálogo no estado atual, que pode já ter sido liquidado enquanto a página não
+existia. A entrada só é apagada quando o pedido chega a um estado terminal e
+o diálogo é fechado.
+
+Verificado no navegador: compra pela interface em modo `manual`, F5 com o
+diálogo pendente, o mesmo pedido volta (um só no banco), e a recusa forçada
+pelo painel troca o diálogo por evento, sem recarregar, com o carrinho
+preservado.
+
+---
+
+## Contrato REST do catálogo
+
+| Método | Rota               | Erros de negócio    |
+| ------ | ------------------ | ------------------- |
+| GET    | `/api/nfts`        | —                   |
+| GET    | `/api/nfts/:nftId` | 404 `NFT_NOT_FOUND` |
+
+Parâmetros de `/api/nfts`: `q`, `collection` (repetível), `network`
+(repetível), `minPrice`, `maxPrice`, `tab`, `sort`, `exclude`, `page`,
+`pageSize`. Parâmetro inválido cai no padrão em vez de recusar — a URL é
+entrada de fora, e uma busca não deve quebrar porque alguém digitou
+`?sort=xyz`.
+
+A busca normaliza acento e caixa: quem digita "oculos" espera achar "Óculos".
+A faixa de preço e a ordenação comparam em **wei**, pelo mesmo motivo de todo
+o resto do projeto — `Number` perderia precisão no limite da faixa.
+
+`NftListItem.price` é `Money`, não a string formatada de `NftSummary`: é deste
+valor que o carrinho e os eventos dependem. Formatar acontece na apresentação.
+
+### Estado do catálogo na URL
+
+Busca, filtros, ordenação e paginação compõem `validateSearch` na rota `/`,
+com zod. Cada campo tem `.catch(...)`: a URL é entrada de fora, e um
+`?sort=xyz` colado por alguém cai no padrão em vez de quebrar a tela.
+
+**Toda mudança de filtro volta para a página 1** — sem isso, quem está na
+página 3 aplica um filtro com 4 resultados e vê uma tela vazia sem entender
+por quê. Paginar, ao contrário, cria entrada de histórico própria: é
+navegação, e o botão voltar deve desfazê-la. Filtrar usa `replace`, para o
+histórico não ganhar um passo por tecla digitada na busca (que ainda tem 300ms
+de espera antes de virar URL).
+
+O intervalo de preço é local enquanto se arrasta e só vira URL no Aplicar:
+escrever a cada pixel dispararia uma consulta por quadro.
+
+A rota de detalhe passou a `ssr: false` pelo mesmo motivo do carrinho — o
+catálogo agora vem da rede, e a rede é o Service Worker. O 404 é tratado por
+`error.kind === 'not_found'`, que a política de retry já não repete.
+
+As fixtures passaram de 8 para **24 NFTs**, com categoria, rede, data de
+listagem e marca de "em alta". Oito itens de uma coleção só não exercitam
+filtro nem paginação — não há o que recortar quando todos casam com tudo. Os
+oito originais mantêm id e preço: o cenário-semente do carrinho (26.846 ETH) é
+baseline de regressão visual.
+
+---
+
+## Painel de simulação
+
+`/dev`. Não tem link no cabeçalho, no rodapé nem na barra de navegação, não
+entra em `ALLOWED` de `auth-redirect.ts` e carrega `noindex`: existe só pela
+URL.
+
+**Funciona no build de demonstração de propósito.** Os mocks ficam ligados lá,
+e é lá que o cenário de tempo real precisa ser demonstrável — guardá-lo por
+`import.meta.env.DEV` o tornaria inútil exatamente onde serve. Com
+`VITE_ENABLE_MOCKS=false` a tela diz que não há simulação a controlar.
+
+Ele existe porque o §6 pede que mudanças nos dados simulados se reflitam tanto
+nas respostas REST quanto nos eventos, e porque o cenário obrigatório do §7 —
+o preço muda enquanto alguém navega — precisa de alguém que provoque a
+mudança. Sem isso, o cenário só existiria dentro de um teste.
+
+| Método | Rota                                 | Efeito                                                            |
+| ------ | ------------------------------------ | ----------------------------------------------------------------- |
+| PATCH  | `/api/__mock/nfts/:nftId`            | grava preço/disponibilidade, sobe a revisão e emite `nft.updated` |
+| POST   | `/api/__mock/realtime/disconnect`    | derruba as conexões, para exercitar reconexão                     |
+| GET    | `/api/__mock/realtime`               | número de conexões vivas                                          |
+| GET    | `/api/__mock/orders`                 | todos os pedidos, para o painel                                   |
+| POST   | `/api/__mock/orders/:orderId/settle` | força `confirmed` ou `declined` e emite `order.updated`           |
+
+A coluna esquerda escreve por REST; a direita mostra o que o `socket.io-client`
+**recebeu**, incluindo os descartes. É a prova visual de que o transporte é
+real: quebre o socket e a direita fica muda enquanto o resto continua
+funcionando.
+
+---
+
 ## Dificuldades declaradas
 
 Coisas que a demonstração **não** faz, e por quê. Nenhuma delas está escondida
@@ -762,6 +1052,16 @@ atrás de um botão que finge funcionar.
 3. **`/mockServiceWorker.js` na Vercel** foi verificado no build local (servido
    na raiz, com `text/javascript`), mas `nitro@3` é pré-release: confirmar num
    preview deploy antes de considerar fechado.
-4. **Socket.IO, autenticação e as demais telas** ainda não existem. O `version`
-   nos contratos e o escopo nas chaves de consulta são os pontos de encaixe já
-   preparados para elas.
+4. **A URL serializa as listas de filtro em JSON** (`?collection=["games"]`),
+   que é o padrão do TanStack Router. Funciona e sobrevive ao refresh, mas o
+   formato REST convencional seria `?collection=games&collection=music` — o
+   cliente HTTP já monta assim; só a URL do navegador destoa.
+5. **O pedido pendente é guardado por navegador, não por conta.**
+   `kurio.checkout.pending.v1` não carrega o id do usuário: se alguém sair e
+   outra pessoa entrar no mesmo navegador com um pedido em aberto, a tela de
+   pagamento tentaria recuperá-lo. O servidor simulado também não filtra
+   `GET /api/orders/:id` por dono. Os dois precisam do escopo da sessão antes
+   de valer para mais de um colecionador por máquina.
+6. **Sem testes automatizados.** Playwright não está configurado, e tudo aqui
+   foi verificado à mão no navegador. Os fluxos de tempo real são justamente
+   os que mais precisam de teste, porque dependem de ordem e de tempo.

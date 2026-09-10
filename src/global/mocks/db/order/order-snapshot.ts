@@ -1,4 +1,5 @@
 import type { NftEditionId } from '../../../type'
+import type { OrderStatus } from '../../../api/contracts/order'
 
 /**
  * O pedido guarda o que o colecionador viu no instante da compra — nome,
@@ -43,7 +44,17 @@ export type OrderSnapshot = {
   id: string
   /** Hash simulado da transação, exibido e usado no link do explorador. */
   transactionHash: string
-  status: 'confirmed'
+  status: OrderStatus
+  /** Sobe a cada transição. É o que ordena os eventos `order.updated`. */
+  version: number
+  updatedAt: string
+  /**
+   * Quando o pedido pendente deve ser liquidado. Guardado, e não só agendado
+   * em memória: um `setTimeout` não sobrevive ao recarregar a página, e o
+   * pedido precisa ser recuperável mesmo assim.
+   */
+  settleAt?: string
+  declineReason?: string
   items: Array<OrderItemSnapshot>
   totals: OrderTotalsSnapshot
   couponCode?: string

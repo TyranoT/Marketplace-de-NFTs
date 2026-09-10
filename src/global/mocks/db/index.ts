@@ -1,5 +1,7 @@
 export { CartRuleError, cartService } from './cart'
 export { mockDb } from './core'
 export { RuleError } from './core/rule-error'
-export { checkoutService } from './order'
+export { NftRuleError, nftService } from './nft'
+export type { NftChangeInput } from './nft'
+export { OrderRuleError, checkoutService, orderService } from './order'
 export { SEED_CREDENTIALS, userService, walletService } from './user'

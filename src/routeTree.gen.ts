@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as CriarContaRouteImport } from './routes/criar-conta'
+import { Route as DevRouteImport } from './routes/dev'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as PagamentoRouteImport } from './routes/pagamento'
 import { Route as PerfilRouteImport } from './routes/perfil'
@@ -34,6 +35,11 @@ const CarrinhoRoute = CarrinhoRouteImport.update({
 const CriarContaRoute = CriarContaRouteImport.update({
   id: '/criar-conta',
   path: '/criar-conta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevRoute = DevRouteImport.update({
+  id: '/dev',
+  path: '/dev',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EntrarRoute = EntrarRouteImport.update({
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/carrinho': typeof CarrinhoRoute
   '/criar-conta': typeof CriarContaRoute
+  '/dev': typeof DevRoute
   '/entrar': typeof EntrarRoute
   '/pagamento': typeof PagamentoRoute
   '/perfil': typeof PerfilRouteWithChildren
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/carrinho': typeof CarrinhoRoute
   '/criar-conta': typeof CriarContaRoute
+  '/dev': typeof DevRoute
   '/entrar': typeof EntrarRoute
   '/pagamento': typeof PagamentoRoute
   '/ui': typeof UiRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/carrinho': typeof CarrinhoRoute
   '/criar-conta': typeof CriarContaRoute
+  '/dev': typeof DevRoute
   '/entrar': typeof EntrarRoute
   '/pagamento': typeof PagamentoRoute
   '/perfil': typeof PerfilRouteWithChildren
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
     | '/'
     | '/carrinho'
     | '/criar-conta'
+    | '/dev'
     | '/entrar'
     | '/pagamento'
     | '/perfil'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
     | '/'
     | '/carrinho'
     | '/criar-conta'
+    | '/dev'
     | '/entrar'
     | '/pagamento'
     | '/ui'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/'
     | '/carrinho'
     | '/criar-conta'
+    | '/dev'
     | '/entrar'
     | '/pagamento'
     | '/perfil'
@@ -161,6 +173,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CarrinhoRoute: typeof CarrinhoRoute
   CriarContaRoute: typeof CriarContaRoute
+  DevRoute: typeof DevRoute
   EntrarRoute: typeof EntrarRoute
   PagamentoRoute: typeof PagamentoRoute
   PerfilRoute: typeof PerfilRouteWithChildren
@@ -189,6 +202,13 @@ declare module '@tanstack/react-router' {
       path: '/criar-conta'
       fullPath: '/criar-conta'
       preLoaderRoute: typeof CriarContaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dev': {
+      id: '/dev'
+      path: '/dev'
+      fullPath: '/dev'
+      preLoaderRoute: typeof DevRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entrar': {
@@ -269,6 +289,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CarrinhoRoute: CarrinhoRoute,
   CriarContaRoute: CriarContaRoute,
+  DevRoute: DevRoute,
   EntrarRoute: EntrarRoute,
   PagamentoRoute: PagamentoRoute,
   PerfilRoute: PerfilRouteWithChildren,

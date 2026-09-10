@@ -16,5 +16,8 @@ export const DEFAULT_CATALOG_TAB: CatalogTab['key'] = 'all'
 export const DEFAULT_CATALOG_SORT: CatalogSortOption['value'] = 'recent'
 export const CATALOG_PAGE_SIZE = 9
 
-/** Quantidade de páginas desenhada no Figma. O total real vem da API. */
-export const CATALOG_PAGE_COUNT = 4
+export const CATALOG_ERROR_COPY = {
+  title: 'Não foi possível carregar o catálogo',
+  body: 'A consulta ao mercado falhou. Verifique a conexão e tente novamente.',
+  retry: 'Tentar novamente',
+} as const

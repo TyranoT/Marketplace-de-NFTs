@@ -33,11 +33,23 @@ export type OrderItem = {
   lineTotal: Money
 }
 
+/**
+ * Ciclo do pedido. `pending` é o estado em que a compra nasce e de onde
+ * `order.updated` a tira; `confirmed` e `declined` são terminais e nunca
+ * regridem.
+ */
+export type OrderStatus = 'pending' | 'confirmed' | 'declined'
+
 export type Order = {
   id: string
   /** Hash da transação simulada, exibido abreviado na confirmação. */
   transactionHash: string
-  status: 'confirmed'
+  status: OrderStatus
+  /** Sobe a cada transição; ordena os eventos `order.updated`. */
+  version: number
+  updatedAt: string
+  /** Por que foi recusado. Só existe em `declined`. */
+  declineReason?: string
   items: Array<OrderItem>
   totals: CartTotals
   couponCode?: string
@@ -50,4 +62,12 @@ export type Order = {
 export type CheckoutInput = {
   profile: CollectorProfile
   walletId: string
+  /**
+   * Versão do carrinho que o colecionador estava vendo ao confirmar.
+   *
+   * Divergindo da corrente, o servidor recusa: o preço mudou entre a
+   * revisão e o envio, e cobrar um valor que ninguém viu não é opção. O
+   * bloqueio na interface existe para avisar antes; este é o que decide.
+   */
+  cartVersion: number
 }

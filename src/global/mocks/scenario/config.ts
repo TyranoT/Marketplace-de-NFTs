@@ -1,5 +1,7 @@
 export type MockLatency = 'none' | 'fast' | 'slow' | 'variable'
 
+export type OrderOutcome = 'confirmed' | 'declined' | 'manual'
+
 export type MockScenario = {
   seed: number
   latency: MockLatency
@@ -9,9 +11,18 @@ export type MockScenario = {
   /** Alterna a latência por requisição para provocar respostas fora de ordem. */
   outOfOrder: boolean
   offline: boolean
+  /**
+   * Desfecho do pedido pendente. `manual` deixa a decisão para o painel de
+   * simulação, para demonstrar a recusa sem depender do relógio.
+   */
+  orderOutcome: OrderOutcome
+  /** Quanto o pedido fica pendente antes de liquidar. */
+  orderSettleDelayMs: number
 }
 
-const STORAGE_KEY = 'kurio.mock.scenario'
+export const SCENARIO_STORAGE_KEY = 'kurio.mock.scenario'
+
+const STORAGE_KEY = SCENARIO_STORAGE_KEY
 
 const DEFAULT_SCENARIO: MockScenario = {
   seed: 1,
@@ -19,9 +30,12 @@ const DEFAULT_SCENARIO: MockScenario = {
   failureRate: 0,
   outOfOrder: false,
   offline: false,
+  orderOutcome: 'confirmed',
+  orderSettleDelayMs: 1200,
 }
 
 const LATENCIES: Array<MockLatency> = ['none', 'fast', 'slow', 'variable']
+const ORDER_OUTCOMES: Array<OrderOutcome> = ['confirmed', 'declined', 'manual']
 
 function fromSearch(search: URLSearchParams): Partial<MockScenario> {
   const partial: Partial<MockScenario> = {}
@@ -29,6 +43,8 @@ function fromSearch(search: URLSearchParams): Partial<MockScenario> {
   const seed = search.get('mockSeed')
   const failureRate = search.get('mockFail')
   const forceStatus = search.get('mockStatus')
+  const orderOutcome = search.get('mockOrder')
+  const settleDelay = search.get('mockOrderDelay')
 
   /**
    * `mock` escolhe **um** modo, e escolhê-lo desliga os outros. Sem isso um
@@ -49,6 +65,12 @@ function fromSearch(search: URLSearchParams): Partial<MockScenario> {
   if (seed) partial.seed = Number(seed)
   if (failureRate) partial.failureRate = Number(failureRate)
   if (forceStatus) partial.forceStatus = Number(forceStatus)
+
+  if (ORDER_OUTCOMES.includes(orderOutcome as OrderOutcome)) {
+    partial.orderOutcome = orderOutcome as OrderOutcome
+  }
+
+  if (settleDelay) partial.orderSettleDelayMs = Number(settleDelay)
 
   return partial
 }
@@ -91,6 +113,11 @@ export function getScenario(): MockScenario {
   }
 
   return cache
+}
+
+/** Outra aba mudou o cenário: a próxima leitura relê o `localStorage`. */
+export function invalidateScenarioCache() {
+  cache = undefined
 }
 
 export function resetScenario() {

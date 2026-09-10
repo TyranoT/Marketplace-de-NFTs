@@ -15,12 +15,6 @@ import type {
 import type { NftEditionId } from '../../../type'
 
 /**
- * Versão do NFT no catálogo. Fixa por ora: o catálogo é um fixture que não
- * muda em runtime, mas o campo já viaja para os eventos da próxima fase.
- */
-const CATALOG_ITEM_VERSION = 1
-
-/**
  * Única classe que conhece o formato de wire. É o que mantém `Wei` longe da
  * resposta HTTP — `JSON.stringify` lança em bigint — sem espalhar `toMoney`
  * pelo domínio.
@@ -58,7 +52,7 @@ export class CartContractMapper {
       unitPrice: toMoney(line.unitPrice),
       lineTotal: toMoney(line.lineTotal),
       available: line.available,
-      version: CATALOG_ITEM_VERSION,
+      version: line.version,
     }
   }
 

@@ -1,5 +1,7 @@
 import { HttpResponse, http } from 'msw'
 import { mockDb } from '../db'
+import { realtimeServer } from '../realtime'
+import { cancelSettlements } from '../realtime/order-events'
 import { getScenario, resetScenario, setScenario } from '../scenario/config'
 import type { MockScenario } from '../scenario/config'
 
@@ -17,9 +19,14 @@ export const scenarioHandlers = [
     const body = (await request.json().catch(() => ({}))) as ResetBody
 
     resetScenario()
+    /** Um pedido da vida anterior não pode liquidar sobre o banco novo. */
+    cancelSettlements()
     mockDb.$reset()
 
     if (body.scenario) setScenario(body.scenario)
+
+    /** Depois do reset gravado: quem ouvir já encontra o banco novo. */
+    realtimeServer.emitReset()
 
     return new HttpResponse(null, { status: 204 })
   }),

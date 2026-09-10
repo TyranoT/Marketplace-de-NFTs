@@ -14,6 +14,8 @@ export class CartLine {
     readonly nft: Nft,
     readonly unitPrice: Wei,
     readonly available: number,
+    /** Versão do NFT no catálogo, para o cliente ordenar os eventos. */
+    readonly version: number,
   ) {}
 
   get lineTotal(): Wei {

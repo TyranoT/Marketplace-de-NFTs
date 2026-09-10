@@ -153,6 +153,7 @@ export class CartService {
           nft,
           parseEth(price?.amount ?? nft.price.amount),
           this.availableFor(item.nftId, item.editionId),
+          mockDb.nftRevision.versionOf(item.nftId),
         ),
       ]
     })

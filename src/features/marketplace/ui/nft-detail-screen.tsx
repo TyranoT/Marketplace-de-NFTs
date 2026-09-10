@@ -6,17 +6,17 @@ import { NftGallery } from '../components/nft-gallery'
 import { NftMetadataList } from '../components/nft-metadata-list'
 import { NftPurchasePanel } from '../components/nft-purchase-panel'
 import { NftRating } from '../components/nft-rating'
-import { NftRelatedSection } from '../components/nft-related-section'
+import { NftRelatedList } from '../components/nft-related-list'
 import { NftShare } from '../components/nft-share'
 import { NftDetailMobile } from './nft-detail-mobile'
-import type { NftDetail, NftSummary } from '@/global/type'
+import type { NftCategoryId, NftDetail } from '@/global/type'
 
 type NftDetailScreenProps = {
   nft: NftDetail
-  related: Array<NftSummary>
+  categoryId: NftCategoryId
 }
 
-export function NftDetailScreen({ nft, related }: NftDetailScreenProps) {
+export function NftDetailScreen({ nft, categoryId }: NftDetailScreenProps) {
   return (
     <Container as="main" className="flex flex-col gap-8 md:gap-24 md:pt-8">
       <NftDetailMobile nft={nft} />
@@ -68,7 +68,7 @@ export function NftDetailScreen({ nft, related }: NftDetailScreenProps) {
       </div>
 
       <div className="hidden md:block">
-        <NftRelatedSection items={related} />
+        <NftRelatedList categoryId={categoryId} excludeId={nft.id} />
       </div>
     </Container>
   )

@@ -22,6 +22,12 @@ type CheckoutSummaryProps = {
   walletId: string
   walletError?: string
   isSubmitting: boolean
+  /**
+   * Trava o envio sem fingir que ele está acontecendo. Separado de
+   * `isSubmitting` porque o rótulo "Confirmando..." descreveria uma compra
+   * em voo que não existe — quem lê ficaria esperando um resultado.
+   */
+  isBlocked?: boolean
   couponError?: string
   isApplyingCoupon: boolean
   onWalletChange: (walletId: string) => void
@@ -40,6 +46,7 @@ export function CheckoutSummary({
   walletId,
   walletError,
   isSubmitting,
+  isBlocked = false,
   couponError,
   isApplyingCoupon,
   onWalletChange,
@@ -121,7 +128,7 @@ export function CheckoutSummary({
       <Button
         type="submit"
         form={formId}
-        disabled={isSubmitting}
+        disabled={isSubmitting || isBlocked}
         className="mt-6 h-11 w-full text-15 font-bold"
       >
         {isSubmitting ? CHECKOUT_COPY.submitting : CHECKOUT_COPY.submit}

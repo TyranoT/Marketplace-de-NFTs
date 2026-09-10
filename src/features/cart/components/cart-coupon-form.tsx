@@ -59,9 +59,8 @@ export function CartCouponForm({
 
       <div
         className={cn(
-          'flex',
-          isInline &&
-            'items-center rounded-full border border-line-soft',
+          'flex shadow-xl shadow-black/20',
+          isInline && 'items-center rounded-full border border-line-soft',
         )}
       >
         <Input
@@ -85,7 +84,7 @@ export function CartCouponForm({
           type="submit"
           disabled={isApplying}
           className={cn(
-            'shrink-0 font-bold border-0 bg-linear-120 from-brand to-highlight text-foreground',
+            'shrink-0 border-0 bg-linear-120 from-line-soft/50 to-brand text-foreground',
             isInline
               ? 'h-11 rounded-full px-6 text-16'
               : 'w-25.5 rounded-l-none rounded-r-md text-15',

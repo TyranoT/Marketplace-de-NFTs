@@ -14,7 +14,7 @@ export async function startMocks() {
    * Import dinâmico sob a guarda: mantém `msw/browser` e todos os handlers
    * fora do bundle do servidor e em um chunk separado no cliente.
    */
-  const { worker } = await import('./browser')
+  const { worker, syncMocksAcrossTabs } = await import('./browser')
 
   await worker.start({
     quiet: true,
@@ -22,4 +22,6 @@ export async function startMocks() {
     onUnhandledRequest: 'bypass',
     serviceWorker: { url: '/mockServiceWorker.js', options: { scope: '/' } },
   })
+
+  syncMocksAcrossTabs()
 }

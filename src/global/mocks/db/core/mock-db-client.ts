@@ -1,7 +1,13 @@
 import { CartDelegate } from '../cart/cart-delegate'
 import { CartItemDelegate } from '../cart/cart-item-delegate'
 import { CouponDelegate } from '../cart/coupon-delegate'
-import { AvailabilityDelegate, NftDelegate, PriceDelegate } from '../nft'
+import {
+  AvailabilityDelegate,
+  NftDelegate,
+  NftRevisionDelegate,
+  PriceDelegate,
+} from '../nft'
+import { IdempotencyDelegate } from '../order/idempotency-delegate'
 import { OrderDelegate } from '../order/order-delegate'
 import { SessionDelegate } from '../user/session-delegate'
 import { UserDelegate } from '../user/user-delegate'
@@ -22,7 +28,9 @@ export class MockDbClient {
   readonly cartItem: CartItemDelegate
   readonly availability: AvailabilityDelegate
   readonly price: PriceDelegate
+  readonly nftRevision: NftRevisionDelegate
   readonly order: OrderDelegate
+  readonly idempotency: IdempotencyDelegate
   readonly user: UserDelegate
   readonly wallet: WalletDelegate
   readonly session: SessionDelegate
@@ -32,7 +40,9 @@ export class MockDbClient {
     this.cartItem = new CartItemDelegate(store)
     this.availability = new AvailabilityDelegate(store)
     this.price = new PriceDelegate(store)
+    this.nftRevision = new NftRevisionDelegate(store)
     this.order = new OrderDelegate(store)
+    this.idempotency = new IdempotencyDelegate(store)
     this.user = new UserDelegate(store)
     this.wallet = new WalletDelegate(store)
     this.session = new SessionDelegate(store)

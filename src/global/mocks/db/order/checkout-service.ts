@@ -8,8 +8,11 @@ import { isWalletAddress } from '../../../helpers/wallet-address'
 import { CartRuleError } from '../cart/cart-rule-error'
 import { cartService } from '../cart/cart-service'
 import { mockDb } from '../core'
+import { fnv1a } from '../core/fnv'
+import { getScenario } from '../../scenario/config'
 import { CheckoutRuleError } from './checkout-rule-error'
 import { orderContractMapper } from './order-contract-mapper'
+import { OrderRuleError } from './order-rule-error'
 import { buildTransactionHash } from './transaction-hash'
 import type {
   CollectorProfileSnapshot,
@@ -24,6 +27,12 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 type CheckoutData = {
   profile: CollectorProfileSnapshot
   walletId: string
+  cartVersion: number
+}
+
+export type CheckoutOptions = {
+  /** Header `Idempotency-Key`. Ausente, a tentativa não é deduplicada. */
+  idempotencyKey?: string
 }
 
 /**
@@ -35,11 +44,29 @@ type CheckoutData = {
  * tratar.
  */
 export class CheckoutService {
-  checkout(data: CheckoutData): Order {
+  checkout(data: CheckoutData, options: CheckoutOptions = {}): Order {
     return mockDb.$transaction(() => {
+      /**
+       * A idempotência vem antes de qualquer regra: uma retentativa após
+       * timeout precisa recuperar o pedido que já nasceu, e não ser julgada
+       * de novo contra um estoque que ela mesma já consumiu.
+       */
+      const replayed = this.replay(data, options.idempotencyKey)
+
+      if (replayed) return replayed
+
       const cart = cartService.readCart()
 
       if (cart.items.length === 0) throw CheckoutRuleError.cartEmpty()
+
+      /**
+       * Antes de qualquer outra regra: se o carrinho mudou desde a revisão,
+       * nada mais importa. Validar o perfil primeiro só faria o colecionador
+       * corrigir campos de um pedido que seria recusado de qualquer forma.
+       */
+      if (cart.version !== data.cartVersion) {
+        throw CheckoutRuleError.quoteOutdated(cart.version)
+      }
 
       const walletLabel = this.walletLabelFor(data.walletId)
 
@@ -51,18 +78,50 @@ export class CheckoutService {
         data: this.buildSnapshot(cart, data, walletLabel),
       })
 
-      mockDb.cartItem.deleteMany()
-      mockDb.cart.update({
-        where: { id: cart.id },
-        data: {
-          couponCode: null,
-          version: cart.version + 1,
-          updatedAt: new Date().toISOString(),
-        },
-      })
+      if (options.idempotencyKey) {
+        mockDb.idempotency.create({
+          data: {
+            key: options.idempotencyKey,
+            requestHash: requestHashOf(data),
+            orderId: order.id,
+          },
+        })
+      }
 
+      /**
+       * O carrinho **não** é esvaziado aqui. O pedido nasce pendente, e uma
+       * recusa precisa devolver o colecionador ao carrinho que ele tinha —
+       * é o "preservar os itens em falhas" do enunciado. Quem limpa é a
+       * confirmação, no `OrderService`.
+       */
       return orderContractMapper.toContract(order)
     })
+  }
+
+  /**
+   * Retentativa com a mesma chave.
+   *
+   * Mesmo conteúdo devolve o pedido que já nasceu — é o que faz o cenário
+   * "timeout depois de criar o pedido" recuperar em vez de comprar duas
+   * vezes. Conteúdo diferente é conflito: a chave identifica uma tentativa,
+   * e reusá-la para outra compra esconderia um pedido.
+   */
+  private replay(data: CheckoutData, key?: string): Order | undefined {
+    if (!key) return undefined
+
+    const known = mockDb.idempotency.findUnique({ where: { key } })
+
+    if (!known) return undefined
+
+    if (known.requestHash !== requestHashOf(data)) {
+      throw OrderRuleError.idempotencyKeyReused()
+    }
+
+    const order = mockDb.order.findUnique({ where: { id: known.orderId } })
+
+    if (!order) return undefined
+
+    return orderContractMapper.toContract(order)
   }
 
   /**
@@ -163,7 +222,17 @@ export class CheckoutService {
     return {
       id,
       transactionHash: buildTransactionHash(`${id}:${createdAt}`),
-      status: 'confirmed',
+      /**
+       * Nasce pendente: quem decide o desfecho é a liquidação, e ela chega
+       * por `order.updated`. Exibir "confirmado" antes disso mostraria uma
+       * compra que a simulação ainda não aprovou.
+       */
+      status: 'pending',
+      version: 1,
+      updatedAt: createdAt,
+      settleAt: new Date(
+        Date.now() + getScenario().orderSettleDelayMs,
+      ).toISOString(),
       items: cart.items.map((item) => toOrderItem(item)),
       totals: {
         subtotal: cart.totals.subtotal.amount,
@@ -178,6 +247,20 @@ export class CheckoutService {
       createdAt,
     }
   }
+}
+
+/**
+ * Resumo do conteúdo da tentativa. É o que distingue "reenvio do mesmo
+ * pedido" de "chave reusada para outra compra".
+ */
+function requestHashOf(data: CheckoutData): string {
+  return fnv1a(
+    JSON.stringify({
+      walletId: data.walletId,
+      cartVersion: data.cartVersion,
+      profile: data.profile,
+    }),
+  )
 }
 
 function toOrderItem(item: CartItem): OrderItemSnapshot {

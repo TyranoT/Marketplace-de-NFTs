@@ -36,6 +36,16 @@ export const CART_COPY = {
 
   recommendationsHeading: 'Colecionadores também viram',
 
+  /**
+   * Avisos de tempo real. O resumo já se atualiza sozinho; este texto diz
+   * por quê, que é o que o número sozinho não conta.
+   */
+  priceChanged:
+    'O preço de {nft} mudou de {from} para {to}. O resumo foi atualizado.',
+  availabilityChanged:
+    'A disponibilidade de {nft} mudou: agora restam {units} unidades.',
+  dismissChange: 'Dispensar aviso',
+
   emptyTitle: 'Seu carrinho está vazio',
   emptyBody:
     'Você ainda não adicionou nenhum NFT. Explore o catálogo e escolha as obras que vão para a sua coleção.',

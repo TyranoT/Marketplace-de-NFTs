@@ -9,6 +9,15 @@ export const CHECKOUT_BREADCRUMB: Array<BreadcrumbItem> = [
 export const CHECKOUT_COPY = {
   profileHeading: 'Perfil do colecionador',
 
+  /**
+   * Cotação desatualizada. O texto não diz o valor novo de propósito: ele
+   * está no resumo, ao lado, já atualizado — repeti-lo aqui criaria dois
+   * lugares para conferir, que podem discordar.
+   */
+  quoteStale:
+    'O valor do pedido mudou enquanto você preenchia. Revise o resumo antes de confirmar.',
+  quoteReview: 'Revisar novo valor',
+
   /** Tela do frame mobile: escolher a carteira que paga e confirmar. */
   mobileTitle: 'Pagamento com carteira',
   mobileBack: 'Voltar',
@@ -50,6 +59,14 @@ export const CHECKOUT_COPY = {
   submitting: 'Confirmando...',
 
   confirmationTitle: 'Seus NFTs agora estão na sua carteira',
+  /**
+   * Os dois estados que o frame não desenha. O pendente não promete nada; o
+   * recusado diz o que sobrou para o colecionador fazer, porque o carrinho
+   * foi preservado de propósito.
+   */
+  pendingTitle: 'Confirmando a transação na rede...',
+  declinedTitle: 'A transação foi recusada',
+  declinedHint: 'Seus itens continuam no carrinho.',
   confirmationClose: 'Fechar',
   transactionIdLabel: 'ID da transação',
   dateLabel: 'Data',

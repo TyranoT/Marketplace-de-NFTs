@@ -49,9 +49,11 @@ export function toWalletCheckoutInput(
   wallet: Wallet,
   username: string,
   walletType: string,
+  cartVersion: number,
 ): CheckoutInput {
   return {
     walletId: wallet.id,
+    cartVersion,
     profile: {
       displayName: wallet.displayName,
       username,

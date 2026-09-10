@@ -21,7 +21,7 @@ import {
   shortenHash,
 } from '../helpers/format-order'
 import { OrderConfirmationItem } from './order-confirmation-item'
-import type { Order } from '@/global/api'
+import type { Order, OrderStatus } from '@/global/api'
 
 type OrderConfirmationDialogProps = {
   order: Order
@@ -33,6 +33,26 @@ type OrderConfirmationDialogProps = {
  * a barra da marca no rodapé. Fecha para o carrinho vazio: o pedido já está
  * concluído, e não há a que voltar nesta tela.
  */
+const STATUS_TITLE: Record<OrderStatus, string> = {
+  pending: CHECKOUT_COPY.pendingTitle,
+  confirmed: CHECKOUT_COPY.confirmationTitle,
+  declined: CHECKOUT_COPY.declinedTitle,
+}
+
+/** Espera com movimento contido, respeitando `prefers-reduced-motion`. */
+function OrderPendingHeader() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="mt-4 flex h-20 items-center justify-center"
+    >
+      <span className="size-10 animate-spin rounded-full border-2 border-line border-t-brand motion-reduce:animate-none" />
+      <span className="sr-only">{CHECKOUT_COPY.pendingTitle}</span>
+    </div>
+  )
+}
+
 export function OrderConfirmationDialog({
   order,
   onClose,
@@ -55,11 +75,31 @@ export function OrderConfirmationDialog({
             <X className="size-6" />
           </DialogClose>
 
-          <ThankYouEnvelopeIcon className="mt-4 h-20 self-center text-brand" />
+          {order.status === 'pending' ? (
+            /**
+             * O frame só desenha a confirmação. Enquanto o desfecho não
+             * chega, o mesmo card mostra a espera em vez de anunciar uma
+             * compra que a simulação ainda não aprovou.
+             */
+            <OrderPendingHeader />
+          ) : (
+            <ThankYouEnvelopeIcon
+              className={cn(
+                'mt-4 h-20 self-center',
+                order.status === 'declined' ? 'text-destructive' : 'text-brand',
+              )}
+            />
+          )}
 
           <DialogTitle className="mt-5 text-center text-16 leading-5 font-bold text-text-secondary">
-            {CHECKOUT_COPY.confirmationTitle}
+            {STATUS_TITLE[order.status]}
           </DialogTitle>
+
+          {order.status === 'declined' && order.declineReason ? (
+            <p className="mt-2 text-center text-14 leading-5 text-destructive">
+              {order.declineReason}
+            </p>
+          ) : null}
         </div>
 
         {/** No card estreito os quatro metadados não caem em uma linha: 2×2. */}

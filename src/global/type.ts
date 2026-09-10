@@ -27,6 +27,24 @@ export type NftRating = {
   count: number
 }
 
+/**
+ * Categorias e redes do catálogo. Os ids são os mesmos dos filtros do Figma
+ * (`COLLECTION_FILTERS` e `NETWORK_FILTERS`): sem esse casamento, o filtro
+ * seria um enfeite que não recorta nada.
+ */
+export type NftCategoryId =
+  | 'digital-art'
+  | 'photography'
+  | 'music'
+  | '3d-art'
+  | 'collectibles'
+  | 'generative'
+  | 'games'
+  | 'subscriptions'
+  | 'utility'
+
+export type NftNetworkId = 'ethereum' | 'polygon' | 'solana'
+
 /** Registro-semente: fonte única de verdade de cada NFT. */
 export type Nft = {
   id: string
@@ -39,8 +57,15 @@ export type Nft = {
   price: Money
   secondaryPrice?: Money
   artworkKey: ArtworkKey
+  /** Nome de exibição da coleção, como no Figma. */
   collection: string
+  categoryId: NftCategoryId
+  networkId: NftNetworkId
   edition: NftEditionId
+  /** Ordena "Listados recentemente" e alimenta a aba "Novos lançamentos". */
+  listedAt: string
+  /** Aba "Em alta". Marcado na semente para o cenário ser reproduzível. */
+  trending: boolean
 }
 
 /** Contrato de leitura do card. Derivado de `Nft` por `toNftSummary`. */

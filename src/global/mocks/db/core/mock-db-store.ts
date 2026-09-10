@@ -3,7 +3,9 @@ import { seedFingerprint } from './seed-fingerprint'
 import { SEED_VERSION } from './snapshot'
 import type { MockDbSnapshot } from './snapshot'
 
-const STORAGE_KEY = 'kurio.mock.db.v1'
+export const MOCK_DB_STORAGE_KEY = 'kurio.mock.db.v1'
+
+const STORAGE_KEY = MOCK_DB_STORAGE_KEY
 
 /** Cache em memória do banco simulado, persistido entre recargas da página. */
 export class MockDbStore {
@@ -26,6 +28,19 @@ export class MockDbStore {
     this.save(seeded)
 
     return seeded
+  }
+
+  /**
+   * Descarta a cópia em memória; a próxima leitura restaura do
+   * `localStorage`.
+   *
+   * Cada aba roda o seu próprio banco simulado — os handlers do MSW executam
+   * na página, não no Service Worker — e todas gravam no mesmo
+   * `localStorage`. Sem isto, uma aba continuaria servindo o preço que leu
+   * ao abrir, mesmo depois de outra aba o ter mudado.
+   */
+  invalidate(): void {
+    this.cache = undefined
   }
 
   /** Troca o estado em memória sem gravar — é o rollback da transação. */

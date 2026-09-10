@@ -93,7 +93,7 @@ export function MobileHeroBanner() {
               alt={thumbnail.alt}
               loading="lazy"
               decoding="async"
-              className="absolute -bottom-[calc(var(--u)*8)] left-[calc(var(--u)*14)] size-[calc(var(--u)*57)] rounded-[calc(var(--u)*15)] object-cover"
+              className="absolute bottom-[calc(-8*var(--u))] left-[calc(var(--u)*14)] size-[calc(var(--u)*57)] rounded-[calc(var(--u)*15)] object-cover"
             />
           </div>
         </div>

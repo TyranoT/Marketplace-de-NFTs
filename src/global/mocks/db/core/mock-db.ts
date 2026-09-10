@@ -1,14 +1,19 @@
 import { NFTS } from '../../../data/nfts'
 import { MockCart } from '../cart/mock-cart'
 import { MockCartItem } from '../cart/mock-cart-item'
-import { AvailabilityDelegate, PriceDelegate } from '../nft'
+import {
+  AvailabilityDelegate,
+  NftRevisionDelegate,
+  PriceDelegate,
+} from '../nft'
 import { MockOrder } from '../order/mock-order'
 import { MockUser } from '../user/mock-user'
 import { MockWallet } from '../user/mock-wallet'
 import { buildSeedUsers, buildSeedWallets } from '../user/user-seed'
 import { seedFingerprint } from './seed-fingerprint'
 import { SEED_VERSION } from './snapshot'
-import type { MockDbSnapshot } from './snapshot'
+import type { IdempotencyRecord, MockDbSnapshot } from './snapshot'
+import type { NftRevisionRecord } from '../nft'
 import type { SessionSnapshot } from '../user/user-snapshot'
 
 const SEED_CART_ID = 'cart-guest'
@@ -34,7 +39,9 @@ export class MockDb {
     readonly cart: MockCart,
     readonly availability: Map<string, number>,
     readonly prices: Map<string, string>,
+    readonly revisions: Map<string, NftRevisionRecord>,
     readonly orders: Map<string, MockOrder>,
+    readonly idempotency: Map<string, IdempotencyRecord>,
     readonly users: Map<string, MockUser>,
     readonly wallets: Map<string, MockWallet>,
     private currentSession?: SessionSnapshot,
@@ -53,6 +60,8 @@ export class MockDb {
       MockCart.seeded(SEED_CART_ID, items),
       AvailabilityDelegate.seed(),
       PriceDelegate.seed(),
+      NftRevisionDelegate.seed(),
+      new Map(),
       new Map(),
       buildSeedUsers(),
       buildSeedWallets(),
@@ -65,11 +74,18 @@ export class MockDb {
       new Map(Object.entries(snapshot.availability)),
       new Map(Object.entries(snapshot.prices)),
       new Map(
+        Object.entries(snapshot.nftRevisions).map(([nftId, revision]) => [
+          nftId,
+          { nftId, ...revision },
+        ]),
+      ),
+      new Map(
         snapshot.orders.map((order) => [
           order.id,
           MockOrder.fromSnapshot(order),
         ]),
       ),
+      new Map(Object.entries(snapshot.idempotency)),
       new Map(
         snapshot.users.map((user) => [user.id, MockUser.fromSnapshot(user)]),
       ),
@@ -98,7 +114,14 @@ export class MockDb {
       cart: this.cart.toSnapshot(),
       availability: Object.fromEntries(this.availability),
       prices: Object.fromEntries(this.prices),
+      nftRevisions: Object.fromEntries(
+        [...this.revisions].map(([nftId, { version, updatedAt }]) => [
+          nftId,
+          { version, updatedAt },
+        ]),
+      ),
       orders: [...this.orders.values()].map((order) => order.toSnapshot()),
+      idempotency: Object.fromEntries(this.idempotency),
       users: [...this.users.values()].map((user) => user.toSnapshot()),
       wallets: [...this.wallets.values()].map((wallet) => wallet.toSnapshot()),
       session: this.currentSession,

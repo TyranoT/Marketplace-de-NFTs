@@ -18,6 +18,7 @@ export type {
   CollectorProfile,
   Order,
   OrderItem,
+  OrderStatus,
 } from './contracts/order'
 export type {
   AvatarInput,

@@ -9,6 +9,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import appCss from '@/styles.css?url'
 import { Header, MobileTabBar } from '@/features/layout'
 import { SITE, absoluteUrl } from '@/global/config/site'
+import { RealtimeProvider } from '@/global/realtime'
 import { useDeviceTier } from '@/global'
 import type { QueryClient } from '@tanstack/react-query'
 
@@ -80,9 +81,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="pb-32 md:pb-0">
-        <Header />
-        {children}
-        <MobileTabBar />
+        <RealtimeProvider>
+          <Header />
+          {children}
+          <MobileTabBar />
+        </RealtimeProvider>
         {isMobile ? null : (
           <TanStackDevtools
             config={{ position: 'bottom-right' }}

@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { Breadcrumb } from '@/global/components/ui/breadcrumb'
 import { Container } from '@/global/components/ui/container'
 import { Skeleton } from '@/global/components/ui/skeleton'
 import { useApplyCoupon, useCart } from '@/global/api/cart'
-import { useCheckout } from '@/global/api/checkout'
 import { useCurrentUser, useWallets } from '@/global/api/user'
 import { useDeviceTier } from '@/global'
 import { CartEmpty, toCartErrorMessage } from '@/features/cart'
@@ -22,13 +21,15 @@ import {
   toFormValues,
   toWalletCheckoutInput,
 } from '../helpers/to-checkout-wallets'
+import { useOrderAttempt } from '../hooks/use-order-attempt'
+import { useQuoteGuard } from '../hooks/use-quote-guard'
 import { CheckoutError } from '../components/checkout-error'
 import { CheckoutForm } from '../components/checkout-form'
+import { CheckoutQuoteNotice } from '../components/checkout-quote-notice'
 import { CheckoutSummary } from '../components/checkout-summary'
 import { OrderConfirmationDialog } from '../components/order-confirmation-dialog'
 import { CheckoutMobileScreen } from './checkout-mobile-screen'
 import type { CheckoutFormValues } from '../helpers/checkout-schema'
-import type { Order } from '@/global/api'
 
 const FORM_ID = 'checkout-form'
 
@@ -42,11 +43,12 @@ const CHECKOUT_GRID =
 
 export function CheckoutScreen() {
   const cart = useCart()
-  const checkout = useCheckout()
+  const attempt = useOrderAttempt()
   const applyCoupon = useApplyCoupon()
   const navigate = useNavigate()
+  const quote = useQuoteGuard(cart.data)
 
-  const [order, setOrder] = useState<Order>()
+  const order = attempt.order
 
   const form = useForm<CheckoutFormValues>({
     resolver: checkoutResolver,
@@ -77,15 +79,24 @@ export function CheckoutScreen() {
   }, [form, primaryWallet, user])
 
   function handleSubmit(values: CheckoutFormValues) {
-    checkout.mutate(toCheckoutInput(values), {
-      onSuccess: (created) => setOrder(created),
-    })
+    /** Guarda de corrida: a cotação pode ter vencido entre o clique e aqui. */
+    if (quote.isStale) return
+
+    attempt.submit(toCheckoutInput(values, quote.reviewedVersion))
   }
 
-  /** Fechar a confirmação leva ao início: o carrinho comprado não existe mais. */
+  /**
+   * Fechar leva ao início quando a compra foi confirmada — o carrinho
+   * comprado não existe mais. Numa recusa fica onde está: os itens foram
+   * preservados, e mandar embora quem acabou de falhar tiraria dele o
+   * caminho de tentar de novo.
+   */
   function handleCloseConfirmation() {
-    setOrder(undefined)
-    void navigate({ to: '/' })
+    const wasConfirmed = order?.status === 'confirmed'
+
+    attempt.dismiss()
+
+    if (wasConfirmed) void navigate({ to: '/' })
   }
 
   function handleWalletConfirm(chosen: {
@@ -96,9 +107,15 @@ export function CheckoutScreen() {
 
     if (!wallet || !user) return
 
-    checkout.mutate(
-      toWalletCheckoutInput(wallet, user.username, chosen.walletType),
-      { onSuccess: (created) => setOrder(created) },
+    if (quote.isStale) return
+
+    attempt.submit(
+      toWalletCheckoutInput(
+        wallet,
+        user.username,
+        chosen.walletType,
+        quote.reviewedVersion,
+      ),
     )
   }
 
@@ -117,9 +134,12 @@ export function CheckoutScreen() {
         <CheckoutMobileScreen
           cart={cart.data}
           wallets={savedWallets}
-          isSubmitting={checkout.isPending}
-          error={checkout.error}
+          isSubmitting={attempt.isSubmitting}
+          /** Mesmo bloqueio do desktop: a compra é a mesma. */
+          isQuoteStale={quote.isStale}
+          error={attempt.error}
           onConfirm={handleWalletConfirm}
+          onReviewQuote={quote.acceptCurrent}
         />
 
         {order ? (
@@ -137,8 +157,8 @@ export function CheckoutScreen() {
       <div className="flex flex-col gap-6">
         <Breadcrumb items={CHECKOUT_BREADCRUMB} />
 
-        {checkout.isError ? (
-          <CheckoutError message={toCheckoutErrorMessage(checkout.error)} />
+        {attempt.error ? (
+          <CheckoutError message={toCheckoutErrorMessage(attempt.error)} />
         ) : null}
 
         {cart.isPending ? <CheckoutSkeleton /> : null}
@@ -149,6 +169,14 @@ export function CheckoutScreen() {
 
         {cart.data && cart.data.items.length === 0 && !order ? (
           <CartEmpty />
+        ) : null}
+
+        {/**
+         * Fora da grade e acima dela: o bloqueio vale para as duas colunas,
+         * e o botão de enviar vive na direita.
+         */}
+        {quote.isStale ? (
+          <CheckoutQuoteNotice onReview={quote.acceptCurrent} />
         ) : null}
 
         {cart.data && cart.data.items.length > 0 ? (
@@ -171,7 +199,8 @@ export function CheckoutScreen() {
               wallets={toCheckoutWallets(wallets.data)}
               walletId={walletId}
               walletError={form.formState.errors.walletId?.message}
-              isSubmitting={checkout.isPending}
+              isSubmitting={attempt.isSubmitting}
+              isBlocked={quote.isStale}
               couponError={toCartErrorMessage(applyCoupon.error)}
               isApplyingCoupon={applyCoupon.isPending}
               onWalletChange={(next) =>
