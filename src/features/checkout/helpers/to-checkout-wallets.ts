@@ -1,7 +1,7 @@
 import { CHECKOUT_WALLETS } from '@/global/data'
 import type { CheckoutWallet } from '@/global/data'
 import type { CheckoutFormValues } from './checkout-schema'
-import type { Wallet } from '@/global/api'
+import type { CheckoutInput, Wallet } from '@/global/api'
 
 /**
  * As carteiras salvas são as do pagamento — é o que o frame de carteiras
@@ -38,4 +38,31 @@ export function toFormValues(
 
 export function findPrimary(wallets?: Array<Wallet>): Wallet | undefined {
   return wallets?.find(({ role }) => role === 'primary')
+}
+
+/**
+ * Compra pela carteira salva, sem formulário: o perfil sai dela, e o provedor
+ * escolhido na tela sobrescreve o tipo de carteira — é o que dá efeito real à
+ * segunda lista do frame mobile, em vez de deixá-la decorativa.
+ */
+export function toWalletCheckoutInput(
+  wallet: Wallet,
+  username: string,
+  walletType: string,
+): CheckoutInput {
+  return {
+    walletId: wallet.id,
+    profile: {
+      displayName: wallet.displayName,
+      username,
+      network: wallet.network,
+      profileName: wallet.profileName,
+      walletAddress: wallet.address,
+      secondaryWallet: wallet.secondaryAddress,
+      walletType,
+      referralCode: wallet.referralCode,
+      email: wallet.email,
+      ensSuffix: wallet.ensSuffix,
+    },
+  }
 }

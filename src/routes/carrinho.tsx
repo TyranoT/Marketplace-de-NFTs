@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Footer } from '@/features/layout'
 import { CartScreen, CartScreenSkeleton } from '@/features/cart'
 
 /**
@@ -17,24 +16,7 @@ export const Route = createFileRoute('/carrinho')({
     /** O painel fixo do carrinho ocupa o lugar da barra de navegação. */
     mobileTabBar: false,
   },
-  component: CartRoute,
-  pendingComponent: CartPendingRoute,
+  /** Sem rodapé: a tela termina no painel de totais, e não em navegação. */
+  component: CartScreen,
+  pendingComponent: CartScreenSkeleton,
 })
-
-function CartRoute() {
-  return (
-    <div className="flex flex-col gap-24">
-      <CartScreen />
-      <Footer />
-    </div>
-  )
-}
-
-function CartPendingRoute() {
-  return (
-    <div className="flex flex-col gap-24">
-      <CartScreenSkeleton />
-      <Footer />
-    </div>
-  )
-}

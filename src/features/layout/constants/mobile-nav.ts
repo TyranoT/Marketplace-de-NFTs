@@ -25,7 +25,7 @@ export const MOBILE_NAV_ITEMS: Array<MobileNavItem> = [
   { key: 'home', label: 'Início', position: 11.1, to: '/' },
   { key: 'favorites', label: 'Favoritos', position: 28.5 },
   { key: 'cart', label: 'Carrinho', position: 72.9, to: '/carrinho' },
-  { key: 'account', label: 'Minha conta', position: 87.9 },
+  { key: 'account', label: 'Minha conta', position: 87.9, to: '/perfil' },
 ]
 
 export const MOBILE_SCAN_LABEL = 'Escanear código'

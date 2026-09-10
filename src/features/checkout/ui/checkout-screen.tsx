@@ -7,6 +7,7 @@ import { Skeleton } from '@/global/components/ui/skeleton'
 import { useApplyCoupon, useCart } from '@/global/api/cart'
 import { useCheckout } from '@/global/api/checkout'
 import { useCurrentUser, useWallets } from '@/global/api/user'
+import { useDeviceTier } from '@/global'
 import { CartEmpty, toCartErrorMessage } from '@/features/cart'
 import { CHECKOUT_BREADCRUMB, CHECKOUT_COPY } from '../constants/checkout-copy'
 import {
@@ -19,11 +20,13 @@ import {
   findPrimary,
   toCheckoutWallets,
   toFormValues,
+  toWalletCheckoutInput,
 } from '../helpers/to-checkout-wallets'
 import { CheckoutError } from '../components/checkout-error'
 import { CheckoutForm } from '../components/checkout-form'
 import { CheckoutSummary } from '../components/checkout-summary'
 import { OrderConfirmationDialog } from '../components/order-confirmation-dialog'
+import { CheckoutMobileScreen } from './checkout-mobile-screen'
 import type { CheckoutFormValues } from '../helpers/checkout-schema'
 import type { Order } from '@/global/api'
 
@@ -55,6 +58,8 @@ export function CheckoutScreen() {
 
   const user = useCurrentUser()
   const wallets = useWallets()
+  const isMobile = useDeviceTier() === 'mobile'
+  const hasItems = Boolean(cart.data && cart.data.items.length > 0)
   const primaryWallet = findPrimary(wallets.data)
 
   /**
@@ -81,6 +86,50 @@ export function CheckoutScreen() {
   function handleCloseConfirmation() {
     setOrder(undefined)
     void navigate({ to: '/' })
+  }
+
+  function handleWalletConfirm(chosen: {
+    walletId: string
+    walletType: string
+  }) {
+    const wallet = wallets.data?.find(({ id }) => id === chosen.walletId)
+
+    if (!wallet || !user) return
+
+    checkout.mutate(
+      toWalletCheckoutInput(wallet, user.username, chosen.walletType),
+      { onSuccess: (created) => setOrder(created) },
+    )
+  }
+
+  /**
+   * O frame mobile não tem formulário: com carteira salva, a compra sai da
+   * carteira. Sem conta ou sem carteira, cai na composição de sempre — o
+   * servidor exige o perfil de um jeito ou de outro.
+   */
+  const savedWallets = wallets.data ?? []
+  const paysWithWallet =
+    isMobile && Boolean(user) && savedWallets.length > 0 && hasItems
+
+  if (paysWithWallet && cart.data) {
+    return (
+      <>
+        <CheckoutMobileScreen
+          cart={cart.data}
+          wallets={savedWallets}
+          isSubmitting={checkout.isPending}
+          error={checkout.error}
+          onConfirm={handleWalletConfirm}
+        />
+
+        {order ? (
+          <OrderConfirmationDialog
+            order={order}
+            onClose={handleCloseConfirmation}
+          />
+        ) : null}
+      </>
+    )
   }
 
   return (

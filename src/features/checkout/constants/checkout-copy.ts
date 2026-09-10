@@ -9,6 +9,18 @@ export const CHECKOUT_BREADCRUMB: Array<BreadcrumbItem> = [
 export const CHECKOUT_COPY = {
   profileHeading: 'Perfil do colecionador',
 
+  /** Tela do frame mobile: escolher a carteira que paga e confirmar. */
+  mobileTitle: 'Pagamento com carteira',
+  mobileBack: 'Voltar',
+  connectedHeading: 'Carteira conectada',
+  switchWallet: 'Trocar carteira',
+  manageWallet: 'Gerenciar carteiras',
+  editWallet: 'Editar carteira',
+  walletMenuLabel: 'Opções da carteira',
+  totalPrefix: 'Total:',
+  /** O frame não desenha o caso sem carteira; o formulário cobre esse caminho. */
+  noWalletHint: 'Cadastre uma carteira para pagar com um toque.',
+
   displayNameLabel: 'Nome de exibição',
   usernameLabel: 'Nome de usuário',
   networkLabel: 'Rede',
@@ -52,6 +64,11 @@ export const CHECKOUT_COPY = {
 
   errorTitle: 'Não foi possível concluir a compra',
 } as const
+
+/** 'Rede principal Ethereum' na principal e 'Rede Polygon' nas outras. */
+export function buildNetworkLabel(network: string, isPrimary: boolean) {
+  return isPrimary ? `Rede principal ${network}` : `Rede ${network}`
+}
 
 export function buildQuantityLabel(quantity: number) {
   return `(x ${quantity})`

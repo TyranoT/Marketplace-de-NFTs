@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Breadcrumb } from '@/global/components/ui/breadcrumb'
 import { Container } from '@/global/components/ui/container'
+import { MobileTopBar } from '@/global/components/ui/mobile-top-bar'
 import { cn } from '@/global/helpers/cn'
 import {
   useApplyCoupon,
@@ -18,7 +19,6 @@ import { CartEmpty } from '../components/cart-empty'
 import { CartError } from '../components/cart-error'
 import { CartMobileList } from '../components/cart-mobile-list'
 import { CartMobileSummary } from '../components/cart-mobile-summary'
-import { CartMobileTopBar } from '../components/cart-mobile-top-bar'
 import { CartSummary } from '../components/cart-summary'
 import { CartSummarySkeleton } from '../components/cart-summary-skeleton'
 import { CartTable } from '../components/cart-table'
@@ -95,7 +95,10 @@ export function CartScreen() {
       >
         {/** O frame mobile traz título próprio, e não a trilha do desktop. */}
         <Breadcrumb items={CART_BREADCRUMB} className="hidden md:block" />
-        <CartMobileTopBar />
+        <MobileTopBar
+          title={CART_COPY.mobileTitle}
+          backLabel={CART_COPY.mobileBack}
+        />
 
         {/** Mensagens de mutation ficam acima da lista, onde a ação começou. */}
         {(actionError ?? backgroundError) ? (
@@ -206,7 +209,10 @@ export function CartScreenSkeleton() {
     <Container as="main" className="flex flex-col gap-8 md:gap-24 md:pt-8">
       <div className="flex flex-col gap-3">
         <Breadcrumb items={CART_BREADCRUMB} className="hidden md:block" />
-        <CartMobileTopBar />
+        <MobileTopBar
+          title={CART_COPY.mobileTitle}
+          backLabel={CART_COPY.mobileBack}
+        />
 
         <div className={CART_GRID}>
           <CartTableSkeleton />

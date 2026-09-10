@@ -11,12 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
+import { Route as CriarContaRouteImport } from './routes/criar-conta'
+import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as PagamentoRouteImport } from './routes/pagamento'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as UiRouteImport } from './routes/ui'
 import { Route as NftNftIdRouteImport } from './routes/nft.$nftId'
 import { Route as PerfilIndexRouteImport } from './routes/perfil.index'
 import { Route as PerfilCarteirasRouteImport } from './routes/perfil.carteiras'
+import { Route as PerfilDadosRouteImport } from './routes/perfil.dados'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -26,6 +29,16 @@ const IndexRoute = IndexRouteImport.update({
 const CarrinhoRoute = CarrinhoRouteImport.update({
   id: '/carrinho',
   path: '/carrinho',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CriarContaRoute = CriarContaRouteImport.update({
+  id: '/criar-conta',
+  path: '/criar-conta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntrarRoute = EntrarRouteImport.update({
+  id: '/entrar',
+  path: '/entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PagamentoRoute = PagamentoRouteImport.update({
@@ -58,35 +71,49 @@ const PerfilCarteirasRoute = PerfilCarteirasRouteImport.update({
   path: '/carteiras',
   getParentRoute: () => PerfilRoute,
 } as any)
+const PerfilDadosRoute = PerfilDadosRouteImport.update({
+  id: '/dados',
+  path: '/dados',
+  getParentRoute: () => PerfilRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/carrinho': typeof CarrinhoRoute
+  '/criar-conta': typeof CriarContaRoute
+  '/entrar': typeof EntrarRoute
   '/pagamento': typeof PagamentoRoute
   '/perfil': typeof PerfilRouteWithChildren
   '/ui': typeof UiRoute
   '/nft/$nftId': typeof NftNftIdRoute
   '/perfil/carteiras': typeof PerfilCarteirasRoute
+  '/perfil/dados': typeof PerfilDadosRoute
   '/perfil/': typeof PerfilIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/carrinho': typeof CarrinhoRoute
+  '/criar-conta': typeof CriarContaRoute
+  '/entrar': typeof EntrarRoute
   '/pagamento': typeof PagamentoRoute
   '/ui': typeof UiRoute
   '/nft/$nftId': typeof NftNftIdRoute
   '/perfil/carteiras': typeof PerfilCarteirasRoute
+  '/perfil/dados': typeof PerfilDadosRoute
   '/perfil': typeof PerfilIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/carrinho': typeof CarrinhoRoute
+  '/criar-conta': typeof CriarContaRoute
+  '/entrar': typeof EntrarRoute
   '/pagamento': typeof PagamentoRoute
   '/perfil': typeof PerfilRouteWithChildren
   '/ui': typeof UiRoute
   '/nft/$nftId': typeof NftNftIdRoute
   '/perfil/carteiras': typeof PerfilCarteirasRoute
+  '/perfil/dados': typeof PerfilDadosRoute
   '/perfil/': typeof PerfilIndexRoute
 }
 export interface FileRouteTypes {
@@ -94,36 +121,47 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/carrinho'
+    | '/criar-conta'
+    | '/entrar'
     | '/pagamento'
     | '/perfil'
     | '/ui'
     | '/nft/$nftId'
     | '/perfil/carteiras'
+    | '/perfil/dados'
     | '/perfil/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/carrinho'
+    | '/criar-conta'
+    | '/entrar'
     | '/pagamento'
     | '/ui'
     | '/nft/$nftId'
     | '/perfil/carteiras'
+    | '/perfil/dados'
     | '/perfil'
   id:
     | '__root__'
     | '/'
     | '/carrinho'
+    | '/criar-conta'
+    | '/entrar'
     | '/pagamento'
     | '/perfil'
     | '/ui'
     | '/nft/$nftId'
     | '/perfil/carteiras'
+    | '/perfil/dados'
     | '/perfil/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CarrinhoRoute: typeof CarrinhoRoute
+  CriarContaRoute: typeof CriarContaRoute
+  EntrarRoute: typeof EntrarRoute
   PagamentoRoute: typeof PagamentoRoute
   PerfilRoute: typeof PerfilRouteWithChildren
   UiRoute: typeof UiRoute
@@ -144,6 +182,20 @@ declare module '@tanstack/react-router' {
       path: '/carrinho'
       fullPath: '/carrinho'
       preLoaderRoute: typeof CarrinhoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/criar-conta': {
+      id: '/criar-conta'
+      path: '/criar-conta'
+      fullPath: '/criar-conta'
+      preLoaderRoute: typeof CriarContaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entrar': {
+      id: '/entrar'
+      path: '/entrar'
+      fullPath: '/entrar'
+      preLoaderRoute: typeof EntrarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pagamento': {
@@ -188,16 +240,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilCarteirasRouteImport
       parentRoute: typeof PerfilRoute
     }
+    '/perfil/dados': {
+      id: '/perfil/dados'
+      path: '/dados'
+      fullPath: '/perfil/dados'
+      preLoaderRoute: typeof PerfilDadosRouteImport
+      parentRoute: typeof PerfilRoute
+    }
   }
 }
 
 interface PerfilRouteChildren {
   PerfilCarteirasRoute: typeof PerfilCarteirasRoute
+  PerfilDadosRoute: typeof PerfilDadosRoute
   PerfilIndexRoute: typeof PerfilIndexRoute
 }
 
 const PerfilRouteChildren: PerfilRouteChildren = {
   PerfilCarteirasRoute: PerfilCarteirasRoute,
+  PerfilDadosRoute: PerfilDadosRoute,
   PerfilIndexRoute: PerfilIndexRoute,
 }
 
@@ -207,6 +268,8 @@ const PerfilRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CarrinhoRoute: CarrinhoRoute,
+  CriarContaRoute: CriarContaRoute,
+  EntrarRoute: EntrarRoute,
   PagamentoRoute: PagamentoRoute,
   PerfilRoute: PerfilRouteWithChildren,
   UiRoute: UiRoute,

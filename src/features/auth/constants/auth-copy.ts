@@ -1,6 +1,12 @@
 export const AUTH_COPY = {
   loginTab: 'Entrar',
   registerTab: 'Criar conta',
+  /** Títulos das telas cheias do mobile, que são mais explícitos que as abas. */
+  registerTitle: 'Criar perfil de colecionador',
+  registerScreenSubmit: 'Criar perfil',
+  newHere: 'Novo na Kurio?',
+  createAccount: 'Crie uma conta',
+  alreadyHaveAccount: 'Já tem uma conta?',
   close: 'Fechar',
 
   loginSubtitle:

@@ -5,9 +5,8 @@ import { PROFILE_NAV_ITEMS } from '../constants/profile-nav'
 import { ProfileSidebarItem } from './profile-sidebar-item'
 
 /**
- * Card de 310 do frame. Abaixo de `lg` vira uma faixa acima do conteúdo, com
- * os itens rolando na horizontal — não há frame mobile destas telas, então é
- * adaptação declarada, não desenho seguido.
+ * Card de 310 do frame, só no desktop: no mobile quem navega é a lista de
+ * seções que o Tab abre, e o `ProfileShell` nem monta esta sidebar.
  */
 export function ProfileSidebar() {
   const logout = useLogout()
@@ -15,15 +14,15 @@ export function ProfileSidebar() {
   return (
     <nav
       aria-label={PROFILE_COPY.sidebarHeading}
-      className="flex flex-col gap-4 bg-surface-card py-6 lg:h-101.75"
+      className="flex h-101.75 flex-col gap-4 bg-surface-card py-6"
     >
       <h2 className="px-5 text-20 leading-6 font-bold text-text-primary">
         {PROFILE_COPY.sidebarHeading}
       </h2>
 
-      <ul className="flex gap-2 overflow-x-auto lg:flex-col lg:gap-0 lg:overflow-visible">
+      <ul className="flex flex-col">
         {PROFILE_NAV_ITEMS.map((item) => (
-          <li key={item.label} className="shrink-0 lg:shrink">
+          <li key={item.label}>
             <ProfileSidebarItem item={item} />
           </li>
         ))}

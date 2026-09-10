@@ -4,21 +4,24 @@ import { Input } from '@/global/components/ui/input'
 import { PasswordInput } from '@/global/components/ui/password-input'
 import { useRegister } from '@/global/api/user'
 import { AUTH_COPY } from '../constants/auth-copy'
+import { AUTH_FIELD_CLASS, AUTH_SUBMIT_CLASS } from '../constants/auth-fields'
 import { REGISTER_DEFAULTS, registerResolver } from '../helpers/auth-schema'
 import { toAuthErrorMessage } from '../helpers/to-auth-error-message'
 import { AuthNotice } from './auth-notice'
 import type { RegisterFormValues } from '../helpers/auth-schema'
+import type { AuthVariant } from '../constants/auth-fields'
 import type { User } from '@/global/api'
 
-const FIELD_CLASS =
-  'h-12 rounded-md border-line-soft text-14 placeholder:text-brand-muted'
-
 type RegisterFormProps = {
+  variant?: AuthVariant
   onAuthenticated: (user: User) => void
 }
 
 /** O cadastro já entra na conta: a senha acabou de ser escolhida. */
-export function RegisterForm({ onAuthenticated }: RegisterFormProps) {
+export function RegisterForm({
+  variant = 'dialog',
+  onAuthenticated,
+}: RegisterFormProps) {
   const register = useRegister()
 
   const form = useForm<RegisterFormValues>({
@@ -47,7 +50,7 @@ export function RegisterForm({ onAuthenticated }: RegisterFormProps) {
           aria-label={AUTH_COPY.usernamePlaceholder}
           aria-invalid={Boolean(errors.username)}
           placeholder={AUTH_COPY.usernamePlaceholder}
-          className={FIELD_CLASS}
+          className={AUTH_FIELD_CLASS[variant]}
         />
         <AuthNotice message={errors.username?.message} />
       </div>
@@ -61,7 +64,7 @@ export function RegisterForm({ onAuthenticated }: RegisterFormProps) {
           aria-label={AUTH_COPY.registerEmailPlaceholder}
           aria-invalid={Boolean(errors.email)}
           placeholder={AUTH_COPY.registerEmailPlaceholder}
-          className={FIELD_CLASS}
+          className={AUTH_FIELD_CLASS[variant]}
         />
         <AuthNotice message={errors.email?.message} />
       </div>
@@ -74,7 +77,7 @@ export function RegisterForm({ onAuthenticated }: RegisterFormProps) {
           aria-label={AUTH_COPY.newPasswordPlaceholder}
           aria-invalid={Boolean(errors.password)}
           placeholder={AUTH_COPY.newPasswordPlaceholder}
-          className={FIELD_CLASS}
+          className={AUTH_FIELD_CLASS[variant]}
         />
         <AuthNotice message={errors.password?.message} />
       </div>
@@ -87,7 +90,7 @@ export function RegisterForm({ onAuthenticated }: RegisterFormProps) {
           aria-label={AUTH_COPY.confirmPasswordPlaceholder}
           aria-invalid={Boolean(errors.confirmPassword)}
           placeholder={AUTH_COPY.confirmPasswordPlaceholder}
-          className={FIELD_CLASS}
+          className={AUTH_FIELD_CLASS[variant]}
         />
         <AuthNotice message={errors.confirmPassword?.message} />
       </div>
@@ -97,7 +100,7 @@ export function RegisterForm({ onAuthenticated }: RegisterFormProps) {
       <Button
         type="submit"
         disabled={register.isPending}
-        className="h-12 w-full text-16 font-bold"
+        className={AUTH_SUBMIT_CLASS[variant]}
       >
         {register.isPending
           ? AUTH_COPY.registerSubmitting

@@ -670,11 +670,58 @@ O resolver estava escrito duas vezes e o perfil seria a terceira. Os
 primitivos que faltavam entraram na vitrine `/ui`: campo de formulário, select
 de opções, senha, textarea, radio e menu.
 
+### Mobile
+
+A área de perfil entra pelo **Tab**: `MOBILE_NAV_ITEMS` tem a chave `account`
+("Minha conta"), que nasceu sem `to` esperando estas rotas, e agora aponta para
+`/perfil`.
+
+No celular a navegação é a de ajustes: `/perfil` é a **lista de seções**, e cada
+item abre a própria tela com voltar no topo (`MobileTopBar`). Os cinco itens sem
+tela seguem marcados "em breve". A faixa horizontal de sete itens que existia
+como adaptação saiu — com sete itens ela vivia cortada e empurrava o conteúdo
+para baixo.
+
+Isso exigiu um caminho próprio para os dados do perfil: **`/perfil/dados`**. No
+desktop o índice `/perfil` continua mostrando os dados, o que é o que mantém o
+item da sidebar ativo; a regra que traduz um no outro é a `toMobileTarget`, num
+lugar só, porque a lista e o título do topo precisam concordar.
+
+### Autenticação em tela cheia
+
+Os frames `Mobile/Login` e `Mobile/Cadastro` não são o diálogo do desktop: são
+**tela cheia**, com a marca no topo e **sem a barra de navegação inferior** — e
+`mobileTabBar: false` só existe por rota. Daí duas rotas:
+
+| Rota           | Tela                             |
+| -------------- | -------------------------------- |
+| `/entrar`      | login, aceitando `?redirect=`    |
+| `/criar-conta` | cadastro, que já inicia a sessão |
+
+Medidas do PNG em 2x (828×1792 → **414×896**): conteúdo de 358, "KURIO" em
+~28px com tracking, campos de **358×50** com 12,5 de gap e raio grande, botão de
+**358×60**, provedores de **358×40**.
+
+Deslogado, `/perfil` no mobile navega para `/entrar` guardando o destino, e a
+pessoa volta para onde queria depois de entrar. No desktop segue o painel com o
+diálogo — cada moldura tem o seu frame.
+
+**`?redirect=` é entrada de fora**, e por isso passa por `toSafeRedirect`
+(`global/config/auth-redirect.ts`): só rota conhecida atravessa. URL externa,
+`//host`, `javascript:` e caminho inexistente caem no padrão `/perfil`. Sem
+essa checagem, um link montado por terceiros escolheria para onde a pessoa vai
+ao autenticar.
+
+As duas molduras compartilham **schema, resolver e mensagens** — o que muda é a
+pintura, num mapa de classes (`constants/auth-fields.ts`). Se a validação
+divergisse entre diálogo e tela, o bug apareceria em uma e não na outra.
+
 ### Provisório declarado
 
-Não há frame mobile destas telas. Abaixo de `lg` a sidebar vira uma faixa acima
-do conteúdo, com os itens rolando na horizontal, e as sub-colunas do formulário
-viram uma. Funciona, mas não é fiel a um design — não havia design a seguir.
+Os frames mobile cobrem login e cadastro, não as telas de perfil em si. Abaixo
+de `md` as sub-colunas do formulário viram uma e a lista de seções faz a
+navegação — funciona e segue o padrão das outras telas mobile, mas o desenho
+dessas duas telas não existe.
 
 ## Dificuldades declaradas
 
