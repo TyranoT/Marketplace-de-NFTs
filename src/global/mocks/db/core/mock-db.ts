@@ -2,6 +2,7 @@ import { NFTS } from '../../../data/nfts'
 import { MockCart } from '../cart/mock-cart'
 import { MockCartItem } from '../cart/mock-cart-item'
 import { AvailabilityDelegate, PriceDelegate } from '../nft'
+import { MockOrder } from '../order/mock-order'
 import { SEED_VERSION } from './snapshot'
 import type { MockDbSnapshot } from './snapshot'
 
@@ -28,6 +29,7 @@ export class MockDb {
     readonly cart: MockCart,
     readonly availability: Map<string, number>,
     readonly prices: Map<string, string>,
+    readonly orders: Map<string, MockOrder>,
   ) {}
 
   static seed(): MockDb {
@@ -43,6 +45,7 @@ export class MockDb {
       MockCart.seeded(SEED_CART_ID, items),
       AvailabilityDelegate.seed(),
       PriceDelegate.seed(),
+      new Map(),
     )
   }
 
@@ -51,6 +54,12 @@ export class MockDb {
       MockCart.fromSnapshot(snapshot.cart),
       new Map(Object.entries(snapshot.availability)),
       new Map(Object.entries(snapshot.prices)),
+      new Map(
+        snapshot.orders.map((order) => [
+          order.id,
+          MockOrder.fromSnapshot(order),
+        ]),
+      ),
     )
   }
 
@@ -60,6 +69,7 @@ export class MockDb {
       cart: this.cart.toSnapshot(),
       availability: Object.fromEntries(this.availability),
       prices: Object.fromEntries(this.prices),
+      orders: [...this.orders.values()].map((order) => order.toSnapshot()),
     }
   }
 }

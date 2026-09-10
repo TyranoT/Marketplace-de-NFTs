@@ -1,15 +1,9 @@
-/**
- * Veredito de regra do carrinho. Status HTTP, código de negócio e mensagem
- * nascem juntos nas fábricas estáticas: é o que impede o mesmo erro de existir
- * com dois textos diferentes em dois pontos do repositório.
- */
-export class CartRuleError extends Error {
-  private constructor(
-    readonly status: number,
-    readonly code: string,
-    message: string,
-  ) {
-    super(message)
+import { RuleError } from '../core/rule-error'
+
+/** Regras do carrinho. Cada fábrica é um veredito possível da API. */
+export class CartRuleError extends RuleError {
+  private constructor(status: number, code: string, message: string) {
+    super(status, code, message)
     this.name = 'CartRuleError'
   }
 

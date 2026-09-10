@@ -100,13 +100,8 @@ export function CartSummary({
         </div>
       </div>
 
-      {/**
-       * O fluxo de pagamento ainda não existe. Um botão que parecesse
-       * funcionar prometeria uma compra que não acontece.
-       */}
       <Button
-        disabled
-        title={CART_COPY.checkoutUnavailable}
+        render={<Link to="/pagamento" />}
         className="mt-5.5 w-full text-15 font-bold"
       >
         {CART_COPY.checkout}

@@ -13,3 +13,9 @@ export type {
   CartTotals,
   UpdateCartItemInput,
 } from './contracts/cart'
+export type {
+  CheckoutInput,
+  CollectorProfile,
+  Order,
+  OrderItem,
+} from './contracts/order'

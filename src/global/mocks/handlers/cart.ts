@@ -1,5 +1,5 @@
 import { HttpResponse, http } from 'msw'
-import { CartRuleError, cartService } from '../db'
+import { RuleError, cartService } from '../db'
 import { applyLatency, nextRequestIndex } from '../scenario/delay'
 import { errorResponse, maybeFail } from '../scenario/failure'
 import type { Cart } from '../../api/contracts/cart'
@@ -21,7 +21,7 @@ async function withScenario(run: () => Cart) {
   try {
     return HttpResponse.json(run())
   } catch (error) {
-    if (error instanceof CartRuleError) {
+    if (error instanceof RuleError) {
       return errorResponse(error.status, error.code, error.message)
     }
 

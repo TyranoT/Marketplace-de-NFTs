@@ -68,6 +68,15 @@ export class CartItemDelegate
     return item
   }
 
+  /** Esvazia o carrinho de uma vez, como no fim de uma compra. */
+  deleteMany(): number {
+    const removed = this.cart().items.length
+
+    this.cart().clear()
+
+    return removed
+  }
+
   protected list(): Array<MockCartItem> {
     return [...this.cart().items]
   }

@@ -1,4 +1,5 @@
 import type { CartSnapshot } from '../cart/cart-snapshot'
+import type { OrderSnapshot } from '../order/order-snapshot'
 
 export type MockDbSnapshot = {
   /**
@@ -11,6 +12,9 @@ export type MockDbSnapshot = {
   availability: Record<string, number>
   /** Preço corrente por NFT, em string decimal. Muda com `nft.updated`. */
   prices: Record<string, string>
+  /** Compras concluídas, na ordem em que aconteceram. */
+  orders: Array<OrderSnapshot>
 }
 
-export const SEED_VERSION = 1
+/** 2: o banco passou a guardar pedidos. */
+export const SEED_VERSION = 2

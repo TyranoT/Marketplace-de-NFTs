@@ -81,6 +81,10 @@ export class MockCart {
     this.entries = this.entries.filter((entry) => entry.id !== itemId)
   }
 
+  clear(): void {
+    this.entries = []
+  }
+
   setCoupon(code: string | undefined): void {
     this.appliedCouponCode = code
   }

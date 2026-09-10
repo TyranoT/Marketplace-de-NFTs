@@ -27,8 +27,6 @@ export const CART_COPY = {
   networkFeeNote: 'Taxa estimada',
   totalLabel: 'Total',
   checkout: 'Conectar e finalizar',
-  /** O pagamento ainda não existe; a ação não pode aparentar sucesso. */
-  checkoutUnavailable: 'O pagamento estará disponível em breve.',
   continueShopping: 'Continuar explorando',
 
   recommendationsHeading: 'Colecionadores também viram',

@@ -60,7 +60,8 @@ export const FOOTER_SOCIALS: Array<SocialLink> = [
   { label: 'YouTube', Icon: YoutubeIcon },
 ]
 
-export const COMPATIBLE_WALLETS = ['METAMASK', 'WALLETCONNECT', 'COINBASE']
+/** Fonte única: a mesma lista valida a compra no servidor simulado. */
+export { COMPATIBLE_WALLETS } from '@/global/data'
 
 export const FOOTER_CONTACT = {
   email: 'contato@email.com',

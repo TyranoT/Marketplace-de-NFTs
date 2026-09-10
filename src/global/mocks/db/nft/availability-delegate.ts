@@ -30,6 +30,15 @@ export type AvailabilityWhere = {
   editionId?: NftEditionId
 }
 
+export type AvailabilityWhereUnique = {
+  nftId: string
+  editionId: NftEditionId
+}
+
+export type AvailabilityUpdateInput = {
+  units: number
+}
+
 /**
  * Disponibilidade por edição. Vive no servidor simulado, não no fixture do
  * catálogo: é estado que muda com a compra, e não uma característica da obra.
@@ -49,6 +58,19 @@ export class AvailabilityDelegate extends ModelDelegate<
         SCARCE_UNITS[nft.id] ?? UNITS_BY_EDITION[nft.edition],
       ]),
     )
+  }
+
+  update(args: {
+    where: AvailabilityWhereUnique
+    data: AvailabilityUpdateInput
+  }): AvailabilityRecord {
+    const { nftId, editionId } = args.where
+
+    this.store
+      .load()
+      .availability.set(availabilityKey(nftId, editionId), args.data.units)
+
+    return { nftId, editionId, units: args.data.units }
   }
 
   protected list(): Array<AvailabilityRecord> {
