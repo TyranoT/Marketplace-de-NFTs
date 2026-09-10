@@ -1,33 +1,33 @@
-import { CartItemCard } from './cart-item-card'
+import { CartMobileItem } from './cart-mobile-item'
 import type { CartItem } from '@/global/api'
 
 type CartMobileListProps = {
   items: Array<CartItem>
   pendingItemId?: string
+  registerRemoveButton: (
+    itemId: string,
+    element: HTMLButtonElement | null,
+  ) => void
   onQuantityChange: (itemId: string, quantity: number) => void
   onRemove: (item: CartItem) => void
 }
 
-/**
- * Composição provisória do mobile.
- *
- * O frame mobile do carrinho não foi exportado, então esta lista empilhada
- * garante que a rota funcione abaixo de `lg` sem inventar um layout que o
- * design ainda não definiu. Substituir quando o frame chegar.
- */
+/** Lista do frame mobile: cards de 358×112 com 7 entre eles. */
 export function CartMobileList({
   items,
   pendingItemId,
+  registerRemoveButton,
   onQuantityChange,
   onRemove,
 }: CartMobileListProps) {
   return (
-    <ul className="flex flex-col gap-3 lg:hidden">
+    <ul className="flex flex-col gap-1.75 lg:hidden">
       {items.map((item) => (
         <li key={item.id}>
-          <CartItemCard
+          <CartMobileItem
             item={item}
             isPending={pendingItemId === item.id}
+            registerRemoveButton={registerRemoveButton}
             onQuantityChange={onQuantityChange}
             onRemove={onRemove}
           />

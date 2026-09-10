@@ -4,9 +4,19 @@ import { cn } from '@/global/helpers/cn'
 import type { VariantProps } from 'class-variance-authority'
 
 const stepperButton = cva(
-  'flex shrink-0 items-center justify-center bg-primary text-ink transition-opacity disabled:opacity-50',
+  'flex shrink-0 items-center justify-center transition-opacity disabled:opacity-50',
   {
     variants: {
+      tone: {
+        /** Padrão do projeto: círculo da marca com o glifo escuro. */
+        solid: 'bg-primary text-ink',
+        /**
+         * Carrinho no mobile: círculo escuro com o glifo claro, como o frame.
+         * O botão travado apaga pelo `disabled:opacity-50` da base, que é o
+         * que produz o tom apagado do desenho sobre este fundo.
+         */
+        outline: 'bg-[#2f1d15] text-foreground',
+      },
       shape: {
         /** Detalhe do NFT: botão redondo. */
         circle: 'rounded-full',
@@ -24,7 +34,7 @@ const stepperButton = cva(
       { shape: 'pill', size: 'sm', class: 'h-7 w-4.5' },
       { shape: 'pill', size: 'md', class: 'h-7 w-4.5' },
     ],
-    defaultVariants: { shape: 'circle', size: 'md' },
+    defaultVariants: { shape: 'circle', size: 'md', tone: 'solid' },
   },
 )
 
@@ -54,6 +64,7 @@ export function QuantityStepper({
   disabled = false,
   shape,
   size,
+  tone,
   decreaseLabel,
   increaseLabel,
   valueLabel,
@@ -61,7 +72,7 @@ export function QuantityStepper({
   onIncrease,
   onDecrease,
 }: QuantityStepperProps) {
-  const buttonClass = stepperButton({ shape, size })
+  const buttonClass = stepperButton({ shape, size, tone })
   const iconClass = shape === 'pill' ? 'size-3' : 'size-3.5 md:size-4'
 
   return (

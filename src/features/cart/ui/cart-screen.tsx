@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Breadcrumb } from '@/global/components/ui/breadcrumb'
 import { Container } from '@/global/components/ui/container'
+import { cn } from '@/global/helpers/cn'
 import {
   useApplyCoupon,
   useCart,
@@ -16,6 +17,8 @@ import { useCartFocus } from '../hooks/use-cart-focus'
 import { CartEmpty } from '../components/cart-empty'
 import { CartError } from '../components/cart-error'
 import { CartMobileList } from '../components/cart-mobile-list'
+import { CartMobileSummary } from '../components/cart-mobile-summary'
+import { CartMobileTopBar } from '../components/cart-mobile-top-bar'
 import { CartSummary } from '../components/cart-summary'
 import { CartSummarySkeleton } from '../components/cart-summary-skeleton'
 import { CartTable } from '../components/cart-table'
@@ -69,8 +72,17 @@ export function CartScreen() {
     )
   }
 
+  const hasItems = Boolean(cart.data && cart.data.items.length > 0)
+
   return (
-    <Container as="main" className="flex flex-col gap-8 md:gap-24 md:pt-8">
+    <Container
+      as="main"
+      className={cn(
+        'flex flex-col gap-8 md:gap-24 md:pt-8',
+        /** Espaço para o painel fixo do mobile não cobrir o fim do conteúdo. */
+        hasItems && 'pb-76 md:pb-0',
+      )}
+    >
       {/**
        * `tabIndex={-1}` aqui, e não no bloco da tabela: quando o último item
        * sai, a tabela é desmontada junto com ele, e o foco cairia no `body`.
@@ -81,7 +93,9 @@ export function CartScreen() {
         tabIndex={-1}
         className="flex flex-col gap-3 outline-none"
       >
-        <Breadcrumb items={CART_BREADCRUMB} />
+        {/** O frame mobile traz título próprio, e não a trilha do desktop. */}
+        <Breadcrumb items={CART_BREADCRUMB} className="hidden md:block" />
+        <CartMobileTopBar />
 
         {/** Mensagens de mutation ficam acima da lista, onde a ação começou. */}
         {(actionError ?? backgroundError) ? (
@@ -118,7 +132,7 @@ export function CartScreen() {
 
         {cart.data && cart.data.items.length > 0 ? (
           <div className={CART_GRID}>
-            <div>
+            <div className="min-w-0">
               <CartTable
                 items={cart.data.items}
                 pendingItemId={pendingItemId}
@@ -130,30 +144,58 @@ export function CartScreen() {
               <CartMobileList
                 items={cart.data.items}
                 pendingItemId={pendingItemId}
+                registerRemoveButton={focus.registerRemoveButton}
                 onQuantityChange={handleQuantityChange}
                 onRemove={handleRemove}
               />
             </div>
 
-            <CartSummary
-              cart={cart.data}
-              isUpdating={
-                updateItem.isPending || removeItem.isPending || cart.isFetching
-              }
-              couponError={toCartErrorMessage(applyCoupon.error)}
-              isApplyingCoupon={applyCoupon.isPending}
-              onApplyCoupon={(code) => applyCoupon.mutate({ code })}
-              onRemoveCoupon={() => removeCoupon.mutate()}
-            />
+            {/** No mobile o resumo é o painel fixo do rodapé, mais abaixo. */}
+            <div className="hidden lg:block">
+              <CartSummary
+                cart={cart.data}
+                isUpdating={
+                  updateItem.isPending ||
+                  removeItem.isPending ||
+                  cart.isFetching
+                }
+                couponError={toCartErrorMessage(applyCoupon.error)}
+                isApplyingCoupon={applyCoupon.isPending}
+                onApplyCoupon={(code) => applyCoupon.mutate({ code })}
+                onRemoveCoupon={() => removeCoupon.mutate()}
+              />
+            </div>
           </div>
         ) : null}
       </div>
 
-      <NftRelatedSection
-        items={getCartRecommendations()}
-        heading={CART_COPY.recommendationsHeading}
-        headingId="cart-recommendations"
-      />
+      {/**
+       * Fora do fluxo e só com itens: um botão de finalizar sobre uma tela
+       * vazia não teria o que finalizar.
+       */}
+      {cart.data && cart.data.items.length > 0 ? (
+        <CartMobileSummary
+          cart={cart.data}
+          isUpdating={
+            updateItem.isPending || removeItem.isPending || cart.isFetching
+          }
+          couponError={toCartErrorMessage(applyCoupon.error)}
+          isApplyingCoupon={applyCoupon.isPending}
+          onApplyCoupon={(code) => applyCoupon.mutate({ code })}
+        />
+      ) : null}
+
+      {/**
+       * O frame mobile mostra só o carrinho. Abaixo de `md` a vitrine sairia
+       * atrás do painel fixo, disputando a rolagem com a ação principal.
+       */}
+      <div className="hidden md:block">
+        <NftRelatedSection
+          items={getCartRecommendations()}
+          heading={CART_COPY.recommendationsHeading}
+          headingId="cart-recommendations"
+        />
+      </div>
     </Container>
   )
 }
@@ -163,7 +205,8 @@ export function CartScreenSkeleton() {
   return (
     <Container as="main" className="flex flex-col gap-8 md:gap-24 md:pt-8">
       <div className="flex flex-col gap-3">
-        <Breadcrumb items={CART_BREADCRUMB} />
+        <Breadcrumb items={CART_BREADCRUMB} className="hidden md:block" />
+        <CartMobileTopBar />
 
         <div className={CART_GRID}>
           <CartTableSkeleton />

@@ -349,13 +349,56 @@ Duas divergências conscientes:
 2. **Badge do cabeçalho** — o frame mostra `6` com 17 unidades no carrinho. É
    decorativo; o badge real mostra a soma das quantidades.
 
+### Mobile
+
+O frame mobile chegou depois da primeira entrega, e a lista empilhada que
+existia como adaptação declarada saiu. Medidas do PNG em 2x (828×1792 →
+**414×896**, iPhone XR, como os outros frames mobile):
+
+| Elemento        | Medida                                                |
+| --------------- | ----------------------------------------------------- |
+| Margens         | 28 → conteúdo de **358**                              |
+| Card do item    | **358 × 112**, `--surface-card`, 7 entre cards        |
+| Arte            | **101 quadrada**, encostada na borda esquerda do card |
+| Topo            | círculo de voltar (44) + título de **20px bold**      |
+| Painel inferior | de ~554 à base, cantos no topo                        |
+| Botão           | **366 × 60**, cápsula com gradiente                   |
+
+Três decisões que o frame não resolvia sozinho:
+
+1. **A lixeira é um quarto controle.** O desenho a mostra numa linha só, no
+   lugar do `+`. Cada linha tem `−`, quantidade, `+` e remover: sem isso não
+   haveria como tirar um item do carrinho no mobile, e o desktop tem a coluna de
+   ações justamente para essa ação. O `−` apagado em quantidade 1 e o `+`
+   apagado no limite da edição estão no frame e saem de graça do `min`/`max` do
+   `QuantityStepper`.
+2. **Topo próprio, sem barra de navegação.** O cabeçalho do site já era
+   `md:block`, então no mobile ele nunca aparecia; o que entrou foi o topo com
+   voltar e título, e a trilha passou a `hidden md:block`. A rota declara
+   `mobileTabBar: false`, como o detalhe do NFT: o painel do carrinho ocupa
+   aquele lugar, e o frame não mostra as duas barras juntas.
+3. **Rodapé fixo.** Cupom, totais e ação grudados na base, com a lista rolando
+   atrás, para o total e o botão ficarem sempre à vista. O conteúdo ganha
+   `pb-84` no mobile para o fim não ficar coberto, e o painel **não** aparece
+   com o carrinho vazio ou em erro — um botão de finalizar sobre uma tela sem
+   itens não teria o que finalizar.
+
+O `QuantityStepper` ganhou a variante `tone`: `solid` (círculo da marca com
+glifo escuro) segue o padrão de todos os consumidores atuais, e `outline`
+(círculo escuro com glifo claro) é o do frame mobile do carrinho.
+
+O `CartCouponForm` ganhou `variant`: `stacked` é o campo rotulado do desktop e
+`inline` é a cápsula do mobile. Uma variante em vez de um segundo componente,
+porque o comportamento — aparar o código, submeter, mostrar o veredito — é o
+mesmo.
+
+**Divergência do frame**: o subtotal desenhado (8.92 ETH) não fecha com os
+próprios itens que ele mostra (1.19 + 1.39 + 3.58 + 1.98 = 8.14), e as edições e
+quantidades são um cenário diferente do frame desktop. Como no resto da tela, o
+que aparece vem da API — o frame vale pelo layout, não pelos números.
+
 ### Provisório declarado
 
-- **Layout mobile**: o frame mobile do carrinho não foi exportado. Abaixo de
-  `lg` a tela usa uma lista empilhada (`cart-mobile-list.tsx`) que funciona, mas
-  não é fiel a um design — não havia design a seguir. A tabela começa em `lg`, e
-  não em `md`, porque suas colunas foram medidas para os 782px que só existem a
-  partir dali; espremida em tablet ela trunca os nomes.
 - **"Conectar e finalizar"** leva a `/pagamento`. Enquanto essa tela não
   existia o botão ficava desabilitado, porque uma ação fora do escopo não pode
   aparentar sucesso funcional.

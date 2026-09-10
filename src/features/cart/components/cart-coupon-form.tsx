@@ -11,21 +11,29 @@ const ERROR_ID = 'cart-coupon-error'
 type CartCouponFormProps = {
   error?: string
   isApplying: boolean
+  /**
+   * `stacked` é o campo rotulado do frame desktop; `inline` é a cápsula do
+   * frame mobile, onde o rótulo daria uma linha que não existe no desenho.
+   */
+  variant?: 'stacked' | 'inline'
   className?: string
   onApply: (code: string) => void
 }
 
 /**
- * Campo de cupom do frame: entrada de 230px e botão de 102px somando os 332
- * da coluna, com o arredondamento só nas pontas externas do conjunto.
+ * Campo de cupom. No desktop segue o frame: entrada de 230px e botão de 102px
+ * somando os 332 da coluna, com o arredondamento só nas pontas externas do
+ * conjunto.
  */
 export function CartCouponForm({
   error,
   isApplying,
+  variant = 'stacked',
   className,
   onApply,
 }: CartCouponFormProps) {
   const [code, setCode] = useState('')
+  const isInline = variant === 'inline'
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -40,30 +48,48 @@ export function CartCouponForm({
       onSubmit={handleSubmit}
       className={cn('flex flex-col gap-1.5', className)}
     >
-      <Label
-        htmlFor={FIELD_ID}
-        className="text-13 leading-4 font-bold text-foreground"
-      >
-        {CART_COPY.couponLabel}
-      </Label>
+      {isInline ? null : (
+        <Label
+          htmlFor={FIELD_ID}
+          className="text-13 leading-4 font-bold text-foreground"
+        >
+          {CART_COPY.couponLabel}
+        </Label>
+      )}
 
-      <div className="flex">
+      <div
+        className={cn(
+          'flex',
+          isInline &&
+            'items-center gap-2 rounded-full border border-line-soft p-1.5',
+        )}
+      >
         <Input
           id={FIELD_ID}
           name="coupon"
           value={code}
           autoComplete="off"
+          aria-label={isInline ? CART_COPY.couponLabel : undefined}
           placeholder={CART_COPY.couponPlaceholder}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? ERROR_ID : undefined}
           onChange={(event) => setCode(event.target.value)}
-          className="rounded-r-none rounded-l-md border-primary border-r-0 text-13 placeholder:text-brand-muted"
+          className={cn(
+            isInline
+              ? 'h-11 border-transparent bg-transparent px-4 text-14 placeholder:text-brand-muted focus-visible:ring-0'
+              : 'rounded-r-none rounded-l-md border-r-0 border-primary text-13 placeholder:text-brand-muted',
+          )}
         />
 
         <Button
           type="submit"
           disabled={isApplying}
-          className="w-25.5 shrink-0 rounded-l-none rounded-r-md text-15 font-bold"
+          className={cn(
+            'shrink-0 font-bold',
+            isInline
+              ? 'h-11 rounded-full px-6 text-16'
+              : 'w-25.5 rounded-l-none rounded-r-md text-15',
+          )}
         >
           {CART_COPY.couponApply}
         </Button>

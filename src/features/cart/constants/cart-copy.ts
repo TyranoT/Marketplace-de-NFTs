@@ -15,6 +15,11 @@ export const CART_COPY = {
 
   tokenIdLabel: 'ID do token:',
 
+  /** Topo da tela no mobile: o frame traz título próprio, sem trilha. */
+  mobileTitle: 'Carrinho de NFTs',
+  mobileBack: 'Voltar',
+  editionPrefix: 'Edição:',
+
   summaryHeading: 'Resumo da carteira',
   couponLabel: 'Código promocional',
   couponPlaceholder: 'Digite o código promocional...',

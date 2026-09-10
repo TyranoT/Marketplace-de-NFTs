@@ -14,6 +14,8 @@ export const Route = createFileRoute('/carrinho')({
   ssr: false,
   staticData: {
     header: { active: 'market', divider: true },
+    /** O painel fixo do carrinho ocupa o lugar da barra de navegação. */
+    mobileTabBar: false,
   },
   component: CartRoute,
   pendingComponent: CartPendingRoute,
