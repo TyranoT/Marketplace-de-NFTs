@@ -17,6 +17,16 @@ export function getNftById(id: string): NftDetail | undefined {
   return nft ? buildNftDetail(nft) : undefined
 }
 
+/**
+ * Vitrine do carrinho. O frame mostra os cinco últimos do catálogo — os
+ * mesmos de "Mais desta coleção", só que sem excluir um item de origem.
+ */
+export function getCartRecommendations(
+  limit: number = RELATED_LIMIT,
+): Array<NftSummary> {
+  return NFTS.slice(-limit).map(toNftSummary)
+}
+
 export function getRelatedNfts(
   id: string,
   limit: number = RELATED_LIMIT,

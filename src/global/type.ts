@@ -1,3 +1,5 @@
+import type { Money } from './api/contracts/money'
+
 export type Artwork = {
   src: string
   alt: string
@@ -29,8 +31,13 @@ export type NftRating = {
 export type Nft = {
   id: string
   name: string
-  price: string
-  secondaryPrice?: string
+  /**
+   * Valor estruturado, não string de exibição: é daqui que o servidor
+   * simulado tira o preço para somar o carrinho com precisão. Quem renderiza
+   * recebe `NftSummary.price` / `NftDetail.price`, já formatados.
+   */
+  price: Money
+  secondaryPrice?: Money
   artworkKey: ArtworkKey
   collection: string
   edition: NftEditionId

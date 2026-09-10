@@ -9,7 +9,7 @@ export const NFTS: Array<Nft> = [
   {
     id: 'emerald-ape-042',
     name: 'Emerald Ape #042',
-    price: '1.19 ETH',
+    price: { amount: '1.19', currency: 'ETH' },
     artworkKey: 'varsity',
     collection: 'Kurio Apes',
     edition: '1-50',
@@ -17,7 +17,7 @@ export const NFTS: Array<Nft> = [
   {
     id: 'sage-nomad-009',
     name: 'Sage Nomad #009',
-    price: '1.69 ETH',
+    price: { amount: '1.69', currency: 'ETH' },
     artworkKey: 'headphones',
     collection: 'Kurio Apes',
     edition: '1-50',
@@ -25,8 +25,8 @@ export const NFTS: Array<Nft> = [
   {
     id: 'neon-vessel-552',
     name: 'Neon Vessel #552',
-    price: '1.99 ETH',
-    secondaryPrice: '2.29 ETH',
+    price: { amount: '1.99', currency: 'ETH' },
+    secondaryPrice: { amount: '2.29', currency: 'ETH' },
     artworkKey: 'turtleneck',
     collection: 'Kurio Apes',
     edition: '1-50',
@@ -34,7 +34,7 @@ export const NFTS: Array<Nft> = [
   {
     id: 'cosmic-bloom-118',
     name: 'Cosmic Bloom #118',
-    price: '1.29 ETH',
+    price: { amount: '1.29', currency: 'ETH' },
     artworkKey: 'bucket',
     collection: 'Kurio Apes',
     edition: '1-50',
@@ -42,7 +42,7 @@ export const NFTS: Array<Nft> = [
   {
     id: 'violet-nomad-314',
     name: 'Violet Nomad #314',
-    price: '1.39 ETH',
+    price: { amount: '1.39', currency: 'ETH' },
     artworkKey: 'varsity',
     collection: 'Kurio Apes',
     edition: '1-50',
@@ -50,7 +50,7 @@ export const NFTS: Array<Nft> = [
   {
     id: 'ivory-baron-088',
     name: 'Ivory Baron #088',
-    price: '1.79 ETH',
+    price: { amount: '1.79', currency: 'ETH' },
     artworkKey: 'turtleneck',
     collection: 'Kurio Apes',
     edition: '1-50',
@@ -58,7 +58,7 @@ export const NFTS: Array<Nft> = [
   {
     id: 'golden-beat-207',
     name: 'Golden Beat #207',
-    price: '0.99 ETH',
+    price: { amount: '0.99', currency: 'ETH' },
     artworkKey: 'headphones',
     collection: 'Kurio Apes',
     edition: '1-50',
@@ -66,7 +66,7 @@ export const NFTS: Array<Nft> = [
   {
     id: 'golden-signal-160',
     name: 'Golden Signal #160',
-    price: '0.39 ETH',
+    price: { amount: '0.39', currency: 'ETH' },
     artworkKey: 'bucket',
     collection: 'Kurio Apes',
     edition: '1-50',

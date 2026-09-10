@@ -5,10 +5,11 @@ import { HeaderActions } from './header-actions'
 import { HeaderNav } from './header-nav'
 
 type HeaderProps = {
+  /** Sobrepõe a contagem real; sem ela o cabeçalho consulta o carrinho. */
   cartCount?: number
 }
 
-export function Header({ cartCount = 0 }: HeaderProps) {
+export function Header({ cartCount }: HeaderProps) {
   const config = useRouterState({
     select: (state) => state.matches.at(-1)?.staticData.header,
   })

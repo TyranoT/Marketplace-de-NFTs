@@ -1,3 +1,5 @@
+import type { BreadcrumbItem } from '@/global/components/ui/breadcrumb'
+
 export const NFT_DETAIL_COPY = {
   breadcrumbHome: 'Início',
   breadcrumbMarket: 'Mercado',
@@ -37,6 +39,12 @@ export const NFT_FACT_LABELS = {
   royalties: 'Contrato:',
   contract: 'Direitos autorais:',
 }
+
+/** Trilha do detalhe. `Mercado` ainda não tem rota, então fica sem `to`. */
+export const NFT_BREADCRUMB: Array<BreadcrumbItem> = [
+  { label: 'Início', to: '/' },
+  { label: 'Mercado' },
+]
 
 /** 3 indicadores no carrossel de relacionados, o 2º ativo. Medido no Figma. */
 export const RELATED_SLIDE_COUNT = 3

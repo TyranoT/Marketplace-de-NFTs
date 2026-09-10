@@ -17,7 +17,7 @@ export function MobileSearchBar({ onOpenFilters }: MobileSearchBarProps) {
           id="catalog-search"
           type="search"
           placeholder={MOBILE_SEARCH_PLACEHOLDER}
-          className="min-w-0 flex-1 bg-transparent text-15 font-bold text-foreground outline-none placeholder:font-bold placeholder:text-foreground"
+          className="min-w-0 flex-1 bg-transparent text-15 font-bold text-foreground outline-none placeholder:font-bold placeholder:text-text-secondary"
         />
       </div>
 
@@ -25,7 +25,7 @@ export function MobileSearchBar({ onOpenFilters }: MobileSearchBarProps) {
         type="button"
         onClick={onOpenFilters}
         aria-label="Abrir filtros"
-        className="flex size-11.25 shrink-0 items-center justify-center rounded-[9px] bg-primary text-ink"
+        className="flex size-11.25 shrink-0 bg-linear-120 from-line-soft to-brand items-center justify-center rounded-[9px] bg-primary text-ink"
       >
         <SlidersHorizontal className="size-5.5" />
       </button>

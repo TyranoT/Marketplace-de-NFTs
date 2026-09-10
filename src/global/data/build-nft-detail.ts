@@ -1,3 +1,4 @@
+import { formatMoney } from '../helpers/eth-amount'
 import { ARTWORKS, ARTWORK_ATTRIBUTES } from './artwork'
 import {
   CATALOG_CONTRACT,
@@ -41,8 +42,8 @@ export function buildNftDetail(nft: Nft): NftDetail {
   const derived: NftDetail = {
     id: nft.id,
     name: nft.name,
-    price: nft.price,
-    secondaryPrice: nft.secondaryPrice,
+    price: formatMoney(nft.price),
+    secondaryPrice: nft.secondaryPrice && formatMoney(nft.secondaryPrice),
     collection: nft.collection,
     artwork,
     gallery: Array.from({ length: GALLERY_SIZE }, () => artwork),

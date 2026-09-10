@@ -9,19 +9,26 @@ import type { NftSummary } from '@/global/type'
 
 type NftRelatedSectionProps = {
   items: Array<NftSummary>
+  /** O carrinho reusa a mesma vitrine sob outro título. */
+  heading?: string
+  headingId?: string
 }
 
-export function NftRelatedSection({ items }: NftRelatedSectionProps) {
+export function NftRelatedSection({
+  items,
+  heading = NFT_DETAIL_COPY.relatedHeading,
+  headingId = 'nft-related',
+}: NftRelatedSectionProps) {
   if (items.length === 0) return null
 
   return (
-    <section aria-labelledby="nft-related" className="flex flex-col gap-10">
+    <section aria-labelledby={headingId} className="flex flex-col gap-10">
       <div className="flex flex-col gap-4 border-b border-line pb-4">
         <h2
-          id="nft-related"
+          id={headingId}
           className="text-17 leading-4 font-bold text-highlight"
         >
-          {NFT_DETAIL_COPY.relatedHeading}
+          {heading}
         </h2>
       </div>
 

@@ -15,6 +15,13 @@ export default [
     },
   },
   {
-    ignores: ['eslint.config.js', 'prettier.config.js'],
+    ignores: [
+      'eslint.config.js',
+      'prettier.config.js',
+      // Gerado por `msw init`; não é código do projeto.
+      'public/mockServiceWorker.js',
+      // Saída do build: fica fora do tsconfig e trava o parser.
+      '.output/**',
+    ],
   },
 ]

@@ -24,7 +24,7 @@ export const MOBILE_TAB_BAR_NOTCH_PATH =
 export const MOBILE_NAV_ITEMS: Array<MobileNavItem> = [
   { key: 'home', label: 'Início', position: 11.1, to: '/' },
   { key: 'favorites', label: 'Favoritos', position: 28.5 },
-  { key: 'cart', label: 'Carrinho', position: 72.9 },
+  { key: 'cart', label: 'Carrinho', position: 72.9, to: '/carrinho' },
   { key: 'account', label: 'Minha conta', position: 87.9 },
 ]
 

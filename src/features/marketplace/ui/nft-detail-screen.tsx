@@ -1,6 +1,6 @@
 import { Container } from '@/global/components/ui/container'
-import { NFT_DETAIL_COPY } from '../constants/nft-detail-copy'
-import { NftBreadcrumb } from '../components/nft-breadcrumb'
+import { Breadcrumb } from '@/global/components/ui/breadcrumb'
+import { NFT_BREADCRUMB, NFT_DETAIL_COPY } from '../constants/nft-detail-copy'
 import { NftDetailTabs } from '../components/nft-detail-tabs'
 import { NftGallery } from '../components/nft-gallery'
 import { NftMetadataList } from '../components/nft-metadata-list'
@@ -22,7 +22,7 @@ export function NftDetailScreen({ nft, related }: NftDetailScreenProps) {
       <NftDetailMobile nft={nft} />
 
       <div className="hidden flex-col gap-3.5 md:flex">
-        <NftBreadcrumb />
+        <Breadcrumb items={NFT_BREADCRUMB} />
 
         <section className="flex flex-col gap-8 lg:flex-row lg:gap-8.25">
           <NftGallery gallery={nft.gallery} name={nft.name} />
@@ -52,6 +52,7 @@ export function NftDetailScreen({ nft, related }: NftDetailScreenProps) {
             </div>
 
             <NftPurchasePanel
+              nftId={nft.id}
               editions={nft.editions}
               selectedEdition={nft.selectedEdition}
             />

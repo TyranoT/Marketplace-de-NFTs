@@ -65,6 +65,8 @@ export function NftDetailMobile({ nft }: NftDetailMobileProps) {
       </div>
 
       <NftMobilePurchaseBar
+        nftId={nft.id}
+        editionId={purchase.edition}
         price={nft.price}
         quantity={purchase.quantity}
         onIncrease={purchase.increase}

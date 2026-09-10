@@ -1,12 +1,22 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import {
+  HeadContent,
+  Scripts,
+  createRootRouteWithContext,
+} from '@tanstack/react-router'
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import appCss from '@/styles.css?url'
 import { Header, MobileTabBar } from '@/features/layout'
 import { SITE, absoluteUrl } from '@/global/config/site'
 import { useDeviceTier } from '@/global'
+import type { QueryClient } from '@tanstack/react-query'
 
-export const Route = createRootRoute({
+type RootContext = {
+  queryClient: QueryClient
+}
+
+export const Route = createRootRouteWithContext<RootContext>()({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
@@ -80,6 +90,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               {
                 name: 'Tanstack Router',
                 render: <TanStackRouterDevtoolsPanel />,
+              },
+              {
+                name: 'Tanstack Query',
+                render: <ReactQueryDevtoolsPanel />,
               },
             ]}
           />
