@@ -18,6 +18,12 @@ export type MockScenario = {
   orderOutcome: OrderOutcome
   /** Quanto o pedido fica pendente antes de liquidar. */
   orderSettleDelayMs: number
+  /**
+   * A próxima compra é gravada, mas a resposta se perde — o timeout depois
+   * da criação do pedido que o §6 pede. Vale uma vez: a retentativa com a
+   * mesma `Idempotency-Key` precisa receber o pedido que já existe.
+   */
+  checkoutResponseLost: boolean
 }
 
 export const SCENARIO_STORAGE_KEY = 'kurio.mock.scenario'
@@ -32,6 +38,7 @@ const DEFAULT_SCENARIO: MockScenario = {
   offline: false,
   orderOutcome: 'confirmed',
   orderSettleDelayMs: 1200,
+  checkoutResponseLost: false,
 }
 
 const LATENCIES: Array<MockLatency> = ['none', 'fast', 'slow', 'variable']
@@ -71,6 +78,8 @@ function fromSearch(search: URLSearchParams): Partial<MockScenario> {
   }
 
   if (settleDelay) partial.orderSettleDelayMs = Number(settleDelay)
+
+  if (search.get('mockCheckout') === 'lost') partial.checkoutResponseLost = true
 
   return partial
 }

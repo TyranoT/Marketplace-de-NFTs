@@ -97,19 +97,18 @@ export class NftService {
      * muda o total de lá. Subir a versão do carrinho é o que faz o checkout
      * reconhecer a cotação como desatualizada; sem isso a compra seguiria com
      * um valor que o colecionador nunca viu.
+     *
+     * **Todo** carrinho que tem o NFT, e não só o de quem está logado: com
+     * um carrinho por dono, subir só o da sessão deixaria outra conta pagar
+     * pela cotação antiga.
      */
-    if (mockDb.cartItem.findFirst({ where: { nftId: id } })) {
-      const cart = mockDb.cart.findFirst()
+    const now = new Date().toISOString()
 
-      if (cart) {
-        mockDb.cart.update({
-          where: { id: cart.id },
-          data: {
-            version: cart.version + 1,
-            updatedAt: new Date().toISOString(),
-          },
-        })
-      }
+    for (const cart of mockDb.cart.everyCart()) {
+      if (!cart.items.some((item) => item.nftId === id)) continue
+
+      cart.setVersion(cart.version + 1)
+      cart.setUpdatedAt(now)
     }
 
     return nftContractMapper.toListItem(nft)

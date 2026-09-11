@@ -8,19 +8,26 @@ type CartChangeNoticeProps = {
   onDismiss: (id: string) => void
 }
 
+/**
+ * O aviso de um NFT acumula as mudanças dele. Descrevia só o preço quando
+ * os dois mudavam, e a disponibilidade nova — que é o que limita a
+ * quantidade — sumia do texto.
+ */
 function describe(alert: CartChangeAlert): string {
   const changedPrice = alert.previousPrice.amount !== alert.nextPrice.amount
+  const changedAvailability = alert.previousAvailable !== alert.nextAvailable
 
-  if (changedPrice) {
-    return CART_COPY.priceChanged
-      .replace('{nft}', alert.name)
-      .replace('{from}', formatMoney(alert.previousPrice))
-      .replace('{to}', formatMoney(alert.nextPrice))
-  }
-
-  return CART_COPY.availabilityChanged
+  const price = CART_COPY.priceChanged
+    .replace('{nft}', alert.name)
+    .replace('{from}', formatMoney(alert.previousPrice))
+    .replace('{to}', formatMoney(alert.nextPrice))
+  const availability = CART_COPY.availabilityChanged
     .replace('{nft}', alert.name)
     .replace('{units}', String(alert.nextAvailable))
+
+  if (changedPrice && changedAvailability) return `${price} ${availability}`
+
+  return changedPrice ? price : availability
 }
 
 /**

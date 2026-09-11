@@ -1,6 +1,6 @@
 import { HttpResponse, http } from 'msw'
 import { RuleError, checkoutService } from '../db'
-import { getScenario } from '../scenario/config'
+import { getScenario, setScenario } from '../scenario/config'
 import { applyLatency, nextRequestIndex } from '../scenario/delay'
 import { errorResponse, maybeFail } from '../scenario/failure'
 import { scheduleSettlement } from '../realtime/order-events'
@@ -36,6 +36,17 @@ export const checkoutHandlers = [
       const order = checkoutService.checkout(body, { idempotencyKey })
 
       scheduleSettlement(order, getScenario().orderSettleDelayMs)
+
+      /**
+       * O pedido existe, mas a resposta não chega ao cliente. Só a
+       * idempotência resolve: a nova tentativa, com a mesma chave, recebe
+       * este mesmo pedido em vez de criar outro.
+       */
+      if (getScenario().checkoutResponseLost) {
+        setScenario({ checkoutResponseLost: false })
+
+        return HttpResponse.error()
+      }
 
       return HttpResponse.json(order, { status: 201 })
     } catch (error) {

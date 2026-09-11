@@ -29,6 +29,8 @@ export default defineConfig({
     locale: 'pt-BR',
   },
   expect: {
+    /** O servidor de desenvolvimento compila sob demanda: 5 s é pouco na primeira visita. */
+    timeout: 10_000,
     /** Baselines estáveis: pequenas diferenças de antialiasing não reprovam. */
     toHaveScreenshot: { maxDiffPixelRatio: 0.02, animations: 'disabled' },
   },

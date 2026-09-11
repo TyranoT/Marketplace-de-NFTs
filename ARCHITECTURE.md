@@ -1147,6 +1147,76 @@ ao mock.
 
 ---
 
+## Testes E2E
+
+A suíte está em `e2e/`, um arquivo por grupo do §9, e roda nos projetos
+`desktop` (1440), `tablet` (768) e `mobile` (Pixel 7) do Chromium. O
+`README.md` tem a tabela de cobertura e os comandos.
+
+### O mock é controlado de dentro da página
+
+`e2e/support/mock.ts` concentra o que todos os testes precisam: `api()`
+(`fetch` por `page.evaluate`), `resetMock()`, `setScenario()`, `login()` e
+`changeNft()`. O MSW só existe no navegador; um `request.post()` do
+Playwright iria ao servidor de desenvolvimento, que responde o HTML da
+aplicação.
+
+**Service Worker controlando a página não quer dizer MSW pronto.** Por
+cerca de um segundo depois de cada navegação, `/api/*` ainda passa direto
+ao servidor, e a resposta é HTML. `waitForMock()` espera um JSON de
+`/api/__mock/scenario` antes de cada chamada. Precisou ser um laço dentro da
+página: `waitForFunction` com predicado assíncrono recebe a Promise, que é
+verdadeira, e retorna na hora.
+
+### A grade é conferida contra a API
+
+O teste do catálogo não repete os dados da semente: lê a URL, monta a mesma
+consulta para `/api/nfts` e compara os nomes da grade com a resposta. Assim
+ele prova que a tela mostra o que o handler respondeu, e continua valendo se
+a semente mudar.
+
+### Timeout depois de criar o pedido
+
+O §6 pede esse cenário, e o Playwright não o alcança: com o MSW atendendo no
+Service Worker, `page.route` não vê as requisições. Ele virou cenário do
+mock, `checkoutResponseLost` (`?mockCheckout=lost`): a compra é gravada e o
+handler responde erro de rede, uma vez. A retentativa, com a mesma
+`Idempotency-Key`, recebe o mesmo pedido.
+
+### Relógio
+
+A recusa é testada com `page.clock`: o pedido fica pendente por um minuto e
+o teste avança o tempo. `settleAt` guardado no pedido e o temporizador da
+liquidação obedecem ao mesmo relógio.
+
+### O que os testes acharam
+
+Cada item abaixo era defeito de verdade, na aplicação e não no teste:
+
+- **Sair não atualizava a tela.** `queryClient.clear()` tira as consultas do
+  cache sem avisar quem as observa; virou `resetQueries()`.
+- **A busca do cabeçalho não abria com o mouse.** O React reaproveitava o
+  mesmo `<button>` e trocava o `type` para `submit` no meio do clique; o
+  navegador enviava o formulário, que fechava a busca. `key` diferentes
+  resolvem.
+- **Salvar o perfil apagava a própria resposta.** O formulário é remontado a
+  cada versão do usuário, e o estado de retorno morava dentro dele. Subiu
+  para o componente de fora.
+- **O motivo da senha recusada sumia** quando o perfil era salvo junto.
+- **O tablet não tinha filtros.** O botão que abre o diálogo ficava na busca
+  do mobile, escondida a partir do `md`, e a lateral só aparece no `lg`.
+- **O aviso do carrinho descrevia só o preço** quando preço e estoque do
+  mesmo NFT mudavam.
+- **Mudança de preço subia a versão só do carrinho logado.** Com um carrinho
+  por dono, as outras contas pagariam pela cotação antiga.
+
+### Regressão visual
+
+`visual.spec.ts` fotografa início, detalhe, carrinho e pagamento em desktop e
+mobile, sobre o cenário-semente. Antes da foto, rola a página para as imagens
+`lazy` carregarem e espera fontes e `aria-busy`. As baselines foram geradas
+no Windows e ficam em `e2e/visual.spec.ts-snapshots/`.
+
 ## Dificuldades declaradas
 
 Coisas que a demonstração **não** faz, e por quê. Nenhuma delas está escondida
@@ -1176,24 +1246,24 @@ atrás de um botão que finge funcionar.
 
 ## Dívidas conhecidas
 
-1. **Catálogo e detalhe ainda leem `src/global/data` diretamente**, sem passar
-   pela camada de rede. É um estado temporário conhecido, não um esquecimento —
-   `createRootRouteWithContext` e as chaves com escopo já estão no lugar
-   justamente para que essa migração seja barata.
-2. **`await startMocks()` antes de hidratar** custa a ativação do Service Worker
-   (dezenas de ms). Irrelevante hoje, porque as outras páginas leem fixtures
-   síncronas, mas vira risco de Lighthouse quando o catálogo passar pela rede.
-3. **`/mockServiceWorker.js` na Vercel** foi verificado no build local (servido
+1. **`await startMocks()` antes de hidratar** custa a ativação do Service
+   Worker. Com o catálogo passando pela rede, é o primeiro suspeito se o
+   Lighthouse acusar LCP alto.
+2. **`/mockServiceWorker.js` na Vercel** foi verificado no build local (servido
    na raiz, com `text/javascript`), mas `nitro@3` é pré-release: confirmar num
    preview deploy antes de considerar fechado.
-4. **A URL serializa as listas de filtro em JSON** (`?collection=["games"]`),
+3. **A URL serializa as listas de filtro em JSON** (`?collection=["games"]`),
    que é o padrão do TanStack Router. Funciona e sobrevive ao refresh, mas o
    formato REST convencional seria `?collection=games&collection=music` — o
    cliente HTTP já monta assim; só a URL do navegador destoa.
-5. **O checkout aceita visitante.** O §3 diz que checkout, perfil,
+4. **O checkout aceita visitante.** O §3 diz que checkout, perfil,
    carteiras, favoritos e pedidos exigem autenticação; hoje só perfil e
    carteiras exigem. O pedido do visitante fica com `ownerId: guest`, isolado
    das contas, mas o fluxo deveria pedir login antes de pagar.
-6. **Sem testes automatizados.** Playwright não está configurado, e tudo aqui
-   foi verificado à mão no navegador. Os fluxos de tempo real são justamente
-   os que mais precisam de teste, porque dependem de ordem e de tempo.
+5. **Favoritos não têm persistência nem API.** O botão do detalhe alterna só
+   na tela; o item 4 do §9 (falha de mutation e recuperação) fica sem teste.
+6. **Eventos duplicados ou antigos** são descartados pelo `EventLedger`, mas
+   nenhum teste injeta um evento repetido pelo socket — cobrem desconexão,
+   reconexão e retomada.
+7. **Sessão não expira sozinha.** A expiração é simulada com `mockStatus=401`.
+8. **Lighthouse (§10) não foi medido.**

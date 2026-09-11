@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { COLLECTOR, CURATOR, api, resetMock } from './support/mock'
 import type { Page } from '@playwright/test'
 
 /**
@@ -9,34 +10,10 @@ import type { Page } from '@playwright/test'
  * navegador — e conferem o que cada conta consegue ver.
  */
 
-const COLLECTOR = { email: 'colecionador@kurio.art', password: 'kurio2026' }
-const CURATOR = { email: 'curadora@kurio.art', password: 'kurio2026' }
-
 /** Total do carrinho-semente do visitante, o do frame do Figma. */
 const SEED_TOTAL = '26.846'
 
 type CartSummary = { items: number; total: string }
-
-async function api<T>(page: Page, method: string, url: string, body?: unknown) {
-  return page.evaluate(
-    async (request) => {
-      const response = await fetch(request.url, {
-        method: request.method,
-        headers: request.body
-          ? { 'Content-Type': 'application/json' }
-          : undefined,
-        body: request.body ? JSON.stringify(request.body) : undefined,
-      })
-      const text = await response.text()
-
-      return {
-        status: response.status,
-        body: (text ? JSON.parse(text) : null) as unknown,
-      }
-    },
-    { method, url, body },
-  ) as Promise<{ status: number; body: T }>
-}
 
 async function cart(page: Page): Promise<CartSummary> {
   const { body } = await api<{
@@ -53,9 +30,7 @@ const login = (page: Page, account: typeof COLLECTOR) =>
 const logout = (page: Page) => api(page, 'DELETE', '/api/session')
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/')
-  await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller))
-  await api(page, 'POST', '/api/__mock/reset')
+  await resetMock(page)
 })
 
 test('o carrinho do visitante passa para a conta ao entrar', async ({

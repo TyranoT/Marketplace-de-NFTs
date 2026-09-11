@@ -143,6 +143,9 @@ export function HomeScreen() {
               sort={catalog.search.sort}
               onTabChange={catalog.changeTab}
               onSortChange={catalog.changeSort}
+              filtersDialogId={filtersDialogId}
+              isFiltersOpen={isFiltersOpen}
+              onOpenFilters={() => setIsFiltersOpen(true)}
             />
 
             {/**

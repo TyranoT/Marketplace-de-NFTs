@@ -45,6 +45,14 @@ export class CartDelegate extends ModelDelegate<MockCart, CartWhere> {
     return this.store.load().cartOf(owner)
   }
 
+  /**
+   * Todos os carrinhos, de todos os donos. Só para o que afeta qualquer um
+   * que tenha o NFT — uma mudança de preço não é da conta logada, é do NFT.
+   */
+  everyCart(): Array<MockCart> {
+    return [...this.store.load().carts.values()]
+  }
+
   /** Esvazia o carrinho do visitante e devolve o que ele tinha. */
   detachGuest(): MockCart | undefined {
     return this.store.load().detachGuestCart()

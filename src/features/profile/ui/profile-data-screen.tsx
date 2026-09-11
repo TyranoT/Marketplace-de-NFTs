@@ -26,18 +26,47 @@ import type { User } from '@/global/api'
 const GRID = 'grid gap-x-7 gap-y-5 md:grid-cols-2'
 
 /** O `key` no formulário garante os valores do servidor como ponto de partida. */
+/**
+ * O retorno de salvar mora aqui, e não no formulário.
+ *
+ * O formulário é remontado a cada versão do usuário (`key`), para nascer
+ * com os valores salvos. Com o estado e as mutations dentro dele, salvar
+ * remontava tudo e apagava a própria resposta: "Perfil atualizado." e "A
+ * senha atual não confere." sumiam antes de alguém ler. O teste de perfil
+ * é que mostrou.
+ */
 export function ProfileDataScreen() {
   const me = useMe()
-
-  if (!me.data) return null
-
-  return <ProfileDataForm key={me.data.updatedAt} user={me.data} />
-}
-
-function ProfileDataForm({ user }: { user: User }) {
   const updateProfile = useUpdateProfile()
   const changePassword = useChangePassword()
   const [status, setStatus] = useState<string>()
+
+  if (!me.data) return null
+
+  return (
+    <ProfileDataForm
+      key={me.data.updatedAt}
+      user={me.data}
+      feedback={{ updateProfile, changePassword, status, setStatus }}
+    />
+  )
+}
+
+type ProfileFeedback = {
+  updateProfile: ReturnType<typeof useUpdateProfile>
+  changePassword: ReturnType<typeof useChangePassword>
+  status: string | undefined
+  setStatus: (status: string | undefined) => void
+}
+
+function ProfileDataForm({
+  user,
+  feedback,
+}: {
+  user: User
+  feedback: ProfileFeedback
+}) {
+  const { updateProfile, changePassword, status, setStatus } = feedback
 
   const form = useForm<ProfileFormValues>({
     resolver: profileResolver,
@@ -208,13 +237,11 @@ function ProfileDataForm({ user }: { user: User }) {
 
         <ProfileNotice message={toProfileErrorMessage(updateProfile.error)} />
 
-        <ProfileNotice
-          message={
-            status === PROFILE_COPY.savedButPasswordFailed
-              ? undefined
-              : toProfileErrorMessage(changePassword.error)
-          }
-        />
+        {/**
+         * O motivo fica mesmo quando o perfil foi salvo: "a senha não mudou"
+         * sem dizer por quê deixa a pessoa tentando no escuro.
+         */}
+        <ProfileNotice message={toProfileErrorMessage(changePassword.error)} />
 
         <ProfileNotice
           message={status}

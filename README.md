@@ -1,213 +1,151 @@
-Welcome to your new TanStack Start app!
+# Kurio — Marketplace de NFTs
 
-# Getting Started
+Marketplace de NFTs com catálogo, detalhe, carrinho, pagamento, conta do
+colecionador e atualização em tempo real por Socket.IO. Toda a API é simulada
+com MSW, na camada de rede, e o mesmo mock serve o desenvolvimento, a
+demonstração publicada e os testes.
 
-To run this application:
+- **Aplicação publicada:** https://kurio-eight.vercel.app
+- **Decisões, contratos, limitações e desvios do Figma:** [`ARCHITECTURE.md`](./ARCHITECTURE.md)
+
+## Requisitos
+
+- Node.js 24 (verificado com a 24.18.0) e npm.
+- Nenhum serviço externo: a aplicação roda a partir de um checkout limpo.
+
+## Setup
 
 ```bash
 npm install
+cp .env.example .env
 npm run dev
 ```
 
-# Building For Production
+A aplicação sobe em http://localhost:3000, já com os mocks ligados.
 
-To build this application for production:
+## Variáveis de ambiente
+
+| Variável            | Padrão | Para quê                                                                                                      |
+| ------------------- | ------ | ------------------------------------------------------------------------------------------------------------- |
+| `VITE_ENABLE_MOCKS` | ligada | Camada MSW. Fica ligada também no build de demonstração; `false` desliga e aponta para uma API real.          |
+| `VITE_SITE_URL`     | vazia  | URL absoluta usada em `og:url` e nas imagens de compartilhamento. Sem ela, as tags saem com caminho relativo. |
+
+## Credenciais fictícias
+
+| Conta        | E-mail                   | Senha       | Observação                                                   |
+| ------------ | ------------------------ | ----------- | ------------------------------------------------------------ |
+| Colecionador | `colecionador@kurio.art` | `kurio2026` | Tem carteira principal: o pagamento vem preenchido.          |
+| Curadora     | `curadora@kurio.art`     | `kurio2026` | Sem carteira. Serve para conferir o isolamento entre contas. |
+
+Cupons do cenário-semente:
+
+| Código     | Efeito                                |
+| ---------- | ------------------------------------- |
+| `KURIO10`  | 10% de desconto                       |
+| `KURIO25`  | 25% de desconto                       |
+| `ETH005`   | 0,05 ETH de desconto                  |
+| `EXPIRADO` | Recusado: cupom vencido               |
+| `MINIMO30` | Recusado abaixo de 30 ETH de subtotal |
+
+## Comandos
+
+| Comando                   | O que faz                                                      |
+| ------------------------- | -------------------------------------------------------------- |
+| `npm run dev`             | Desenvolvimento com mocks, na porta 3000                       |
+| `npm run build`           | Build otimizado (o mesmo que vai para o deploy)                |
+| `npm run preview`         | Serve o build localmente                                       |
+| `npm run typecheck`       | Verificação de tipos (`tsc --noEmit`)                          |
+| `npm run lint`            | ESLint                                                         |
+| `npm run check`           | Prettier, sem alterar arquivos                                 |
+| `npm run test:e2e`        | Testes Playwright (sobe o servidor de desenvolvimento sozinho) |
+| `npm run test:e2e:update` | Regera as baselines da regressão visual                        |
+| `npm run test:e2e:report` | Abre o relatório HTML da última execução                       |
+
+Na primeira vez, instale o navegador do Playwright com
+`npx playwright install chromium`.
+
+A auditoria Lighthouse do §10 ainda não foi entregue — ver
+[Pendências](#pendências).
+
+## Cenários e reset
+
+O estado do mock (catálogo, preços, estoque, carrinhos, contas, carteiras e
+pedidos) fica no `localStorage` do navegador e sobrevive ao refresh. Há dois
+jeitos de controlá-lo:
+
+**Painel de simulação — `/dev`.** "Restaurar cenário-semente" volta ao estado inicial;
+"Cenário de rede" troca a condição de rede; a tabela do catálogo altera preço e
+unidades de qualquer NFT (a mudança sai na resposta REST e no evento Socket.IO);
+"Confirmar" e "Recusar" decidem pedidos pendentes; "Derrubar conexão" desliga o socket para exercitar a reconexão.
+
+**Parâmetros de URL.** Valem em qualquer rota e ficam gravados até outro
+parâmetro ou um reset:
+
+| Parâmetro        | Valores                                                     | Efeito                                                                      |
+| ---------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `mock`           | `none`, `fast`, `slow`, `variable`, `outOfOrder`, `offline` | Latência e condição de rede. Escolher um modo desliga os outros.            |
+| `mockStatus`     | código HTTP, ou `0`                                         | Toda requisição responde com esse status. `0` desliga.                      |
+| `mockFail`       | `0` a `1`                                                   | Proporção de requisições que falham com 503.                                |
+| `mockSeed`       | número                                                      | Semente das falhas e da latência: a mesma semente repete a mesma sequência. |
+| `mockOrder`      | `confirmed`, `declined`, `manual`                           | Desfecho do pedido pendente. `manual` espera o painel.                      |
+| `mockOrderDelay` | milissegundos                                               | Quanto tempo o pedido fica pendente.                                        |
+| `mockCheckout`   | `lost`                                                      | A próxima compra é gravada, mas a resposta se perde (uma vez).              |
+
+`/?mock=fast&mockStatus=0` volta à rede normal sem apagar os dados; o reset
+do painel restaura tudo.
+
+## Reproduzir os fluxos de falha
+
+| Cenário                         | Como                                                                                                  |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Carregamento lento e esqueletos | `/?mock=slow`                                                                                         |
+| Respostas fora de ordem         | `/?mock=outOfOrder`, e troque filtros rapidamente                                                     |
+| Sem conexão                     | `/carrinho?mock=offline`, depois `/carrinho?mock=fast` e "Tentar novamente"                           |
+| Erro 5xx                        | `/?mockStatus=503`, depois `?mockStatus=0` e "Tentar novamente"                                       |
+| Sessão expirada / 401           | Entre, abra `/perfil?mockStatus=401`                                                                  |
+| Conflito de cadastro            | Crie conta com `colecionador@kurio.art`                                                               |
+| Cupom inválido ou expirado      | `NAOEXISTE` ou `EXPIRADO` no carrinho                                                                 |
+| Preço alterado durante a compra | Entre, abra `/pagamento`; noutra aba, mude o preço de um item em `/dev`                               |
+| Edição esgotada                 | Em `/dev`, zere o estoque de um item do carrinho                                                      |
+| Timeout após criar o pedido     | `/pagamento?mockCheckout=lost`, confirme, e confirme de novo: volta o mesmo pedido                    |
+| Pagamento recusado              | `/pagamento?mockOrder=declined`                                                                       |
+| Pedido pendente e retomada      | `/pagamento?mockOrder=manual`, confirme, recarregue a página e use "Confirmar" ou "Recusar" em `/dev` |
+| Desconexão do socket            | Em `/dev`, "Derrubar conexão" e altere um preço                                                       |
+
+## Testes E2E
 
 ```bash
-npm run build
+npm run test:e2e                          # tudo, em desktop, tablet e mobile
+npx playwright test --project=desktop     # um viewport só
+npx playwright test e2e/realtime.spec.ts  # um arquivo só
 ```
 
-## Styling
+Os testes rodam contra a aplicação com os mocks — REST pelos handlers MSW e
+tempo real pelo `socket.io-client` —, cada um a partir do cenário-semente. O
+relatório HTML fica em `playwright-report/` e os traces das falhas em
+`test-results/`.
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+| §9                                                           | Arquivo                             |
+| ------------------------------------------------------------ | ----------------------------------- |
+| 1, 2 — catálogo, histórico, detalhe, inexistente             | `catalog.spec.ts`                   |
+| 3 — cadastro, login, sessão, logout, troca de usuário        | `auth.spec.ts`, `isolation.spec.ts` |
+| 5, 6, 7 — carrinho, compra, recusa, clique repetido, timeout | `cart-checkout.spec.ts`             |
+| 8 — perfil, avatar, senha, carteiras                         | `profile.spec.ts`                   |
+| 9, 10 — Socket.IO no checkout, desconexão, pedido pendente   | `realtime.spec.ts`                  |
+| 11 — teclado, foco, validação, axe                           | `keyboard.spec.ts`, `a11y.spec.ts`  |
+| 12 — esqueleto, falha e nova tentativa                       | `resilience.spec.ts`                |
+| Regressão visual                                             | `visual.spec.ts`                    |
 
-### Removing Tailwind CSS
+As baselines visuais foram geradas no Windows. Em outro sistema o
+antialiasing das fontes muda; regere com `npm run test:e2e:update`.
 
-If you prefer not to use Tailwind CSS:
+## Pendências
 
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
-
-## Linting & Formatting
-
-
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
-
-```bash
-npm run lint
-npm run format
-npm run check
-```
-
-
-## Deploy to Vercel
-
-1. Push this repo to GitHub, GitLab, or Bitbucket
-2. In Vercel, choose **Add New > Project** and import the repo
-3. Keep the detected TanStack Start framework settings
-4. Add production values from `.env.example` under **Settings > Environment Variables**
-5. Deploy
-
-Vercel runs the build script and deploys Nitro's output as Vercel Functions and
-static assets. The included `vercel.json` makes framework detection explicit.
-
-Variables prefixed with `VITE_` are included in the browser bundle. Keep secrets
-unprefixed so they remain server-only.
-
-
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+- **Favoritos (§9, item 4)** não têm persistência nem API: o botão existe no
+  detalhe, mas não há o que testar de falha e recuperação.
+- **Eventos duplicados ou antigos (§9, item 10)** são descartados pelo
+  `EventLedger`, mas o teste não injeta eventos repetidos: cobre desconexão e
+  retomada.
+- **Expiração de sessão** é simulada com `mockStatus=401`; não há prazo de
+  sessão no mock.
+- **Lighthouse (§10)** ainda não foi medido.

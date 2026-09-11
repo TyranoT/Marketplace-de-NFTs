@@ -61,8 +61,15 @@ export function HeaderSearch() {
         />
       </form>
 
+      {/**
+       * `key` diferentes: sem eles o React reaproveita o mesmo `<button>` e
+       * só troca o `type` para `submit` no meio do clique. O navegador, ao
+       * terminar o clique, via um botão de envio e enviava o formulário — que
+       * fechava a busca na mesma hora. Com o mouse, a busca nunca abria.
+       */}
       {isOpen ? (
         <button
+          key="submit"
           type="submit"
           form={formId}
           aria-label="Buscar"
@@ -72,6 +79,7 @@ export function HeaderSearch() {
         </button>
       ) : (
         <button
+          key="open"
           type="button"
           aria-label="Abrir busca"
           aria-expanded={false}

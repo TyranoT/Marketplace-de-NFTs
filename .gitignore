@@ -14,3 +14,7 @@ todos.json
 
 # Referencias visuais do Figma (working material)
 .figma-refs/
+
+# Playwright: saídas de execução. As baselines visuais ficam em e2e/.
+test-results/
+playwright-report/

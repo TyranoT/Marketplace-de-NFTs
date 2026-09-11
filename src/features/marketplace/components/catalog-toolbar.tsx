@@ -1,3 +1,4 @@
+import { SlidersHorizontal } from 'lucide-react'
 import { cn } from '@/global/helpers/cn'
 import {
   Select,
@@ -14,6 +15,9 @@ type CatalogToolbarProps = {
   sort: CatalogSortValue
   onTabChange: (tab: CatalogTabKey) => void
   onSortChange: (sort: CatalogSortValue) => void
+  filtersDialogId?: string
+  isFiltersOpen?: boolean
+  onOpenFilters?: () => void
 }
 
 export function CatalogToolbar({
@@ -21,6 +25,9 @@ export function CatalogToolbar({
   sort,
   onTabChange,
   onSortChange,
+  filtersDialogId,
+  isFiltersOpen = false,
+  onOpenFilters,
 }: CatalogToolbarProps) {
   return (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
@@ -51,6 +58,26 @@ export function CatalogToolbar({
           )
         })}
       </div>
+
+      {onOpenFilters ? (
+        /**
+         * Entre o mobile e o desktop não havia como filtrar: a busca do
+         * mobile, que abre o diálogo, some a partir do `md`, e a lateral só
+         * aparece no `lg`. Este botão cobre o intervalo — o teste do
+         * catálogo no tablet é que mostrou.
+         */
+        <button
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded={isFiltersOpen}
+          aria-controls={filtersDialogId}
+          onClick={onOpenFilters}
+          className="hidden items-center gap-2 rounded-md border border-line px-3 py-1.5 text-15 text-foreground md:inline-flex lg:hidden"
+        >
+          <SlidersHorizontal aria-hidden="true" className="size-4" />
+          Abrir filtros
+        </button>
+      ) : null}
 
       <div className="ml-auto hidden shrink-0 items-center gap-1 md:flex">
         <label

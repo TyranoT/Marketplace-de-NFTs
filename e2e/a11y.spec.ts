@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { resetMock } from './support/mock'
 import type { Page } from '@playwright/test'
 
 /**
@@ -17,16 +18,6 @@ const ROUTES = [
   { name: 'pagamento', path: '/pagamento' },
   { name: 'perfil', path: '/perfil' },
 ]
-
-/**
- * O reset é feito **de dentro da página**. O MSW só existe no navegador: um
- * `request.post()` do Playwright iria ao servidor de verdade, e não ao mock.
- */
-async function resetScenario(page: Page) {
-  await page.goto('/')
-  await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller))
-  await page.evaluate(() => fetch('/api/__mock/reset', { method: 'POST' }))
-}
 
 /** Espera o conteúdo sair do esqueleto antes de auditar. */
 async function waitForContent(page: Page) {
@@ -52,7 +43,7 @@ async function seriousViolations(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await resetScenario(page)
+  await resetMock(page)
 })
 
 for (const route of ROUTES) {
