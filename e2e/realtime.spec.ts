@@ -35,7 +35,6 @@ test('preço alterado em outra aba durante o checkout pede revisão', async ({
   const panel = await context.newPage()
 
   await panel.goto('/dev')
-  await panel.waitForFunction(() => Boolean(navigator.serviceWorker.controller))
   await changeNft(panel, 'emerald-ape-042', { price: '2.50' })
 
   await expect(visible(page.getByText(QUOTE_STALE)).first()).toBeVisible()
