@@ -65,13 +65,27 @@ export function CartScreen() {
 
   function handleRemove(item: CartItem) {
     setActionError(undefined)
+
+    /** Posição antes da remoção: o foco vai para quem ocupar este lugar. */
+    const index = Math.max(
+      0,
+      cart.data?.items.findIndex((entry) => entry.id === item.id) ?? 0,
+    )
     removeItem.mutate(
       { itemId: item.id },
       {
-        onSuccess: (next) => focus.handleRemoved(item, next.items),
+        onSuccess: (next) => focus.handleRemoved(item, next.items, index),
         onError: (error) => setActionError(toCartErrorMessage(error)),
       },
     )
+  }
+
+  /** Remover o cupom falhava em silêncio; agora o erro aparece com os outros. */
+  function handleRemoveCoupon() {
+    setActionError(undefined)
+    removeCoupon.mutate(undefined, {
+      onError: (error) => setActionError(toCartErrorMessage(error)),
+    })
   }
 
   const hasItems = Boolean(cart.data && cart.data.items.length > 0)
@@ -82,7 +96,7 @@ export function CartScreen() {
       className={cn(
         'flex flex-col gap-8 md:gap-24 md:pt-8',
         /** Espaço para o painel fixo do mobile não cobrir o fim do conteúdo. */
-        hasItems && 'pb-76 md:pb-0',
+        hasItems && 'pb-76 lg:pb-0',
       )}
     >
       {/**
@@ -93,6 +107,8 @@ export function CartScreen() {
       <div
         ref={focus.regionRef}
         tabIndex={-1}
+        role="region"
+        aria-label={CART_COPY.mobileTitle}
         className="flex flex-col gap-3 outline-none"
       >
         {/** O frame mobile traz título próprio, e não a trilha do desktop. */}
@@ -101,6 +117,11 @@ export function CartScreen() {
           title={CART_COPY.mobileTitle}
           backLabel={CART_COPY.mobileBack}
         />
+        {/**
+         * O h1 visível é o da barra do mobile; no desktop o frame não tem
+         * título, e a página ficava sem nenhum h1.
+         */}
+        <h1 className="sr-only max-md:hidden">{CART_COPY.mobileTitle}</h1>
 
         {/** Mensagens de mutation ficam acima da lista, onde a ação começou. */}
         {(actionError ?? backgroundError) ? (
@@ -118,6 +139,12 @@ export function CartScreen() {
         <p role="status" className="sr-only">
           {focus.status}
         </p>
+
+        {cart.isPending ? (
+          <p role="status" className="sr-only">
+            {CART_COPY.loadingLabel}
+          </p>
+        ) : null}
 
         {cart.isPending ? (
           <div className={CART_GRID}>
@@ -147,7 +174,7 @@ export function CartScreen() {
               <CartTable
                 items={cart.data.items}
                 pendingItemId={pendingItemId}
-                registerRemoveButton={focus.registerRemoveButton}
+                registerRemoveButton={focus.registerTableButton}
                 onQuantityChange={handleQuantityChange}
                 onRemove={handleRemove}
               />
@@ -155,7 +182,7 @@ export function CartScreen() {
               <CartMobileList
                 items={cart.data.items}
                 pendingItemId={pendingItemId}
-                registerRemoveButton={focus.registerRemoveButton}
+                registerRemoveButton={focus.registerListButton}
                 onQuantityChange={handleQuantityChange}
                 onRemove={handleRemove}
               />
@@ -173,7 +200,7 @@ export function CartScreen() {
                 couponError={toCartErrorMessage(applyCoupon.error)}
                 isApplyingCoupon={applyCoupon.isPending}
                 onApplyCoupon={(code) => applyCoupon.mutate({ code })}
-                onRemoveCoupon={() => removeCoupon.mutate()}
+                onRemoveCoupon={handleRemoveCoupon}
               />
             </div>
           </div>
@@ -193,6 +220,7 @@ export function CartScreen() {
           couponError={toCartErrorMessage(applyCoupon.error)}
           isApplyingCoupon={applyCoupon.isPending}
           onApplyCoupon={(code) => applyCoupon.mutate({ code })}
+          onRemoveCoupon={handleRemoveCoupon}
         />
       ) : null}
 

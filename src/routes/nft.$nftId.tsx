@@ -6,7 +6,7 @@ import {
   NftNotFound,
   toDetailView,
 } from '@/features/marketplace'
-import { useNftDetail } from '@/global/api/nft'
+import { nftDetailQueryOptions, useNftDetail } from '@/global/api/nft'
 
 export const Route = createFileRoute('/nft/$nftId')({
   /**
@@ -18,6 +18,24 @@ export const Route = createFileRoute('/nft/$nftId')({
     header: { active: 'market', divider: true },
     mobileTabBar: false,
   },
+  /**
+   * O loader existe para o `<title>` saber o nome do NFT. Ele aquece o
+   * mesmo cache que a tela lê, então não há segunda requisição. Falha vira
+   * `null` em vez de erro: quem decide o que mostrar — 404, erro de rede —
+   * é o componente, que já trata os dois.
+   */
+  loader: ({ context, params }) =>
+    context.queryClient
+      .ensureQueryData(nftDetailQueryOptions(params.nftId))
+      .then((nft) => ({ name: nft.name }))
+      .catch(() => ({ name: null })),
+  head: ({ loaderData }) => ({
+    meta: [
+      {
+        title: loaderData?.name ? `${loaderData.name} · Kurio` : 'NFT · Kurio',
+      },
+    ],
+  }),
   component: NftDetailRoute,
   pendingComponent: NftDetailPending,
 })

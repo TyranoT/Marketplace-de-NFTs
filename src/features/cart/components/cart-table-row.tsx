@@ -4,6 +4,7 @@ import { cn } from '@/global/helpers/cn'
 import {
   buildDecreaseLabel,
   buildIncreaseLabel,
+  buildMaxQuantityHint,
   buildQuantityLabel,
 } from '../constants/cart-copy'
 import { CART_ROW_HEIGHT } from '../constants/cart-layout'
@@ -31,10 +32,12 @@ export function CartTableRow({
 }: CartTableRowProps) {
   return (
     <tr
+      /** A linha em voo não pode depender só da opacidade para se anunciar. */
+      aria-busy={isPending || undefined}
       className={cn(
         CART_ROW_HEIGHT,
-        '[&>td]:bg-surface-card [&>td]:align-middle',
-        '[&>td:first-child]:rounded-l-md [&>td:last-child]:rounded-r-md',
+        '[&>*]:bg-surface-card [&>*]:align-middle',
+        '[&>*:first-child]:rounded-l-md [&>*:last-child]:rounded-r-md',
       )}
     >
       <td className="p-0">
@@ -49,9 +52,13 @@ export function CartTableRow({
         />
       </td>
 
-      <td className="pl-4">
+      {/**
+       * Cabeçalho da linha: com ele o leitor diz de qual NFT é o preço e o
+       * total que está lendo, e não só a coluna.
+       */}
+      <th scope="row" className="pl-4 text-left font-normal">
         <CartItemIdentity name={item.name} />
-      </td>
+      </th>
 
       <td className="text-16 leading-4 text-brand-muted">
         {formatMoney(item.unitPrice)}
@@ -64,6 +71,7 @@ export function CartTableRow({
           value={item.quantity}
           max={item.available}
           disabled={isPending}
+          limitHint={buildMaxQuantityHint(item.name, item.available)}
           decreaseLabel={buildDecreaseLabel(item.name)}
           increaseLabel={buildIncreaseLabel(item.name)}
           valueLabel={buildQuantityLabel(item.name)}

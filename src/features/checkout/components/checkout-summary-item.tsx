@@ -39,10 +39,15 @@ export function CheckoutSummaryItem({ item }: CheckoutSummaryItemProps) {
       </div>
 
       <span className="shrink-0 text-13 leading-4 text-text-secondary">
-        {buildQuantityLabel(item.quantity)}
+        {/** "(x 2)" é lido literalmente; o leitor de tela ouve a frase. */}
+        <span aria-hidden="true">{buildQuantityLabel(item.quantity)}</span>
+        <span className="sr-only">
+          {item.quantity === 1 ? '1 edição' : `${item.quantity} edições`}
+        </span>
       </span>
 
       <span className="shrink-0 pr-2 text-16 leading-4 font-bold text-highlight">
+        <span className="sr-only">Subtotal: </span>
         {formatMoney(item.lineTotal)}
       </span>
     </li>

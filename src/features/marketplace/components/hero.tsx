@@ -1,4 +1,6 @@
-import { Button } from '@/global/components/ui/button'
+import { Link } from '@tanstack/react-router'
+import { buttonVariants } from '@/global/components/ui/button'
+import { cn } from '@/global/helpers/cn'
 import { HERO_ARTWORK, HERO_CONTENT, HERO_SLIDE_COUNT } from '../constants/hero'
 
 export function Hero() {
@@ -14,7 +16,7 @@ export function Hero() {
                 <p className="text-14 leading-4 font-medium tracking-[1.4px]">
                   {eyebrow}
                 </p>
-                <h1 className="text-43 leading-17.5 font-bold">
+                <h1 className="text-43 leading-17.5 font-bold uppercase">
                   {titleLines[0]}
                   <br />
                   {titleLines[1]}
@@ -25,9 +27,17 @@ export function Hero() {
               </p>
             </div>
 
-            <Button className="w-35 text-16 font-bold text-background">
+            {/** Era um botão sem ação; explorar é ir à grade do catálogo. */}
+            <Link
+              to="/"
+              hash="catalogo"
+              className={cn(
+                buttonVariants(),
+                'w-35 text-16 font-bold text-background uppercase',
+              )}
+            >
               {cta}
-            </Button>
+            </Link>
           </div>
 
           <div aria-hidden="true" className="flex gap-2">

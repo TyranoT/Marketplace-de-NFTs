@@ -1,7 +1,11 @@
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Button } from '@/global/components/ui/button'
-import { FormField, fieldProps } from '@/global/components/ui/form-field'
+import {
+  FormField,
+  errorId,
+  fieldProps,
+} from '@/global/components/ui/form-field'
 import { Input } from '@/global/components/ui/input'
 import { OptionSelect } from '@/global/components/ui/option-select'
 import { ENS_SUFFIXES } from '@/global/data'
@@ -158,6 +162,11 @@ function ProfileDataForm({ user }: { user: User }) {
                 render={({ field }) => (
                   <OptionSelect
                     id="ensSuffix"
+                    ref={field.ref}
+                    onBlur={field.onBlur}
+                    required
+                    ariaLabel="Sufixo ENS"
+                    errorMessageId={errorId('ensName')}
                     value={field.value}
                     options={ENS_SUFFIXES}
                     placeholder={ENS_SUFFIXES[0].label}

@@ -53,12 +53,10 @@ export function ProfileShell({ children }: ProfileShellProps) {
   if (me.isPending) {
     return (
       <Container as="main" className="md:pt-8">
-        <div className={PROFILE_GRID}>
+        <div role="status" aria-busy="true" className={PROFILE_GRID}>
+          <span className="sr-only">{PROFILE_COPY.loadingLabel}</span>
           <Skeleton className="hidden h-101.75 w-full lg:block" />
-          <Skeleton
-            aria-label={PROFILE_COPY.loadingLabel}
-            className="h-150 w-full"
-          />
+          <Skeleton className="h-150 w-full" />
         </div>
       </Container>
     )

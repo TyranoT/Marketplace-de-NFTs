@@ -10,6 +10,7 @@ import { CartScreen, CartScreenSkeleton } from '@/features/cart'
  * deixa o esqueleto no lugar até a hidratação.
  */
 export const Route = createFileRoute('/carrinho')({
+  head: () => ({ meta: [{ title: 'Carrinho · Kurio' }] }),
   ssr: false,
   staticData: {
     header: { active: 'market', divider: true },

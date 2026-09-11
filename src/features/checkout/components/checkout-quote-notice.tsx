@@ -1,6 +1,9 @@
 import { Button } from '@/global/components/ui/button'
 import { CHECKOUT_COPY } from '../constants/checkout-copy'
 
+/** O botão de envio bloqueado aponta para cá, para dizer por quê. */
+export const QUOTE_NOTICE_ID = 'checkout-quote-notice'
+
 type CheckoutQuoteNoticeProps = {
   onReview: () => void
 }
@@ -15,6 +18,7 @@ type CheckoutQuoteNoticeProps = {
 export function CheckoutQuoteNotice({ onReview }: CheckoutQuoteNoticeProps) {
   return (
     <div
+      id={QUOTE_NOTICE_ID}
       role="alert"
       className="flex flex-col gap-3 rounded-md border border-highlight/40 bg-highlight/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
     >

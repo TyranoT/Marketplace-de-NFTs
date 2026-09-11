@@ -10,11 +10,12 @@ const ROWS = [
 /** Rótulos e botão são estáticos; apenas os valores esperam a resposta. */
 export function CartSummarySkeleton() {
   return (
-    <section
-      aria-busy="true"
-      aria-label={CART_COPY.loadingLabel}
-      className="flex flex-col"
-    >
+    /**
+     * Invisível ao leitor de tela: como `section` rotulada ela virava uma
+     * landmark "Carregando carrinho" com um segundo h2 do resumo. O anúncio
+     * de carregamento é um só, na tela do carrinho.
+     */
+    <div aria-hidden="true" className="flex flex-col">
       <h2 className="border-b border-primary/60 pb-3 text-17 leading-4 font-bold text-text-primary">
         {CART_COPY.summaryHeading}
       </h2>
@@ -50,6 +51,6 @@ export function CartSummarySkeleton() {
       </div>
 
       <Skeleton className="mt-5.5 h-10 w-full rounded-lg" />
-    </section>
+    </div>
   )
 }

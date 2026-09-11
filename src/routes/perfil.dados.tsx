@@ -6,5 +6,6 @@ import { ProfileDataScreen } from '@/features/profile'
  * lista de seções no mobile; no desktop renderiza a mesma tela que o índice.
  */
 export const Route = createFileRoute('/perfil/dados')({
+  head: () => ({ meta: [{ title: 'Dados do perfil · Kurio' }] }),
   component: ProfileDataScreen,
 })

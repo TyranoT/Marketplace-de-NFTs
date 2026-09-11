@@ -5,6 +5,7 @@ import { NftDetailTabs } from '../components/nft-detail-tabs'
 import { NftGallery } from '../components/nft-gallery'
 import { NftMetadataList } from '../components/nft-metadata-list'
 import { NftPurchasePanel } from '../components/nft-purchase-panel'
+import { NftPriceAnnouncer } from '../components/nft-price-announcer'
 import { NftRating } from '../components/nft-rating'
 import { NftRelatedList } from '../components/nft-related-list'
 import { NftShare } from '../components/nft-share'
@@ -19,10 +20,12 @@ type NftDetailScreenProps = {
 export function NftDetailScreen({ nft, categoryId }: NftDetailScreenProps) {
   return (
     <Container as="main" className="flex flex-col gap-8 md:gap-24 md:pt-8">
+      <NftPriceAnnouncer price={nft.price} />
       <NftDetailMobile nft={nft} />
 
       <div className="hidden flex-col gap-3.5 md:flex">
-        <Breadcrumb items={NFT_BREADCRUMB} />
+        {/** A trilha termina na página atual; antes o `aria-current` caía em Mercado. */}
+        <Breadcrumb items={[...NFT_BREADCRUMB, { label: nft.name }]} />
 
         <section className="flex flex-col gap-8 lg:flex-row lg:gap-8.25">
           <NftGallery gallery={nft.gallery} name={nft.name} />
@@ -35,6 +38,7 @@ export function NftDetailScreen({ nft, categoryId }: NftDetailScreenProps) {
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <p className="text-22 leading-4 font-bold text-highlight">
+                  <span className="sr-only">Preço: </span>
                   {nft.price}
                 </p>
                 <NftRating rating={nft.rating} />
@@ -58,7 +62,7 @@ export function NftDetailScreen({ nft, categoryId }: NftDetailScreenProps) {
             />
 
             <NftMetadataList metadata={nft.metadata} />
-            <NftShare />
+            <NftShare nftName={nft.name} />
           </div>
         </section>
       </div>

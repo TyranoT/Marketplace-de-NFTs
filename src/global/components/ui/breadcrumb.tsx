@@ -18,7 +18,8 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
     <nav aria-label="Trilha de navegação" className={className}>
       <ol
         className={cn(
-          'flex items-center gap-2 text-16 leading-4 font-bold text-foreground',
+          /** `flex-wrap`: nome longo de NFT não pode empurrar a página para o lado. */
+          'flex flex-wrap items-center gap-2 text-16 leading-4 font-bold text-foreground',
         )}
       >
         {items.map((item, index) => {

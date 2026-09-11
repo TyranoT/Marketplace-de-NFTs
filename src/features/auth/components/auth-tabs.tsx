@@ -19,6 +19,13 @@ const TABS: Array<{ id: AuthTab; label: string }> = [
  */
 export function AuthTabs({ active, onChange }: AuthTabsProps) {
   function handleKeyDown(event: React.KeyboardEvent) {
+    if (event.key === 'Home' || event.key === 'End') {
+      event.preventDefault()
+      onChange(event.key === 'Home' ? 'login' : 'register')
+
+      return
+    }
+
     if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return
 
     event.preventDefault()
@@ -39,11 +46,13 @@ export function AuthTabs({ active, onChange }: AuthTabsProps) {
           role="tab"
           id={`auth-tab-${tab.id}`}
           aria-selected={active === tab.id}
-          aria-controls={`auth-panel-${tab.id}`}
+          /** Só o painel ativo existe no DOM; apontar para o outro era apontar para nada. */
+          aria-controls={active === tab.id ? `auth-panel-${tab.id}` : undefined}
           tabIndex={active === tab.id ? 0 : -1}
           onClick={() => onChange(tab.id)}
           className={cn(
-            'px-3 transition-colors outline-none focus-visible:text-highlight',
+            /** O foco era só uma troca de cor — invisível na aba ativa. Agora vale o contorno global. */
+            'px-3 transition-colors',
             active === tab.id
               ? 'text-brand'
               : 'text-text-primary hover:text-brand-muted',

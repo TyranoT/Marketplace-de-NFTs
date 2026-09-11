@@ -48,11 +48,18 @@ export function RegisterForm({
           id="register-username"
           autoComplete="username"
           aria-label={AUTH_COPY.usernamePlaceholder}
+          aria-required="true"
           aria-invalid={Boolean(errors.username)}
+          aria-describedby={
+            errors.username ? 'register-username-error' : undefined
+          }
           placeholder={AUTH_COPY.usernamePlaceholder}
           className={AUTH_FIELD_CLASS[variant]}
         />
-        <AuthNotice message={errors.username?.message} />
+        <AuthNotice
+          id="register-username-error"
+          message={errors.username?.message}
+        />
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -62,11 +69,13 @@ export function RegisterForm({
           type="email"
           autoComplete="email"
           aria-label={AUTH_COPY.registerEmailPlaceholder}
+          aria-required="true"
           aria-invalid={Boolean(errors.email)}
+          aria-describedby={errors.email ? 'register-email-error' : undefined}
           placeholder={AUTH_COPY.registerEmailPlaceholder}
           className={AUTH_FIELD_CLASS[variant]}
         />
-        <AuthNotice message={errors.email?.message} />
+        <AuthNotice id="register-email-error" message={errors.email?.message} />
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -75,11 +84,18 @@ export function RegisterForm({
           id="register-password"
           autoComplete="new-password"
           aria-label={AUTH_COPY.newPasswordPlaceholder}
+          aria-required="true"
           aria-invalid={Boolean(errors.password)}
+          aria-describedby={
+            errors.password ? 'register-password-error' : undefined
+          }
           placeholder={AUTH_COPY.newPasswordPlaceholder}
           className={AUTH_FIELD_CLASS[variant]}
         />
-        <AuthNotice message={errors.password?.message} />
+        <AuthNotice
+          id="register-password-error"
+          message={errors.password?.message}
+        />
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -88,11 +104,20 @@ export function RegisterForm({
           id="register-confirm-password"
           autoComplete="new-password"
           aria-label={AUTH_COPY.confirmPasswordPlaceholder}
+          aria-required="true"
           aria-invalid={Boolean(errors.confirmPassword)}
+          aria-describedby={
+            errors.confirmPassword
+              ? 'register-confirm-password-error'
+              : undefined
+          }
           placeholder={AUTH_COPY.confirmPasswordPlaceholder}
           className={AUTH_FIELD_CLASS[variant]}
         />
-        <AuthNotice message={errors.confirmPassword?.message} />
+        <AuthNotice
+          id="register-confirm-password-error"
+          message={errors.confirmPassword?.message}
+        />
       </div>
 
       <AuthNotice message={toAuthErrorMessage(register.error)} />
@@ -100,6 +125,7 @@ export function RegisterForm({
       <Button
         type="submit"
         disabled={register.isPending}
+        focusableWhenDisabled
         className={AUTH_SUBMIT_CLASS[variant]}
       >
         {register.isPending

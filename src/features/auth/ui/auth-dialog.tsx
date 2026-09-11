@@ -7,6 +7,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@/global/components/ui/dialog'
+import { MAIN_CONTENT_ID } from '@/global/components/ui/container'
 import { AUTH_COPY } from '../constants/auth-copy'
 import { AuthNotice } from '../components/auth-notice'
 import { AuthProviders } from '../components/auth-providers'
@@ -35,15 +36,24 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     setNotice(undefined)
   }
 
+  /**
+   * Quem abriu o diálogo — o botão "Entrar" do cabeçalho — deixa de existir
+   * ao entrar, trocado pelo menu da conta. Sem destino, o foco caía no
+   * `<body>`; vai para o conteúdo da página.
+   */
   function handleAuthenticated() {
     setNotice(undefined)
     onOpenChange(false)
+    requestAnimationFrame(() =>
+      document.getElementById(MAIN_CONTENT_ID)?.focus({ preventScroll: true }),
+    )
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-125 border-b-8 border-primary">
-        <div className="relative flex flex-col gap-5 px-13 pt-8 pb-9">
+        {/** `px-6` no mobile: com os 52px do frame, a 320px os botões sociais estouravam. */}
+        <div className="relative flex flex-col gap-5 px-6 pt-8 pb-9 md:px-13">
           <DialogClose
             aria-label={AUTH_COPY.close}
             className="absolute top-4 right-4 text-brand transition-colors after:absolute after:-inset-2 hover:text-highlight"
@@ -51,9 +61,16 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             <X className="size-6" />
           </DialogClose>
 
-          <DialogTitle render={<div />} className="text-20">
+          {/**
+           * O título é próprio e invisível: as abas dentro dele davam ao
+           * diálogo o nome "Entrar Criar conta", e punham um `tablist` dentro
+           * de um título.
+           */}
+          <DialogTitle className="sr-only">{AUTH_COPY.dialogTitle}</DialogTitle>
+
+          <div className="text-20">
             <AuthTabs active={tab} onChange={handleTabChange} />
-          </DialogTitle>
+          </div>
 
           <DialogDescription className="text-center text-14 leading-5 text-brand-muted">
             {tab === 'login'

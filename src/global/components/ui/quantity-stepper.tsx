@@ -1,10 +1,17 @@
+import { useId } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { cva } from 'class-variance-authority'
 import { cn } from '@/global/helpers/cn'
 import type { VariantProps } from 'class-variance-authority'
 
 const stepperButton = cva(
-  'flex shrink-0 items-center justify-center transition-opacity disabled:opacity-50',
+  /**
+   * `aria-disabled`, e não `disabled`: um botão `disabled` que está com o
+   * foco joga o foco no `<body>`, e quem usa teclado perdia a posição a cada
+   * clique — o botão trava durante a mutation e de novo ao chegar no limite.
+   * O `after` amplia a área de toque além do desenho de 18px da cápsula.
+   */
+  'relative flex shrink-0 items-center justify-center transition-opacity after:absolute after:-inset-1.5 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
   {
     variants: {
       tone: {
@@ -12,8 +19,8 @@ const stepperButton = cva(
         solid: 'bg-primary text-ink',
         /**
          * Carrinho no mobile: círculo escuro com o glifo claro, como o frame.
-         * O botão travado apaga pelo `disabled:opacity-50` da base, que é o
-         * que produz o tom apagado do desenho sobre este fundo.
+         * O botão travado apaga pelo `aria-disabled:opacity-50` da base, que é
+         * o que produz o tom apagado do desenho sobre este fundo.
          */
         outline: 'bg-[#2f1d15] text-foreground',
       },
@@ -52,6 +59,11 @@ type QuantityStepperProps = VariantProps<typeof stepperButton> & {
   decreaseLabel: string
   increaseLabel: string
   valueLabel: string
+  /**
+   * Por que o "+" travou no limite. Sem isto o botão apagava sem explicação
+   * — a pessoa via o limite, mas não o motivo.
+   */
+  limitHint?: string
   className?: string
   onIncrease: () => void
   onDecrease: () => void
@@ -68,27 +80,36 @@ export function QuantityStepper({
   decreaseLabel,
   increaseLabel,
   valueLabel,
+  limitHint,
   className,
   onIncrease,
   onDecrease,
 }: QuantityStepperProps) {
   const buttonClass = stepperButton({ shape, size, tone })
   const iconClass = shape === 'pill' ? 'size-3' : 'size-3.5 md:size-4'
+  const hintId = useId()
+
+  const isAtLimit = max !== undefined && value >= max
+  const cannotDecrease = disabled || value <= min
+  const cannotIncrease = disabled || isAtLimit
 
   return (
     <div className={cn('flex items-center gap-2.5', className)}>
       <button
         type="button"
         aria-label={decreaseLabel}
-        onClick={onDecrease}
-        disabled={disabled || value <= min}
+        aria-disabled={cannotDecrease || undefined}
+        onClick={() => {
+          if (!cannotDecrease) onDecrease()
+        }}
         className={buttonClass}
       >
         <Minus className={iconClass} />
       </button>
 
+      {/** O rótulo inclui o valor: `aria-label` substitui o conteúdo. */}
       <output
-        aria-label={valueLabel}
+        aria-label={`${valueLabel}: ${value}`}
         className="min-w-4 text-center text-16 leading-4 text-foreground"
       >
         {value}
@@ -97,12 +118,21 @@ export function QuantityStepper({
       <button
         type="button"
         aria-label={increaseLabel}
-        onClick={onIncrease}
-        disabled={disabled || (max !== undefined && value >= max)}
+        aria-disabled={cannotIncrease || undefined}
+        aria-describedby={isAtLimit && limitHint ? hintId : undefined}
+        onClick={() => {
+          if (!cannotIncrease) onIncrease()
+        }}
         className={buttonClass}
       >
         <Plus className={iconClass} />
       </button>
+
+      {limitHint ? (
+        <span id={hintId} className="sr-only">
+          {limitHint}
+        </span>
+      ) : null}
     </div>
   )
 }

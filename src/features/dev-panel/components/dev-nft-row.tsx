@@ -70,6 +70,7 @@ export function DevNftRow({ nft, isSaving, onSave }: DevNftRowProps) {
         <Button
           type="button"
           disabled={isSaving}
+          aria-label={`${DEV_COPY.save} ${nft.name}`}
           onClick={() => onSave({ price, units: Number(units) })}
           className="h-9 px-4 text-13"
         >

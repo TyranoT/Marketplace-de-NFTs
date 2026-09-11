@@ -3,7 +3,10 @@ import { cn } from '@/global/helpers/cn'
 import { errorId } from '@/global/components/ui/form-field'
 import type { CheckoutWallet } from '@/global/data'
 
-const FIELD_ID = 'walletId'
+/** Também o alvo do foco quando a carteira é o único erro do envio. */
+export const WALLET_OPTIONS_ID = 'walletId'
+
+const FIELD_ID = WALLET_OPTIONS_ID
 
 type CheckoutWalletOptionsProps = {
   wallets: Array<CheckoutWallet>
@@ -24,6 +27,8 @@ export function CheckoutWalletOptions({
   return (
     <>
       <RadioGroup
+        id={FIELD_ID}
+        aria-required="true"
         value={value || null}
         onValueChange={(next) => onValueChange(String(next ?? ''))}
         aria-labelledby={headingId}

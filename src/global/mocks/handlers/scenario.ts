@@ -11,8 +11,9 @@ type ResetBody = {
 
 /**
  * Controle da simulação exposto como endpoint, e não como função exportada,
- * para o Playwright preparar o estado com `request.post()` no `beforeEach`,
- * sem depender de `page.evaluate` nem de a aplicação já estar montada.
+ * para ser chamado de dentro da página — pelo painel `/dev` e pelos testes,
+ * com `page.evaluate`. Não dá para usar `request.post()` do Playwright: o
+ * MSW só existe no navegador, e uma requisição de fora iria ao servidor real.
  */
 export const scenarioHandlers = [
   http.post('/api/__mock/reset', async ({ request }) => {

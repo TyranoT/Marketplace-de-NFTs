@@ -32,12 +32,12 @@ export function PasswordSection({ form }: PasswordSectionProps) {
 
   return (
     <section aria-labelledby="profile-password" className="flex flex-col gap-5">
-      <h3
+      <h2
         id="profile-password"
         className="text-17 leading-4 font-bold text-text-primary"
       >
         {PROFILE_COPY.passwordHeading}
-      </h3>
+      </h2>
 
       {FIELDS.map((field) => (
         <FormField

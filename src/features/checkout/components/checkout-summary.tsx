@@ -7,6 +7,7 @@ import {
 import { CART_COPY, CartSummaryRow } from '@/features/cart'
 import { CHECKOUT_COPY } from '../constants/checkout-copy'
 import { CheckoutCouponDisclosure } from './checkout-coupon-disclosure'
+import { QUOTE_NOTICE_ID } from './checkout-quote-notice'
 import { CheckoutSummaryItem } from './checkout-summary-item'
 import { CheckoutWalletOptions } from './checkout-wallet-options'
 import type { Cart } from '@/global/api'
@@ -63,7 +64,11 @@ export function CheckoutSummary({
         {CHECKOUT_COPY.summaryHeading}
       </h2>
 
-      <div className="mt-6.5 flex items-baseline justify-between border-b border-brand/70 pb-2.5 text-16 leading-4 font-bold text-foreground">
+      {/** Cabeçalho visual: cada item já diz o próprio subtotal ao leitor de tela. */}
+      <div
+        aria-hidden="true"
+        className="mt-6.5 flex items-baseline justify-between border-b border-brand/70 pb-2.5 text-16 leading-4 font-bold text-foreground"
+      >
         <span>{CHECKOUT_COPY.columnNfts}</span>
         <span>{CHECKOUT_COPY.columnSubtotal}</span>
       </div>
@@ -129,6 +134,14 @@ export function CheckoutSummary({
         type="submit"
         form={formId}
         disabled={isSubmitting || isBlocked}
+        /**
+         * Continua focável quando travado: desabilitado de verdade ele saía do
+         * Tab, e quem usa teclado não descobria que a cotação tinha mudado. O
+         * `aria-describedby` diz o motivo; o foco também não se perde durante
+         * o envio, e o diálogo devolve o foco para cá ao fechar.
+         */
+        focusableWhenDisabled
+        aria-describedby={isBlocked ? QUOTE_NOTICE_ID : undefined}
         className="mt-6 h-11 w-full text-15 font-bold"
       >
         {isSubmitting ? CHECKOUT_COPY.submitting : CHECKOUT_COPY.submit}

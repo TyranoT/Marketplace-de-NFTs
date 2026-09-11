@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Container } from '@/global/components/ui/container'
-import { Button } from '@/global/components/ui/button'
+import { buttonVariants } from '@/global/components/ui/button'
+import { cn } from '@/global/helpers/cn'
 import { NFT_DETAIL_COPY } from '../constants/nft-detail-copy'
 
 export function NftNotFound() {
@@ -15,9 +16,13 @@ export function NftNotFound() {
       <p className="max-w-150 text-14 leading-6 text-text-secondary">
         {NFT_DETAIL_COPY.notFoundBody}
       </p>
-      <Button render={<Link to="/" />} className="w-fit px-8">
+      {/**
+       * `buttonVariants` direto no Link: pelo `Button` do Base UI com
+       * `render`, o `<a>` recebia `type="button"`, que não é atributo de link.
+       */}
+      <Link to="/" className={cn(buttonVariants(), 'w-fit px-8')}>
         {NFT_DETAIL_COPY.notFoundCta}
-      </Button>
+      </Link>
     </Container>
   )
 }

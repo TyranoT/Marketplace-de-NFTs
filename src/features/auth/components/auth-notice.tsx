@@ -1,4 +1,6 @@
 type AuthNoticeProps = {
+  /** Para o campo apontar para a mensagem com `aria-describedby`. */
+  id?: string
   message?: string
   tone?: 'error' | 'info'
 }
@@ -8,11 +10,12 @@ type AuthNoticeProps = {
  * demonstração. `role="status"` para o aviso e `role="alert"` para o erro: um
  * informa, o outro interrompe.
  */
-export function AuthNotice({ message, tone = 'error' }: AuthNoticeProps) {
+export function AuthNotice({ id, message, tone = 'error' }: AuthNoticeProps) {
   if (!message) return null
 
   return (
     <p
+      id={id}
       role={tone === 'error' ? 'alert' : 'status'}
       className={
         tone === 'error'

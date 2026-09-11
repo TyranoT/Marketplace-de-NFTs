@@ -18,9 +18,22 @@ export function PriceRangeFilter({
   const [minPrice, maxPrice] = range
 
   return (
-    <div className="flex w-full flex-col gap-3 pl-3">
+    /**
+     * O grupo é nomeado aqui, e não na raiz do Slider: o `aria-labelledby`
+     * da raiz desce para os dois cursores e vence o `aria-label` de cada um,
+     * e eles voltavam a se chamar "Preço: 0,02 - 12,30 ETH" — o mesmo nome
+     * para os dois, e um nome que muda enquanto se arrasta.
+     */
+    <div
+      role="group"
+      aria-label="Faixa de preço"
+      className="flex w-full flex-col gap-3 pl-3"
+    >
       <Slider
-        aria-labelledby="price-range-value"
+        getAriaLabel={(index) =>
+          index === 0 ? 'Preço mínimo' : 'Preço máximo'
+        }
+        getAriaValueText={(_, value) => `${formatEth(value)} ETH`}
         min={PRICE_BOUNDS[0]}
         max={PRICE_BOUNDS[1]}
         step={PRICE_STEP}
@@ -28,7 +41,7 @@ export function PriceRangeFilter({
         onValueChange={(value) => onRangeChange(value as PriceRange)}
       />
 
-      <p id="price-range-value" className="text-15 text-foreground">
+      <p aria-hidden="true" className="text-15 text-foreground">
         Preço: {formatEth(minPrice)} - {formatEth(maxPrice)} ETH
       </p>
 

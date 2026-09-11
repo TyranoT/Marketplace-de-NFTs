@@ -25,7 +25,7 @@ const TAB_ICONS: Record<MobileNavKey, TabIcon> = {
   account: { Icon: User, className: 'size-5 fill-current' },
 }
 
-const TAP_TARGET = 'flex size-11 items-center justify-center'
+const TAP_TARGET = 'relative flex size-11 items-center justify-center'
 
 type MobileTabItemProps = {
   item: MobileNavItem
@@ -34,12 +34,17 @@ type MobileTabItemProps = {
 export function MobileTabItem({ item }: MobileTabItemProps) {
   const { Icon, className } = TAB_ICONS[item.key]
 
+  /**
+   * Sem destino, o item é anunciado como indisponível. Antes era um botão
+   * sem ação que parecia funcionar — o que o enunciado proíbe.
+   */
   if (!item.to) {
     return (
       <button
         type="button"
-        aria-label={item.label}
-        className={cn(TAP_TARGET, 'text-text-secondary')}
+        aria-disabled="true"
+        aria-label={`${item.label} (em breve)`}
+        className={cn(TAP_TARGET, 'cursor-not-allowed text-text-secondary/60')}
       >
         <Icon className={className} />
       </button>
@@ -54,12 +59,25 @@ export function MobileTabItem({ item }: MobileTabItemProps) {
       className={TAP_TARGET}
     >
       {({ isActive }) => (
-        <Icon
-          className={cn(
-            className,
-            isActive ? 'text-highlight' : 'text-text-secondary',
-          )}
-        />
+        <>
+          <Icon
+            className={cn(
+              className,
+              isActive ? 'text-highlight' : 'text-text-secondary',
+            )}
+          />
+          {/**
+           * O ativo não pode depender só da cor: os dois tons são próximos
+           * demais para quem enxerga pouco contraste. O ponto é o segundo
+           * sinal; o `aria-current` do Link é o de quem usa leitor de tela.
+           */}
+          {isActive ? (
+            <span
+              aria-hidden="true"
+              className="absolute bottom-0.5 size-1 rounded-full bg-highlight"
+            />
+          ) : null}
+        </>
       )}
     </Link>
   )

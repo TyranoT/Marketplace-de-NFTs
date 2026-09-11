@@ -32,11 +32,7 @@ export function NftMobileActions({
       <button
         type="button"
         aria-pressed={isFavorite}
-        aria-label={
-          isFavorite
-            ? NFT_DETAIL_COPY.favoritedLabel
-            : NFT_DETAIL_COPY.favoriteLabel
-        }
+        aria-label={NFT_DETAIL_COPY.favoriteLabel}
         onClick={onToggleFavorite}
         className={cn(CIRCLE, 'bg-[#2f1d15] text-brand')}
       >

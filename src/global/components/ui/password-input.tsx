@@ -4,20 +4,24 @@ import { Input } from './input'
 import { cn } from '@/global/helpers/cn'
 
 type PasswordInputProps = Omit<React.ComponentProps<'input'>, 'type'> & {
-  /** Rótulo do botão do olho, que muda com o estado. */
   revealLabel?: string
-  hideLabel?: string
 }
 
 /**
- * Campo de senha com o olho do frame. O botão é `tabIndex={-1}`: ele não é
- * um passo do preenchimento, e ficar no caminho do Tab entre senha e
- * confirmação atrasaria quem digita sem olhar.
+ * Campo de senha com o olho do frame.
+ *
+ * O botão fica **no caminho do Tab**. Antes era `tabIndex={-1}`, com a ideia
+ * de não atrasar quem digita sem olhar — mas isso deixava a função
+ * inalcançável para quem só usa teclado, que é justamente quem mais precisa
+ * conferir o que digitou.
+ *
+ * O rótulo é fixo e o estado vai em `aria-pressed`. Trocar o rótulo junto
+ * com o estado fazia o leitor anunciar "Ocultar senha, pressionado": dois
+ * sinais para a mesma coisa, que se contradizem.
  */
 export function PasswordInput({
   className,
   revealLabel = 'Mostrar senha',
-  hideLabel = 'Ocultar senha',
   ...props
 }: PasswordInputProps) {
   const [isVisible, setIsVisible] = useState(false)
@@ -32,9 +36,9 @@ export function PasswordInput({
 
       <button
         type="button"
-        tabIndex={-1}
-        aria-label={isVisible ? hideLabel : revealLabel}
+        aria-label={revealLabel}
         aria-pressed={isVisible}
+        aria-controls={props.id}
         onClick={() => setIsVisible((visible) => !visible)}
         className="absolute inset-y-0 right-3 flex items-center text-brand-muted transition-colors hover:text-brand"
       >

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
   formatEthAmount,
@@ -15,6 +16,7 @@ type CartMobileSummaryProps = {
   couponError?: string
   isApplyingCoupon: boolean
   onApplyCoupon: (code: string) => void
+  onRemoveCoupon: () => void
 }
 
 /**
@@ -34,13 +36,45 @@ export function CartMobileSummary({
   couponError,
   isApplyingCoupon,
   onApplyCoupon,
+  onRemoveCoupon,
 }: CartMobileSummaryProps) {
-  const { totals } = cart
+  const { totals, coupon } = cart
+  const panelRef = useRef<HTMLElement>(null)
+
+  /**
+   * O painel é fixo e cobre o fim da página. Um item focado por Tab podia
+   * ficar atrás dele, invisível. O `scroll-padding` com a altura real do
+   * painel faz o navegador rolar o foco para acima dele — medido, porque a
+   * altura muda com o erro do cupom e com o zoom de texto.
+   */
+  useEffect(() => {
+    const panel = panelRef.current
+    const root = document.documentElement
+
+    if (!panel) return
+
+    const observer = new ResizeObserver(([entry]) => {
+      root.style.scrollPaddingBottom = `${entry.contentRect.height + 24}px`
+    })
+
+    observer.observe(panel)
+
+    return () => {
+      observer.disconnect()
+      root.style.scrollPaddingBottom = ''
+    }
+  }, [])
 
   return (
     <section
+      ref={panelRef}
       aria-labelledby="cart-mobile-summary"
-      className="fixed inset-x-0 bottom-0 z-40 rounded-t-3xl bg-surface-card px-6 pt-4 pb-6 shadow-[0_-8px_24px_rgba(0,0,0,0.5)] md:hidden"
+      /**
+       * `lg:hidden`, e não `md:hidden`: o resumo da coluna direita só aparece
+       * a partir de `lg`. Com `md`, entre 768 e 1023px os dois sumiam e o
+       * tablet ficava sem total e sem o botão de finalizar.
+       */
+      className="fixed inset-x-0 bottom-0 z-40 rounded-t-3xl bg-surface-card px-6 pt-4 pb-6 shadow-[0_-8px_24px_rgba(0,0,0,0.5)] lg:hidden"
     >
       <h2 id="cart-mobile-summary" className="sr-only">
         {CART_COPY.summaryHeading}
@@ -54,11 +88,34 @@ export function CartMobileSummary({
       />
 
       {/**
-       * Uma região viva só, envolvendo valores e total: anunciar as linhas
-       * separadamente faria o leitor de tela ler um subtotal novo ao lado de
-       * um total ainda antigo.
+       * Uma região viva só, envolvendo cupom, valores e total: anunciar as
+       * linhas separadamente faria o leitor de tela ler um subtotal novo ao
+       * lado de um total ainda antigo. O cupom aplicado não existia no
+       * mobile — não havia como ver qual estava valendo nem como tirá-lo.
        */}
-      <div aria-live="polite" aria-busy={isUpdating} className="mt-3.5">
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        aria-busy={isUpdating}
+        className="mt-3.5"
+      >
+        {coupon ? (
+          <p className="mb-2 flex items-center justify-between gap-3 text-12 leading-4 text-brand-muted">
+            <span>
+              {CART_COPY.couponAppliedPrefix} <strong>{coupon.code}</strong>
+            </span>
+
+            <button
+              type="button"
+              onClick={onRemoveCoupon}
+              aria-label={`${CART_COPY.couponRemove} cupom ${coupon.code}`}
+              className="text-brand underline underline-offset-2 hover:text-highlight"
+            >
+              {CART_COPY.couponRemove}
+            </button>
+          </p>
+        ) : null}
+
         <dl className="flex flex-col gap-1.5 text-14 leading-5">
           <CartSummaryRow
             label={CART_COPY.subtotalLabel}

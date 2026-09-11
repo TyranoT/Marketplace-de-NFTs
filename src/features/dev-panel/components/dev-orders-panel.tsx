@@ -54,6 +54,7 @@ export function DevOrdersPanel() {
                   <Button
                     type="button"
                     disabled={settle.isPending}
+                    aria-label={`${DEV_COPY.confirmOrder} ${order.id}`}
                     onClick={() =>
                       settle.mutate({ orderId: order.id, status: 'confirmed' })
                     }
@@ -65,6 +66,7 @@ export function DevOrdersPanel() {
                     type="button"
                     variant="outline"
                     disabled={settle.isPending}
+                    aria-label={`${DEV_COPY.declineOrder} ${order.id}`}
                     onClick={() =>
                       settle.mutate({ orderId: order.id, status: 'declined' })
                     }

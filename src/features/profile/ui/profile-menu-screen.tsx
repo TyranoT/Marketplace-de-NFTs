@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { ChevronRight, LogOut } from 'lucide-react'
 import { useLogout } from '@/global/api/user'
-import { PROFILE_COPY, buildUnavailableLabel } from '../constants/profile-copy'
+import { PROFILE_COPY } from '../constants/profile-copy'
 import { PROFILE_NAV_ITEMS, toMobileTarget } from '../constants/profile-nav'
 
 const ROW =
@@ -32,13 +32,11 @@ export function ProfileMenuScreen() {
         ) : (
           <p
             key={item.label}
-            aria-disabled="true"
-            aria-label={buildUnavailableLabel(item.label)}
             className={`${ROW} cursor-not-allowed text-foreground/50`}
           >
             <item.Icon className="size-5 shrink-0 text-brand/45" />
             <span className="min-w-0 flex-1 truncate">{item.label}</span>
-            <span aria-hidden="true" className="text-10 text-brand-muted/70">
+            <span className="text-12 text-brand-muted">
               {PROFILE_COPY.itemUnavailable}
             </span>
           </p>

@@ -1,67 +1,47 @@
-import { useState } from 'react'
-import { cn } from '@/global/helpers/cn'
+import { Tabs } from '@base-ui/react/tabs'
 import { NFT_DETAIL_COPY } from '../constants/nft-detail-copy'
 import { NftDetailFacts } from './nft-detail-facts'
 import type { NftDetail } from '@/global/type'
-
-type TabId = 'details' | 'reviews'
 
 type NftDetailTabsProps = {
   nft: NftDetail
 }
 
+const TAB_CLASS =
+  'relative -mb-px border-b-2 border-transparent pb-2.5 text-15 leading-4 whitespace-nowrap text-foreground aria-selected:border-primary aria-selected:font-bold aria-selected:text-highlight'
+
+/**
+ * Abas do Base UI, com a aparência do frame.
+ *
+ * As de antes tinham os papéis ARIA certos mas nenhum teclado: as setas não
+ * andavam entre as abas, cada uma era uma parada de Tab, e o `aria-controls`
+ * da aba inativa apontava para um painel que não existia. O Base UI traz o
+ * tabindex móvel, as setas, Home/End e as ligações aba–painel.
+ */
 export function NftDetailTabs({ nft }: NftDetailTabsProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('details')
-
-  const tabs: Array<{ id: TabId; label: string }> = [
-    { id: 'details', label: NFT_DETAIL_COPY.detailsTabLabel },
-    {
-      id: 'reviews',
-      label: `${NFT_DETAIL_COPY.reviewsTabLabel} (${nft.rating.count})`,
-    },
-  ]
-
   return (
-    <section className="flex flex-col gap-5">
-      <div role="tablist" className="flex gap-6 border-b border-line">
-        {tabs.map(({ id, label }) => {
-          const isActive = id === activeTab
-
-          return (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              id={`nft-tab-${id}`}
-              aria-selected={isActive}
-              aria-controls={`nft-panel-${id}`}
-              onClick={() => setActiveTab(id)}
-              className={cn(
-                'relative -mb-px pb-2.5 text-15 leading-4 whitespace-nowrap',
-                isActive
-                  ? 'border-b-2 border-primary font-bold text-highlight'
-                  : 'border-b-2 border-transparent text-foreground',
-              )}
-            >
-              {label}
-            </button>
-          )
-        })}
-      </div>
-
-      <div
-        role="tabpanel"
-        id={`nft-panel-${activeTab}`}
-        aria-labelledby={`nft-tab-${activeTab}`}
+    <Tabs.Root defaultValue="details" className="flex flex-col gap-5">
+      <Tabs.List
+        aria-label="Informações do NFT"
+        className="flex gap-6 border-b border-line"
       >
-        {activeTab === 'details' ? (
-          <NftDetailFacts nft={nft} />
-        ) : (
-          <p className="text-14 leading-6 text-text-secondary">
-            {NFT_DETAIL_COPY.reviewsEmpty}
-          </p>
-        )}
-      </div>
-    </section>
+        <Tabs.Tab value="details" className={TAB_CLASS}>
+          {NFT_DETAIL_COPY.detailsTabLabel}
+        </Tabs.Tab>
+        <Tabs.Tab value="reviews" className={TAB_CLASS}>
+          {`${NFT_DETAIL_COPY.reviewsTabLabel} (${nft.rating.count})`}
+        </Tabs.Tab>
+      </Tabs.List>
+
+      <Tabs.Panel value="details">
+        <NftDetailFacts nft={nft} />
+      </Tabs.Panel>
+
+      <Tabs.Panel value="reviews">
+        <p className="text-14 leading-6 text-text-secondary">
+          {NFT_DETAIL_COPY.reviewsEmpty}
+        </p>
+      </Tabs.Panel>
+    </Tabs.Root>
   )
 }

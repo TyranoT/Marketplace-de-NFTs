@@ -19,12 +19,21 @@ export function AuthProviders({ onUnavailable }: AuthProvidersProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <Button variant="social" onClick={handleClick}>
+      {/** Quebra linha em telas estreitas em vez de vazar do botão. */}
+      <Button
+        variant="social"
+        onClick={handleClick}
+        className="h-auto min-h-10 py-2 whitespace-normal"
+      >
         <GoogleIcon />
         {AUTH_COPY.google}
       </Button>
 
-      <Button variant="social" onClick={handleClick}>
+      <Button
+        variant="social"
+        onClick={handleClick}
+        className="h-auto min-h-10 py-2 whitespace-normal"
+      >
         <FacebookIcon />
         {AUTH_COPY.facebook}
       </Button>

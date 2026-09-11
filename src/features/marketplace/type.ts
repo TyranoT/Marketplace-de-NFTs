@@ -47,4 +47,6 @@ export type NftShareTarget = {
    * do lucide são forwardRef e não são atribuíveis àquela assinatura.
    */
   Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
+  /** URL pública de compartilhamento da rede, sem integração. */
+  buildHref: (pageUrl: string, nftName: string) => string
 }

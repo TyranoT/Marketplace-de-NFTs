@@ -1,5 +1,9 @@
 export const AUTH_COPY = {
   loginTab: 'Entrar',
+  /** O título do diálogo; as abas não servem de nome — viravam "Entrar Criar conta". */
+  dialogTitle: 'Entrar ou criar conta',
+  emailLabel: 'E-mail',
+  passwordLabel: 'Senha',
   registerTab: 'Criar conta',
   /** Títulos das telas cheias do mobile, que são mais explícitos que as abas. */
   registerTitle: 'Criar perfil de colecionador',

@@ -43,7 +43,8 @@ export const CHECKOUT_COPY = {
   walletTypePlaceholder: 'Selecione uma carteira',
   referralCodeLabel: 'Código de indicação',
   emailLabel: 'E-mail',
-  ensNameLabel: 'Nome ENS',
+  /** O select escolhe só o sufixo (.eth, .kurio.eth); o nome vem da carteira. */
+  ensNameLabel: 'Sufixo ENS',
   useAnotherWalletLabel: 'Usar outra carteira?',
   noteLabel: 'Observação do colecionador (opcional)',
 
@@ -78,6 +79,10 @@ export const CHECKOUT_COPY = {
   explorerCta: 'Ver no Etherscan',
   /** O hash é simulado: o link mantém o gesto do frame sem prometer o que não há. */
   explorerHint: 'Transação simulada pelo servidor de demonstração.',
+  explorerNewTab: '(abre em nova aba; transação simulada)',
+  pendingClose: 'Fechar — a compra continua sendo confirmada',
+  pendingInBackground:
+    'Sua compra está sendo confirmada. O resultado aparece aqui assim que chegar.',
 
   errorTitle: 'Não foi possível concluir a compra',
 } as const

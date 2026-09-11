@@ -50,12 +50,14 @@ export function LoginForm({
           id="login-email"
           type="email"
           autoComplete="email"
-          aria-label={AUTH_COPY.loginTab}
+          aria-label={AUTH_COPY.emailLabel}
+          aria-required="true"
           aria-invalid={Boolean(errors.email)}
+          aria-describedby={errors.email ? 'login-email-error' : undefined}
           placeholder={AUTH_COPY.emailPlaceholder}
           className={AUTH_FIELD_CLASS[variant]}
         />
-        <AuthNotice message={errors.email?.message} />
+        <AuthNotice id="login-email-error" message={errors.email?.message} />
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -63,12 +65,19 @@ export function LoginForm({
           {...form.register('password')}
           id="login-password"
           autoComplete="current-password"
-          aria-label="Senha"
+          aria-label={AUTH_COPY.passwordLabel}
+          aria-required="true"
           aria-invalid={Boolean(errors.password)}
+          aria-describedby={
+            errors.password ? 'login-password-error' : undefined
+          }
           placeholder={AUTH_COPY.passwordPlaceholder}
           className={cn(AUTH_FIELD_CLASS[variant], 'tracking-widest')}
         />
-        <AuthNotice message={errors.password?.message} />
+        <AuthNotice
+          id="login-password-error"
+          message={errors.password?.message}
+        />
       </div>
 
       <button
@@ -84,6 +93,7 @@ export function LoginForm({
       <Button
         type="submit"
         disabled={login.isPending}
+        focusableWhenDisabled
         className={AUTH_SUBMIT_CLASS[variant]}
       >
         {login.isPending ? AUTH_COPY.loginSubmitting : AUTH_COPY.loginSubmit}

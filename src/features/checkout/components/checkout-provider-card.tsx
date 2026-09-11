@@ -24,7 +24,11 @@ export function CheckoutProviderCard({
         isSelected ? 'ring-1 ring-primary/40' : 'hover:bg-surface-dark/40',
       )}
     >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-dark text-14 font-bold text-brand">
+      {/** Decorativo: a inicial entrava no nome do rádio ("M MetaMask"). */}
+      <span
+        aria-hidden="true"
+        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-dark text-14 font-bold text-brand"
+      >
         {provider.initial ? (
           provider.initial
         ) : (

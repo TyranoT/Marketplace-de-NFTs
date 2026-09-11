@@ -1,12 +1,9 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { Button } from '@/global/components/ui/button'
 import { Input } from '@/global/components/ui/input'
 import { Label } from '@/global/components/ui/label'
 import { cn } from '@/global/helpers/cn'
 import { CART_COPY } from '../constants/cart-copy'
-
-const FIELD_ID = 'cart-coupon'
-const ERROR_ID = 'cart-coupon-error'
 
 type CartCouponFormProps = {
   error?: string
@@ -17,6 +14,8 @@ type CartCouponFormProps = {
    */
   variant?: 'stacked' | 'inline'
   className?: string
+  /** Foca o campo ao aparecer — quando é aberto por um disclosure. */
+  autoFocus?: boolean
   onApply: (code: string) => void
 }
 
@@ -30,10 +29,19 @@ export function CartCouponForm({
   isApplying,
   variant = 'stacked',
   className,
+  autoFocus,
   onApply,
 }: CartCouponFormProps) {
   const [code, setCode] = useState('')
   const isInline = variant === 'inline'
+
+  /**
+   * `useId`, e não ids fixos: o formulário é montado duas vezes — no resumo
+   * do desktop e no painel do mobile —, e com `cart-coupon` fixo o rótulo e
+   * o erro de um apontavam para o campo do outro.
+   */
+  const fieldId = useId()
+  const errorId = `${fieldId}-error`
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -50,7 +58,7 @@ export function CartCouponForm({
     >
       {isInline ? null : (
         <Label
-          htmlFor={FIELD_ID}
+          htmlFor={fieldId}
           className="text-13 leading-4 font-bold text-foreground"
         >
           {CART_COPY.couponLabel}
@@ -60,18 +68,20 @@ export function CartCouponForm({
       <div
         className={cn(
           'flex shadow-xl shadow-black/20',
-          isInline && 'items-center rounded-full border border-line-soft',
+          isInline &&
+            'items-center rounded-full border border-line-soft focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring',
         )}
       >
         <Input
-          id={FIELD_ID}
+          id={fieldId}
           name="coupon"
+          autoFocus={autoFocus}
           value={code}
           autoComplete="off"
           aria-label={isInline ? CART_COPY.couponLabel : undefined}
           placeholder={CART_COPY.couponPlaceholder}
           aria-invalid={Boolean(error)}
-          aria-describedby={error ? ERROR_ID : undefined}
+          aria-describedby={error ? errorId : undefined}
           onChange={(event) => setCode(event.target.value)}
           className={cn(
             isInline
@@ -96,7 +106,7 @@ export function CartCouponForm({
 
       {error ? (
         <p
-          id={ERROR_ID}
+          id={errorId}
           role="alert"
           className="text-12 leading-4 text-destructive"
         >

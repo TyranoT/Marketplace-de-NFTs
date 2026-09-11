@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { cn } from '@/global/helpers/cn'
-import { PROFILE_COPY, buildUnavailableLabel } from '../constants/profile-copy'
+import { PROFILE_COPY } from '../constants/profile-copy'
 import type { ProfileNavItem } from '../constants/profile-nav'
 
 const ROW =
@@ -21,8 +21,6 @@ export function ProfileSidebarItem({ item }: ProfileSidebarItemProps) {
   if (!to) {
     return (
       <p
-        aria-disabled="true"
-        aria-label={buildUnavailableLabel(label)}
         className={cn(
           ROW,
           'cursor-not-allowed border-transparent text-brand/45',
@@ -30,7 +28,12 @@ export function ProfileSidebarItem({ item }: ProfileSidebarItemProps) {
       >
         <Icon className="size-4.5 shrink-0" />
         <span className="truncate">{label}</span>
-        <span aria-hidden="true" className="text-10 text-brand-muted/70">
+        {/**
+         * Texto comum, e não `aria-hidden`: o motivo nunca era anunciado —
+         * `aria-label` num parágrafo é ignorado. 12px sólidos em vez de 10px
+         * a 70%, que ficavam abaixo do contraste mínimo.
+         */}
+        <span className="text-12 text-brand-muted">
           {PROFILE_COPY.itemUnavailable}
         </span>
       </p>

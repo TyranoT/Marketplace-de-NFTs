@@ -11,9 +11,8 @@ import type { Order, OrderStatus } from '../../api/contracts/order'
 /**
  * Endpoints do painel de simulação.
  *
- * Ficam sob o prefixo `__mock`, como o reset e o cenário, pela mesma razão
- * registrada lá: o Playwright prepara o estado com `request.post()`, sem
- * depender de a interface montar.
+ * Ficam sob o prefixo `__mock`, como o reset e o cenário, e pelo mesmo
+ * motivo: são chamados de dentro da página, onde o MSW existe.
  *
  * O caminho é o exigido pelo §6 — a escrita vai ao banco simulado e a mesma
  * mudança sai tanto na próxima resposta REST quanto no evento. Não são dois

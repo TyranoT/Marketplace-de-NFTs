@@ -26,7 +26,7 @@ export function MobileTabBar() {
 
   return (
     <nav
-      aria-label="Navegação principal"
+      aria-label="Principal"
       className="fixed inset-x-0 bottom-0 z-40 md:hidden"
     >
       <div className="relative h-23.75">
@@ -43,10 +43,16 @@ export function MobileTabBar() {
           <path d={MOBILE_TAB_BAR_NOTCH_PATH} fill="currentColor" />
         </svg>
 
+        {/**
+         * Escanear não existe na demonstração. O botão fica, porque é o centro
+         * do frame, mas anuncia que está indisponível em vez de parecer que
+         * funciona.
+         */}
         <button
           type="button"
-          aria-label={MOBILE_SCAN_LABEL}
-          className="absolute -top-8.25 left-1/2 flex size-16.5 -translate-x-1/2 items-center justify-center rounded-full bg-linear-to-b from-primary/50 to-primary text-foreground"
+          aria-disabled="true"
+          aria-label={`${MOBILE_SCAN_LABEL} (em breve)`}
+          className="absolute -top-8.25 left-1/2 flex size-16.5 -translate-x-1/2 cursor-not-allowed items-center justify-center rounded-full bg-linear-to-b from-primary/50 to-primary text-foreground"
         >
           <ScanLine className="size-6.5" />
         </button>

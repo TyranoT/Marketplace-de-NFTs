@@ -28,7 +28,12 @@
   --text-secondary: #cfb28c;
   --foreground: #f5f1eb;
 
-  --destructive: oklch(0.577 0.245 27.325);
+  /**
+   * Mais claro que o padrão do shadcn (oklch 0.577): aquele dava 4.1:1 sobre
+   * ink e 3.7:1 sobre card, abaixo de 4.5:1 para as mensagens de erro de
+   * 12px. Este passa de 6:1 nos dois fundos.
+   */
+  --destructive: oklch(0.7 0.19 25);
   --radius: 6px;
 }
 

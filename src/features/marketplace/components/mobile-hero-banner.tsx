@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import { HERO_SLIDE_COUNT } from '../constants/hero'
 import { MOBILE_HERO, MOBILE_HERO_ORBS } from '../constants/mobile'
@@ -71,13 +72,14 @@ export function MobileHeroBanner() {
               {body}
             </p>
 
-            <button
-              type="button"
-              className="flex items-center gap-[calc(var(--u)*10)] text-[calc(var(--u)*12)] leading-[calc(var(--u)*16)] font-bold text-highlight"
+            <Link
+              to="/"
+              hash="catalogo"
+              className="flex w-fit items-center gap-[calc(var(--u)*10)] text-[calc(var(--u)*12)] leading-[calc(var(--u)*16)] font-bold text-highlight"
             >
               {cta}
               <ArrowRight className="size-[calc(var(--u)*16)]" />
-            </button>
+            </Link>
           </div>
 
           <div className="relative w-[calc(var(--u)*138)] shrink-0 self-start pt-[calc(var(--u)*4)]">

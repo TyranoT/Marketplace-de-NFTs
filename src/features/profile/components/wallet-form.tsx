@@ -1,6 +1,11 @@
+import { useId } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Button } from '@/global/components/ui/button'
-import { FormField, fieldProps } from '@/global/components/ui/form-field'
+import {
+  FormField,
+  errorId,
+  fieldProps,
+} from '@/global/components/ui/form-field'
 import { Input } from '@/global/components/ui/input'
 import { OptionSelect } from '@/global/components/ui/option-select'
 import { ENS_SUFFIXES, NETWORKS, WALLET_TYPES } from '@/global/data'
@@ -41,6 +46,14 @@ export function WalletForm({
 
   const { errors } = form.formState
 
+  /**
+   * Prefixo único por instância. A tela de carteiras monta dois formulários
+   * ao mesmo tempo — o da principal e o rascunho da secundária —, e com ids
+   * fixos o rótulo e o erro do segundo apontavam para os campos do primeiro.
+   */
+  const idPrefix = useId()
+  const fid = (name: string) => `${idPrefix}-${name}`
+
   return (
     <form
       noValidate
@@ -49,33 +62,33 @@ export function WalletForm({
     >
       <div className={GRID}>
         <FormField
-          id="displayName"
+          id={fid('displayName')}
           label={PROFILE_COPY.displayNameLabel}
           required
           error={errors.displayName?.message}
         >
           <Input
             {...form.register('displayName')}
-            {...fieldProps('displayName', errors.displayName?.message)}
+            {...fieldProps(fid('displayName'), errors.displayName?.message)}
             autoComplete="name"
           />
         </FormField>
 
         <FormField
-          id="nickname"
+          id={fid('nickname')}
           label={PROFILE_COPY.nicknameLabel}
           required
           error={errors.nickname?.message}
         >
           <Input
             {...form.register('nickname')}
-            {...fieldProps('nickname', errors.nickname?.message)}
+            {...fieldProps(fid('nickname'), errors.nickname?.message)}
             autoComplete="off"
           />
         </FormField>
 
         <FormField
-          id="network"
+          id={fid('network')}
           label={PROFILE_COPY.networkLabel}
           required
           error={errors.network?.message}
@@ -85,7 +98,10 @@ export function WalletForm({
             control={form.control}
             render={({ field }) => (
               <OptionSelect
-                id="network"
+                id={fid('network')}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                required
                 value={field.value}
                 options={NETWORKS}
                 placeholder={PROFILE_COPY.networkPlaceholder}
@@ -97,26 +113,26 @@ export function WalletForm({
         </FormField>
 
         <FormField
-          id="profileName"
+          id={fid('profileName')}
           label={PROFILE_COPY.profileNameLabel}
           required
           error={errors.profileName?.message}
         >
           <Input
             {...form.register('profileName')}
-            {...fieldProps('profileName', errors.profileName?.message)}
+            {...fieldProps(fid('profileName'), errors.profileName?.message)}
           />
         </FormField>
 
         <FormField
-          id="address"
+          id={fid('address')}
           label={PROFILE_COPY.addressLabel}
           required
           error={errors.address?.message}
         >
           <Input
             {...form.register('address')}
-            {...fieldProps('address', errors.address?.message)}
+            {...fieldProps(fid('address'), errors.address?.message)}
             placeholder={PROFILE_COPY.addressPlaceholder}
             spellCheck={false}
             autoComplete="off"
@@ -128,7 +144,7 @@ export function WalletForm({
         <div className="flex flex-col justify-end gap-1.5">
           <Input
             {...form.register('secondaryAddress')}
-            id="secondaryAddress"
+            id={fid('secondaryAddress')}
             aria-label={PROFILE_COPY.secondaryAddressLabel}
             placeholder={PROFILE_COPY.secondaryAddressPlaceholder}
             spellCheck={false}
@@ -138,7 +154,7 @@ export function WalletForm({
         </div>
 
         <FormField
-          id="walletType"
+          id={fid('walletType')}
           label={PROFILE_COPY.walletTypeLabel}
           required
           error={errors.walletType?.message}
@@ -148,7 +164,10 @@ export function WalletForm({
             control={form.control}
             render={({ field }) => (
               <OptionSelect
-                id="walletType"
+                id={fid('walletType')}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                required
                 value={field.value}
                 options={WALLET_TYPES}
                 placeholder={PROFILE_COPY.walletTypePlaceholder}
@@ -160,34 +179,34 @@ export function WalletForm({
         </FormField>
 
         <FormField
-          id="referralCode"
+          id={fid('referralCode')}
           label={PROFILE_COPY.referralCodeLabel}
           required
           error={errors.referralCode?.message}
         >
           <Input
             {...form.register('referralCode')}
-            {...fieldProps('referralCode', errors.referralCode?.message)}
+            {...fieldProps(fid('referralCode'), errors.referralCode?.message)}
             autoComplete="off"
           />
         </FormField>
 
         <FormField
-          id="email"
+          id={fid('email')}
           label={PROFILE_COPY.emailLabel}
           required
           error={errors.email?.message}
         >
           <Input
             {...form.register('email')}
-            {...fieldProps('email', errors.email?.message)}
+            {...fieldProps(fid('email'), errors.email?.message)}
             type="email"
             autoComplete="email"
           />
         </FormField>
 
         <FormField
-          id="ensName"
+          id={fid('ensName')}
           label={PROFILE_COPY.ensLabel}
           required
           error={errors.ensSuffix?.message ?? errors.ensName?.message}
@@ -198,7 +217,12 @@ export function WalletForm({
               control={form.control}
               render={({ field }) => (
                 <OptionSelect
-                  id="ensSuffix"
+                  id={fid('ensSuffix')}
+                  ref={field.ref}
+                  onBlur={field.onBlur}
+                  required
+                  ariaLabel="Sufixo ENS"
+                  errorMessageId={errorId(fid('ensName'))}
                   value={field.value}
                   options={ENS_SUFFIXES}
                   placeholder={ENS_SUFFIXES[0].label}
@@ -211,7 +235,7 @@ export function WalletForm({
 
             <Input
               {...form.register('ensName')}
-              {...fieldProps('ensName', errors.ensName?.message)}
+              {...fieldProps(fid('ensName'), errors.ensName?.message)}
               placeholder={PROFILE_COPY.ensNamePlaceholder}
               autoComplete="off"
             />

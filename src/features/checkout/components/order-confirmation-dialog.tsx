@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogTitle,
 } from '@/global/components/ui/dialog'
 import { ThankYouEnvelopeIcon } from '@/global/components/icons'
@@ -39,16 +40,30 @@ const STATUS_TITLE: Record<OrderStatus, string> = {
   declined: CHECKOUT_COPY.declinedTitle,
 }
 
+/**
+ * O que a região viva do diálogo diz. Na recusa, o motivo e o que sobrou
+ * para fazer — os itens continuam no carrinho — entram na mesma frase.
+ */
+function statusMessage(order: Order): string {
+  if (order.status !== 'declined') return STATUS_TITLE[order.status]
+
+  return [
+    CHECKOUT_COPY.declinedTitle,
+    order.declineReason,
+    CHECKOUT_COPY.declinedHint,
+  ]
+    .filter(Boolean)
+    .join('. ')
+}
+
 /** Espera com movimento contido, respeitando `prefers-reduced-motion`. */
 function OrderPendingHeader() {
   return (
     <div
-      role="status"
-      aria-live="polite"
+      aria-hidden="true"
       className="mt-4 flex h-20 items-center justify-center"
     >
       <span className="size-10 animate-spin rounded-full border-2 border-line border-t-brand motion-reduce:animate-none" />
-      <span className="sr-only">{CHECKOUT_COPY.pendingTitle}</span>
     </div>
   )
 }
@@ -69,7 +84,11 @@ export function OrderConfirmationDialog({
            * deslocar o desenho.
            */}
           <DialogClose
-            aria-label={CHECKOUT_COPY.confirmationClose}
+            aria-label={
+              order.status === 'pending'
+                ? CHECKOUT_COPY.pendingClose
+                : CHECKOUT_COPY.confirmationClose
+            }
             className="absolute top-3.5 right-2.75 text-brand transition-colors after:absolute after:-inset-2 hover:text-highlight"
           >
             <X className="size-6" />
@@ -95,11 +114,20 @@ export function OrderConfirmationDialog({
             {STATUS_TITLE[order.status]}
           </DialogTitle>
 
-          {order.status === 'declined' && order.declineReason ? (
-            <p className="mt-2 text-center text-14 leading-5 text-destructive">
-              {order.declineReason}
-            </p>
+          {order.status === 'declined' ? (
+            <DialogDescription className="mt-2 text-center text-14 leading-5 text-destructive">
+              {order.declineReason} {CHECKOUT_COPY.declinedHint}
+            </DialogDescription>
           ) : null}
+
+          {/**
+           * Sempre montada: a região antiga só existia enquanto o pedido
+           * estava pendente e sumia na transição — justamente a mudança que
+           * precisava ser anunciada.
+           */}
+          <p role="status" className="sr-only">
+            {statusMessage(order)}
+          </p>
         </div>
 
         {/** No card estreito os quatro metadados não caem em uma linha: 2×2. */}
@@ -129,7 +157,11 @@ export function OrderConfirmationDialog({
             {CHECKOUT_COPY.detailsHeading}
           </h3>
 
-          <div className="mt-3 flex items-baseline justify-between border-b border-line-soft pb-2 text-16 leading-4 font-bold text-foreground">
+          {/** Cabeçalho visual: cada item já diz edições e subtotal ao leitor de tela. */}
+          <div
+            aria-hidden="true"
+            className="mt-3 flex items-baseline justify-between border-b border-line-soft pb-2 text-16 leading-4 font-bold text-foreground"
+          >
             <span>{CHECKOUT_COPY.columnNfts}</span>
             <span className="flex gap-12">
               <span>{CHECKOUT_COPY.columnEditions}</span>
@@ -168,23 +200,33 @@ export function OrderConfirmationDialog({
             />
           </dl>
 
-          <p className="mt-4 px-4 text-center text-14 leading-6 text-brand-muted">
-            {CHECKOUT_COPY.confirmationNote}
-          </p>
+          {/**
+           * A nota "transação confirmada na Ethereum" e o link do explorador
+           * só valem para a compra confirmada: antes apareciam também no
+           * pendente e no recusado, afirmando o que não tinha acontecido.
+           */}
+          {order.status === 'confirmed' ? (
+            <>
+              <p className="mt-4 px-4 text-center text-14 leading-6 text-brand-muted">
+                {CHECKOUT_COPY.confirmationNote}
+              </p>
 
-          <Button
-            render={
-              <a
-                href={buildExplorerUrl(order.transactionHash)}
-                target="_blank"
-                rel="noreferrer noopener"
-                title={CHECKOUT_COPY.explorerHint}
-              />
-            }
-            className="mt-6 h-12 self-center px-8 text-15 font-bold"
-          >
-            {CHECKOUT_COPY.explorerCta}
-          </Button>
+              <Button
+                render={
+                  <a
+                    href={buildExplorerUrl(order.transactionHash)}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    title={CHECKOUT_COPY.explorerHint}
+                  />
+                }
+                className="mt-6 h-12 self-center px-8 text-15 font-bold"
+              >
+                {CHECKOUT_COPY.explorerCta}
+                <span className="sr-only"> {CHECKOUT_COPY.explorerNewTab}</span>
+              </Button>
+            </>
+          ) : null}
         </div>
       </DialogContent>
     </Dialog>

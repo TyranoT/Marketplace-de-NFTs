@@ -52,7 +52,7 @@ export function NftPurchasePanel({
                 quantity: purchase.quantity,
               })
             }
-            className="w-32.25 text-14 font-bold text-background"
+            className="w-32.25 text-14 font-bold text-background uppercase"
           >
             {NFT_DETAIL_COPY.buyLabel}
           </Button>
@@ -66,9 +66,11 @@ export function NftPurchasePanel({
             <Heart
               className={cn('size-5', purchase.isFavorite && 'fill-current')}
             />
-            {purchase.isFavorite
-              ? NFT_DETAIL_COPY.favoritedLabel
-              : NFT_DETAIL_COPY.favoriteLabel}
+            {/**
+             * Rótulo fixo: o estado está no `aria-pressed`, e trocar o texto
+             * junto fazia o leitor anunciar "Favoritado, pressionado".
+             */}
+            {NFT_DETAIL_COPY.favoriteLabel}
           </Button>
         </div>
       </div>

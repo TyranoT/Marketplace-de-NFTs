@@ -1,14 +1,33 @@
 import { Slider as SliderPrimitive } from '@base-ui/react/slider'
 import { cn } from '@/global/helpers/cn'
 
+type SliderProps = SliderPrimitive.Root.Props & {
+  /**
+   * Nome de cada cursor. Sem isto os dois herdavam o mesmo rótulo do grupo e
+   * quem usa leitor de tela não sabia qual era o mínimo e qual o máximo.
+   */
+  getAriaLabel?: (index: number) => string
+  /**
+   * Valor falado. Sem isto o Base UI anuncia "0.02 start range", em inglês e
+   * sem unidade.
+   */
+  getAriaValueText?: (
+    formattedValue: string,
+    value: number,
+    index: number,
+  ) => string
+}
+
 function Slider({
   className,
   defaultValue,
   value,
   min = 0,
   max = 100,
+  getAriaLabel,
+  getAriaValueText,
   ...props
-}: SliderPrimitive.Root.Props) {
+}: SliderProps) {
   const _values = Array.isArray(value)
     ? value
     : Array.isArray(defaultValue)
@@ -40,7 +59,15 @@ function Slider({
           <SliderPrimitive.Thumb
             data-slot="slider-thumb"
             key={index}
-            className="relative block size-3.75 shrink-0 rounded-full bg-primary ring-3 ring-ink transition-[color,box-shadow] select-none after:absolute after:-inset-2 hover:ring-3 focus-visible:ring-3 focus-visible:outline-hidden active:ring-3 disabled:pointer-events-none disabled:opacity-50"
+            index={index}
+            getAriaLabel={getAriaLabel}
+            getAriaValueText={getAriaValueText}
+            /**
+             * O anel `ring-ink` é a borda escura do desenho, da mesma cor do
+             * fundo — servia de foco e por isso o foco era invisível. O foco
+             * agora é um contorno da marca, fora da borda.
+             */
+            className="relative block size-3.75 shrink-0 rounded-full bg-primary ring-3 ring-ink transition-[color,box-shadow] select-none after:absolute after:-inset-2 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50"
           />
         ))}
       </SliderPrimitive.Control>

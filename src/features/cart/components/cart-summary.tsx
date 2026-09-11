@@ -50,7 +50,8 @@ export function CartSummary({
        * linhas separadamente faria o leitor de tela ler um subtotal novo ao
        * lado de um total ainda antigo.
        */}
-      <div aria-live="polite" aria-busy={isUpdating}>
+      {/** `aria-atomic`: sem ele só o nó que mudou era lido — "0,23 ETH", sem dizer de quê. */}
+      <div aria-live="polite" aria-atomic="true" aria-busy={isUpdating}>
         {coupon ? (
           <p className="mt-4 flex items-center justify-between gap-3 text-12 leading-4 text-brand-muted">
             <span>

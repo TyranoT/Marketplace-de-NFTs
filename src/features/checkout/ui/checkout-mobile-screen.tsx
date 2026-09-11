@@ -9,7 +9,10 @@ import { CHECKOUT_PROVIDERS } from '../constants/checkout-providers'
 import { toCheckoutErrorMessage } from '../helpers/to-checkout-error-message'
 import { CheckoutError } from '../components/checkout-error'
 import { CheckoutProviderCard } from '../components/checkout-provider-card'
-import { CheckoutQuoteNotice } from '../components/checkout-quote-notice'
+import {
+  CheckoutQuoteNotice,
+  QUOTE_NOTICE_ID,
+} from '../components/checkout-quote-notice'
 import { CheckoutWalletCard } from '../components/checkout-wallet-card'
 import type { ApiError, Cart, Wallet } from '@/global/api'
 
@@ -134,9 +137,14 @@ export function CheckoutMobileScreen({
       <div className="fixed inset-x-0 bottom-0 z-40 bg-ink px-6 pb-8">
         <button
           type="button"
-          disabled={isSubmitting || isQuoteStale}
-          onClick={() => onConfirm({ walletId, walletType: providerId })}
-          className="flex h-15 w-full items-center justify-center rounded-full bg-linear-to-r from-primary to-[#b67842] text-16 font-bold text-background disabled:opacity-60"
+          aria-disabled={isSubmitting || isQuoteStale || undefined}
+          aria-describedby={isQuoteStale ? QUOTE_NOTICE_ID : undefined}
+          onClick={() => {
+            if (!isSubmitting && !isQuoteStale) {
+              onConfirm({ walletId, walletType: providerId })
+            }
+          }}
+          className="flex h-15 w-full items-center justify-center rounded-full bg-linear-to-r from-primary to-[#b67842] text-16 font-bold text-background aria-disabled:opacity-60"
         >
           {isSubmitting ? CHECKOUT_COPY.submitting : CHECKOUT_COPY.submit}
         </button>

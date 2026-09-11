@@ -11,9 +11,10 @@ import { toSafeRedirect } from '@/global/config/auth-redirect'
  * verdade.
  */
 export const Route = createFileRoute('/entrar')({
+  head: () => ({ meta: [{ title: 'Entrar · Kurio' }] }),
   ssr: false,
   staticData: {
-    header: { active: 'home', divider: false },
+    header: { divider: false },
     mobileTabBar: false,
   },
   validateSearch: (search: Record<string, unknown>) => ({

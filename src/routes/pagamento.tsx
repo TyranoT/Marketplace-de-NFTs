@@ -8,6 +8,7 @@ import { CheckoutScreen, CheckoutScreenSkeleton } from '@/features/checkout'
  * Worker do MSW — nada disso existe no servidor.
  */
 export const Route = createFileRoute('/pagamento')({
+  head: () => ({ meta: [{ title: 'Pagamento · Kurio' }] }),
   ssr: false,
   staticData: {
     header: { active: 'market', divider: true },

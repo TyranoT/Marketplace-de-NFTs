@@ -13,7 +13,13 @@ export function Header({ cartCount }: HeaderProps) {
   const config = useRouterState({
     select: (state) => state.matches.at(-1)?.staticData.header,
   })
-  const active = config?.active ?? DEFAULT_ACTIVE_NAV
+  /**
+   * O padrão "Início" só vale para rotas que não configuram o cabeçalho.
+   * Uma rota que configura mas não diz `active` — perfil, login — não
+   * pertence a nenhum item, e marcar "Início" como página atual ali era
+   * anunciar ao leitor de tela uma localização falsa.
+   */
+  const active = config ? config.active : DEFAULT_ACTIVE_NAV
   const hasDivider = config?.divider ?? true
 
   return (

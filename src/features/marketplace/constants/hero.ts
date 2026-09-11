@@ -1,8 +1,8 @@
 export const HERO_CONTENT = {
   eyebrow: 'Bem-vindo à Kurio',
-  titleLines: ['SEJA DONO DO FUTURO', 'DA ARTE DIGITAL'],
+  titleLines: ['Seja dono do futuro', 'da arte digital'],
   body: 'Descubra NFTs selecionados de criadores emergentes e consagrados. Colecione arte digital rara, apoie artistas e tenha uma parte da cultura da internet.',
-  cta: 'EXPLORAR',
+  cta: 'Explorar',
 }
 
 export const HERO_ARTWORK = {

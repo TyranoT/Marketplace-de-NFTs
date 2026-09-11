@@ -14,7 +14,7 @@ export function ProfileSidebar() {
   return (
     <nav
       aria-label={PROFILE_COPY.sidebarHeading}
-      className="flex h-101.75 flex-col gap-4 bg-surface-card py-6"
+      className="flex min-h-101.75 flex-col gap-4 bg-surface-card py-6"
     >
       <h2 className="px-5 text-20 leading-6 font-bold text-text-primary">
         {PROFILE_COPY.sidebarHeading}

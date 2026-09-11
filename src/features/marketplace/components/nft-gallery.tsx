@@ -24,8 +24,8 @@ export function NftGallery({ gallery, name }: NftGalleryProps) {
           <li key={index}>
             <button
               type="button"
-              aria-label={`${NFT_DETAIL_COPY.thumbLabel} ${index + 1}`}
-              aria-current={index === activeIndex ? 'true' : undefined}
+              aria-label={`${NFT_DETAIL_COPY.thumbLabel} ${index + 1} de ${gallery.length}`}
+              aria-pressed={index === activeIndex}
               onClick={() => setActiveIndex(index)}
               className={cn(
                 'block size-25 overflow-hidden rounded-lg border bg-surface-card p-1',

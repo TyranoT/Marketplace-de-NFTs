@@ -27,6 +27,8 @@ export function NftRating({ rating }: NftRatingProps) {
       </span>
 
       <span className="text-14 leading-4 text-foreground">
+        {/** As estrelas são `aria-hidden`: sem isto a nota não era falada. */}
+        <span className="sr-only">Nota {rating.score} de 5. </span>
         {formatRatingLabel(rating.count)}
       </span>
     </div>

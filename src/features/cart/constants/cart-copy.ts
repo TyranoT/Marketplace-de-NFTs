@@ -12,6 +12,7 @@ export const CART_COPY = {
   columnEditions: 'Edições',
   columnTotal: 'Total',
   columnActions: 'Ações',
+  tableCaption: 'Itens do carrinho',
 
   tokenIdLabel: 'ID do token:',
 

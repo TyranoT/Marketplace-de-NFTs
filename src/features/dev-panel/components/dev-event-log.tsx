@@ -63,7 +63,7 @@ export function DevEventLog({ status, log }: DevEventLogProps) {
               <span className="text-text-secondary">v{entry.version}</span>
               <span
                 className={cn(
-                  'rounded-sm px-1.5 py-0.5 text-11',
+                  'rounded-sm px-1.5 py-0.5 text-12',
                   entry.applied
                     ? 'bg-brand/20 text-brand'
                     : 'bg-line-soft/40 text-text-secondary',

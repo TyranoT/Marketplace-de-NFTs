@@ -32,6 +32,7 @@ export function SecondaryWalletCard({
       <div className="flex items-center gap-4">
         <button
           type="button"
+          aria-label={`${PROFILE_COPY.secondaryEdit} a carteira ${wallet.nickname}`}
           onClick={onEdit}
           className="text-14 leading-4 text-brand transition-colors hover:text-highlight"
         >

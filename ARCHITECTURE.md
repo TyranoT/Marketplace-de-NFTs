@@ -185,9 +185,10 @@ O cenário-semente reproduz **exatamente** o frame do Figma — Emerald Ape #042
 0.016, total **26.846 ETH** — para a tela servir de baseline de regressão
 visual.
 
-`POST /api/__mock/reset` restaura o cenário conhecido. É endpoint, e não função
-exportada, para o Playwright preparar o estado com `request.post()` no
-`beforeEach`, sem `page.evaluate` nem esperar a aplicação montar.
+`POST /api/__mock/reset` restaura o cenário conhecido. É endpoint, e não função exportada, para ser chamado de dentro da
+página — pelo painel `/dev` e pelos testes, com `page.evaluate`. **Não** dá
+para usar `request.post()` do Playwright: o MSW só existe no navegador, e uma
+requisição feita de fora da página vai ao servidor real, não ao mock.
 
 ### Cenários de rede
 
@@ -1010,6 +1011,111 @@ A coluna esquerda escreve por REST; a direita mostra o que o `socket.io-client`
 **recebeu**, incluindo os descartes. É a prova visual de que o transporte é
 real: quebre o socket e a direita fica muda enquanto o resto continua
 funcionando.
+
+---
+
+## Acessibilidade
+
+Antes do E2E, uma auditoria de semântica percorreu as telas contra o §8. Os
+testes localizam os elementos pelo papel e pelo nome acessível
+(`getByRole`, `getByLabel`), então cada correção feita depois obrigaria a
+reescrever os seletores. As correções estão comentadas no próprio código; aqui
+ficam as decisões e os desvios que valem em mais de um lugar.
+
+### Primitivos, uma vez só
+
+- **Foco visível** é o contorno global de `styles.css` (`outline-ring`, 2px,
+  6.8:1). Button, Radio, Checkbox e Select tinham `outline-none` com um anel a
+  50% de opacidade (≈2.5:1, abaixo de 3:1); saíram, e o global passou a valer.
+  Onde o controle não tem borda própria — busca mobile, newsletter, cupom
+  inline — o contorno é desenhado na cápsula com `focus-within`.
+- **`--destructive`** passou de `oklch(0.577 …)` para `oklch(0.7 …)`: o
+  padrão do shadcn dava 4.1:1 sobre ink e 3.7:1 sobre card, abaixo de 4.5:1
+  para as mensagens de erro de 12px.
+- **`QuantityStepper`** usa `aria-disabled`, e não `disabled`. Um botão
+  `disabled` que está com o foco joga o foco no `<body>`, e o stepper trava a
+  cada mutation e ao chegar no limite. No limite, o motivo é descrito por
+  `aria-describedby` (`buildMaxQuantityHint`).
+- **Paginação** são links de verdade, pela URL. Antes eram `<a href="#">` que o
+  Base UI anunciava como botão (`nativeButton={false}` injeta `role="button"`).
+  O primitivo recebe o `<Link>` pronto (`render`), porque só a tela sabe tipar o
+  `search` da rota.
+- **Obrigatórios** chegam ao leitor por `aria-required`, que `fieldProps`
+  passou a emitir. O asterisco segue só visual.
+- **Slider**: cada cursor tem nome ("Preço mínimo", "Preço máximo") e valor
+  falado em ETH. O `aria-labelledby` que estava na raiz descia para os cursores
+  e vencia o `aria-label` de cada um.
+- **IDs** de formulários montados mais de uma vez na mesma página — cupom,
+  filtros, seletor de edição, `WalletForm` — vêm de `useId()`. Com ids fixos, o
+  rótulo e o erro de uma cópia apontavam para o campo da outra.
+
+### Shell
+
+Skip link "Pular para o conteúdo" como primeiro elemento do Tab; o `<main>`
+(`Container as="main"`) é o alvo, com `tabIndex={-1}`. `RouteFocus` leva o
+foco ao conteúdo quando o **caminho** muda — só o caminho, porque filtros e
+paginação também são navegações, e roubar o foco do checkbox recém-marcado
+seria pior. Cada rota tem `<title>` próprio; no detalhe, com o nome do NFT.
+
+### O que era de mentira virou de verdade, ou foi marcado
+
+O §3 proíbe ações fora do escopo que "aparentem sucesso funcional". Havia
+várias:
+
+| Onde                                | Antes                                            | Agora                                                                       |
+| ----------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------- |
+| Busca do cabeçalho                  | ícone sem ação                                   | abre um campo; buscar leva ao catálogo com `q` na URL                       |
+| "Início" e "Mercado"                | `<span>` num `<nav>` sem links                   | links (`/` e `/#catalogo`)                                                  |
+| "Criadores", "Aprenda"              | texto igual aos itens ativos                     | apagados, "em breve" para o leitor                                          |
+| CTAs do hero e dos promos           | botões sem ação                                  | links para a grade                                                          |
+| "Abrir filtros" (mobile)            | não abria nada; abaixo de `lg` não havia filtros | diálogo com os mesmos filtros da lateral                                    |
+| Compartilhar                        | botões sem ação                                  | links de compartilhamento reais (LinkedIn, e-mail, X)                       |
+| Rodapé                              | 20 `href="#"`                                    | "Meu perfil" e as coleções viram destinos reais; o resto é texto "em breve" |
+| Redes sociais                       | links para `#`                                   | ícones, sem link, "em breve"                                                |
+| Newsletter                          | "Enviar" sem retorno                             | diz em texto que não faz parte da demonstração                              |
+| "Ler mais" do journal               | 4 links `#` idênticos                            | botão que diz que o editorial está fora do escopo                           |
+| Favoritos e Escanear (barra mobile) | botões mortos                                    | `aria-disabled`, "em breve"                                                 |
+
+### Desvios conscientes do Figma
+
+1. **"Contrato" e "Direitos autorais" desinvertidos.** O Figma troca os dois
+   rótulos entre si; a tela seguia o design e punha o texto de royalties sob
+   "Contrato". Informação errada para qualquer pessoa, não só para quem usa
+   leitor de tela.
+2. **"Carteira secundária (opcional)" com rótulo visível** no pagamento. O
+   frame só tem o placeholder, que some ao digitar e levava o "(opcional)".
+3. **"Sufixo ENS"** no lugar de "Nome ENS" no pagamento: o select escolhe só o
+   sufixo.
+4. **Maiúsculas pelo CSS** (`uppercase`) e não no texto — "COMPRAR",
+   "EXPLORAR", o título do hero e o banner. Alguns leitores soletram texto
+   inteiro em caixa alta.
+5. **Campo de busca no cabeçalho desktop.** O frame desenha só o ícone; sem o
+   campo, a busca não existia no desktop.
+6. **Diálogo de filtros no mobile.** O frame tem o botão, não o conteúdo; o
+   conteúdo é o mesmo da lateral.
+
+### Limites que ficaram
+
+- **As contagens dos filtros ("Jogos (19)") são do Figma** e não batem com o
+  catálogo simulado. Por isso ficam `aria-hidden`: anunciá-las seria dar a quem
+  usa leitor de tela um número que a grade desmente. O certo é a API devolver
+  as facetas.
+- **Login e cadastro sem rótulo visível.** O frame usa só placeholders; os
+  campos têm nome por `aria-label` e o erro ligado por `aria-describedby`, mas
+  o placeholder some ao digitar (WCAG 3.3.2). Mantido por fidelidade.
+- **O segundo preço do card** (`secondaryPrice`) não tem rótulo: o frame não
+  diz se é preço anterior ou de outra edição, e inventar o significado seria
+  pior do que omitir.
+- **Abrir o rascunho de carteira secundária não move o foco** para o
+  formulário que aparece.
+
+### Verificação
+
+`e2e/a11y.spec.ts` roda o axe nas rotas principais, em desktop (1440), tablet
+(768) e mobile (Pixel 7), e falha em qualquer violação `serious` ou
+`critical`. O reset do cenário é feito **dentro da página**: o MSW só existe
+no navegador, e um `request.post()` do Playwright iria ao servidor real, não
+ao mock.
 
 ---
 

@@ -59,6 +59,7 @@ export function AvatarField({ avatarUrl }: AvatarFieldProps) {
         <Button
           type="button"
           disabled={setAvatar.isPending}
+          aria-label={`${PROFILE_COPY.avatarChange} avatar`}
           onClick={() => fileRef.current?.click()}
           className="h-10 px-6 text-15 font-bold"
         >
@@ -69,6 +70,7 @@ export function AvatarField({ avatarUrl }: AvatarFieldProps) {
           <button
             type="button"
             disabled={setAvatar.isPending}
+            aria-label={`${PROFILE_COPY.avatarRemove} avatar`}
             onClick={() => setAvatar.mutate(null)}
             className="text-15 leading-4 text-foreground transition-colors hover:text-brand"
           >

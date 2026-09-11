@@ -45,7 +45,7 @@ export function CartChangeNotice({ alerts, onDismiss }: CartChangeNoticeProps) {
           <button
             type="button"
             onClick={() => onDismiss(alert.id)}
-            aria-label={CART_COPY.dismissChange}
+            aria-label={`${CART_COPY.dismissChange}: ${alert.name}`}
             className="shrink-0 text-text-secondary hover:text-foreground"
           >
             <X className="size-4" aria-hidden="true" />

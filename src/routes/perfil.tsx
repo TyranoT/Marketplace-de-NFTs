@@ -11,9 +11,10 @@ import { ProfileShell } from '@/features/profile'
  * como conhecê-los.
  */
 export const Route = createFileRoute('/perfil')({
+  head: () => ({ meta: [{ title: 'Meu perfil · Kurio' }] }),
   ssr: false,
   staticData: {
-    header: { active: 'home', divider: true },
+    header: { divider: true },
   },
   component: ProfileLayoutRoute,
 })

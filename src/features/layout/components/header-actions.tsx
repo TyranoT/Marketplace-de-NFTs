@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { LogOut, Search, ShoppingCart } from 'lucide-react'
+import { LogIn, ShoppingCart } from 'lucide-react'
 import { Button } from '@/global/components/ui/button'
 import { useCartCount } from '@/global/api/cart'
 import { useCurrentUser } from '@/global/api/user'
 import { AUTH_COPY, AuthDialog } from '@/features/auth'
 import { buildCartLabel } from '../helpers/build-cart-label'
+import { HeaderSearch } from './header-search'
 import { HeaderUserMenu } from './header-user-menu'
 
 type HeaderActionsProps = {
@@ -25,9 +26,7 @@ export function HeaderActions({ cartCount }: HeaderActionsProps) {
 
   return (
     <div className="flex items-center gap-7">
-      <button type="button" aria-label="Buscar" className="text-foreground">
-        <Search className="size-6" />
-      </button>
+      <HeaderSearch />
 
       <Link
         to="/carrinho"
@@ -55,7 +54,7 @@ export function HeaderActions({ cartCount }: HeaderActionsProps) {
           onClick={() => setIsAuthOpen(true)}
           className="h-8.75 w-25 gap-1 px-0 text-16 text-background"
         >
-          <LogOut className="size-5" />
+          <LogIn className="size-5" />
           {AUTH_COPY.loginTab}
         </Button>
       )}

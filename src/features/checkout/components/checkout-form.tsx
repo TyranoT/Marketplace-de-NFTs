@@ -39,7 +39,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
       >
         <Input
           {...register('displayName')}
-          {...fieldProps('displayName', errors.displayName?.message)}
+          {...fieldProps('displayName', errors.displayName?.message, {
+            required: true,
+          })}
           autoComplete="name"
         />
       </FormField>
@@ -52,7 +54,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
       >
         <Input
           {...register('username')}
-          {...fieldProps('username', errors.username?.message)}
+          {...fieldProps('username', errors.username?.message, {
+            required: true,
+          })}
           autoComplete="username"
         />
       </FormField>
@@ -69,6 +73,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
           render={({ field }) => (
             <OptionSelect
               id="network"
+              ref={field.ref}
+              onBlur={field.onBlur}
+              required
               value={field.value}
               options={NETWORKS}
               placeholder={CHECKOUT_COPY.networkPlaceholder}
@@ -87,7 +94,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
       >
         <Input
           {...register('profileName')}
-          {...fieldProps('profileName', errors.profileName?.message)}
+          {...fieldProps('profileName', errors.profileName?.message, {
+            required: true,
+          })}
         />
       </FormField>
 
@@ -99,7 +108,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
       >
         <Input
           {...register('walletAddress')}
-          {...fieldProps('walletAddress', errors.walletAddress?.message)}
+          {...fieldProps('walletAddress', errors.walletAddress?.message, {
+            required: true,
+          })}
           placeholder={CHECKOUT_COPY.walletAddressPlaceholder}
           spellCheck={false}
           autoComplete="off"
@@ -107,18 +118,23 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
         />
       </FormField>
 
-      {/** No frame este campo não tem rótulo: o placeholder já o descreve. */}
-      <div className="flex flex-col justify-end gap-1.5">
+      {/**
+       * O frame não dá rótulo a este campo, só o placeholder — que some ao
+       * digitar e levava junto o "(opcional)". O rótulo visível fica.
+       */}
+      <FormField
+        id="secondaryWallet"
+        label={`${CHECKOUT_COPY.secondaryWalletLabel} (opcional)`}
+      >
         <Input
           {...register('secondaryWallet')}
           id="secondaryWallet"
-          aria-label={CHECKOUT_COPY.secondaryWalletLabel}
           placeholder={CHECKOUT_COPY.secondaryWalletPlaceholder}
           spellCheck={false}
           autoComplete="off"
           className="placeholder:text-brand-muted"
         />
-      </div>
+      </FormField>
 
       <FormField
         id="walletType"
@@ -132,6 +148,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
           render={({ field }) => (
             <OptionSelect
               id="walletType"
+              ref={field.ref}
+              onBlur={field.onBlur}
+              required
               value={field.value}
               options={WALLET_TYPES}
               placeholder={CHECKOUT_COPY.walletTypePlaceholder}
@@ -150,7 +169,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
       >
         <Input
           {...register('referralCode')}
-          {...fieldProps('referralCode', errors.referralCode?.message)}
+          {...fieldProps('referralCode', errors.referralCode?.message, {
+            required: true,
+          })}
           autoComplete="off"
         />
       </FormField>
@@ -163,7 +184,7 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
       >
         <Input
           {...register('email')}
-          {...fieldProps('email', errors.email?.message)}
+          {...fieldProps('email', errors.email?.message, { required: true })}
           type="email"
           autoComplete="email"
         />
@@ -181,6 +202,9 @@ export function CheckoutForm({ id, form, onSubmit }: CheckoutFormProps) {
           render={({ field }) => (
             <OptionSelect
               id="ensSuffix"
+              ref={field.ref}
+              onBlur={field.onBlur}
+              required
               value={field.value}
               options={ENS_SUFFIXES}
               placeholder={ENS_SUFFIXES[0].label}

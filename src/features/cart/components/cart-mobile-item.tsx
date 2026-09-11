@@ -6,6 +6,7 @@ import {
   CART_COPY,
   buildDecreaseLabel,
   buildIncreaseLabel,
+  buildMaxQuantityHint,
   buildQuantityLabel,
   buildRemoveLabel,
 } from '../constants/cart-copy'
@@ -38,7 +39,10 @@ export function CartMobileItem({
   onRemove,
 }: CartMobileItemProps) {
   return (
-    <article className="relative flex min-w-0 items-stretch gap-3 rounded-xl bg-surface-card pr-2.5">
+    <article
+      aria-busy={isPending || undefined}
+      className="relative flex min-w-0 items-stretch gap-3 rounded-xl bg-surface-card pr-2.5"
+    >
       <img
         src={item.imageUrl}
         alt={item.imageAlt}
@@ -75,6 +79,7 @@ export function CartMobileItem({
           value={item.quantity}
           max={item.available}
           disabled={isPending}
+          limitHint={buildMaxQuantityHint(item.name, item.available)}
           decreaseLabel={buildDecreaseLabel(item.name)}
           increaseLabel={buildIncreaseLabel(item.name)}
           valueLabel={buildQuantityLabel(item.name)}

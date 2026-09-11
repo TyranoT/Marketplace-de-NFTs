@@ -26,7 +26,7 @@ export const Route = createFileRoute('/dev')({
     ],
   }),
   staticData: {
-    header: { active: 'home', divider: true },
+    header: { divider: true },
     mobileTabBar: false,
   },
   component: DevPanelScreen,

@@ -1,8 +1,8 @@
 import { ARTWORKS } from '@/global/data/artwork'
 
 export const FEATURED_BANNER = {
-  eyebrow: 'NFT EM DESTAQUE',
-  title: 'OFERTA LIMITADA',
+  eyebrow: 'NFT em destaque',
+  title: 'Oferta limitada',
   artwork: ARTWORKS.bucket,
 }
 

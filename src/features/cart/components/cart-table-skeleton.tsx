@@ -21,7 +21,7 @@ export function CartTableSkeleton({
   rows = CART_SKELETON_ROWS,
 }: CartTableSkeletonProps) {
   return (
-    <div className="flex flex-col">
+    <div aria-hidden="true" className="flex flex-col">
       <table className="hidden w-full table-fixed lg:table">
         <colgroup>
           {/** Índice como chave: as larguras se repetem e a ordem é fixa. */}

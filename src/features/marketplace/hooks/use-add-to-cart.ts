@@ -36,7 +36,19 @@ export function useAddToCart({ navigateOnSuccess = false } = {}) {
             return
           }
 
-          setStatus('Item adicionado ao carrinho.')
+          /**
+           * Esvazia antes de escrever: a mesma frase duas vezes seguidas não
+           * muda o conteúdo da região viva, e a segunda adição passava em
+           * silêncio.
+           */
+          setStatus('')
+          requestAnimationFrame(() =>
+            setStatus(
+              quantity === 1
+                ? '1 item adicionado ao carrinho.'
+                : `${quantity} itens adicionados ao carrinho.`,
+            ),
+          )
         },
         onError: (mutationError) => setError(toCartErrorMessage(mutationError)),
       },

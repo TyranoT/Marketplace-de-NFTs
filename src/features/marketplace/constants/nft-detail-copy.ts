@@ -10,7 +10,7 @@ export const NFT_DETAIL_COPY = {
   decreaseLabel: 'Diminuir quantidade',
   increaseLabel: 'Aumentar quantidade',
   quantityLabel: 'Quantidade',
-  buyLabel: 'COMPRAR',
+  buyLabel: 'Comprar',
   backLabel: 'Voltar',
   mobileBuyLabel: 'Comprar NFT',
   cartLabel: 'Adicionar ao carrinho',
@@ -30,14 +30,17 @@ export const NFT_DETAIL_COPY = {
 }
 
 /**
- * Rótulos dos três fatos da aba de detalhes. Os valores de `royalties` e
- * `contract` são exibidos trocados entre si porque é assim que estão no
- * Figma — ver `nft-detail-facts.tsx`.
+ * Rótulos dos três fatos da aba de detalhes.
+ *
+ * O Figma troca "Contrato" e "Direitos autorais" entre si. A tela seguia o
+ * design, mas isso punha o texto de royalties sob "Contrato" — informação
+ * errada para qualquer pessoa, não só para quem usa leitor de tela. Desvio
+ * consciente, registrado no ARCHITECTURE.md.
  */
 export const NFT_FACT_LABELS = {
   network: 'Rede:',
-  royalties: 'Contrato:',
-  contract: 'Direitos autorais:',
+  royalties: 'Direitos autorais:',
+  contract: 'Contrato:',
 }
 
 /** Trilha do detalhe. `Mercado` ainda não tem rota, então fica sem `to`. */

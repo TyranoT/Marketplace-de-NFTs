@@ -38,6 +38,8 @@ export function CartTable({
 }: CartTableProps) {
   return (
     <table className="hidden w-full table-fixed border-separate -my-3 border-spacing-y-3 lg:table">
+      <caption className="sr-only">{CART_COPY.tableCaption}</caption>
+
       <colgroup>
         {/** Índice como chave: as larguras se repetem e a ordem é fixa. */}
         {CART_COLUMN_WIDTHS.map((width, index) => (

@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
+import type { FieldErrors } from 'react-hook-form'
 import { Breadcrumb } from '@/global/components/ui/breadcrumb'
 import { Container } from '@/global/components/ui/container'
 import { Skeleton } from '@/global/components/ui/skeleton'
@@ -28,6 +29,7 @@ import { CheckoutForm } from '../components/checkout-form'
 import { CheckoutQuoteNotice } from '../components/checkout-quote-notice'
 import { CheckoutSummary } from '../components/checkout-summary'
 import { OrderConfirmationDialog } from '../components/order-confirmation-dialog'
+import { WALLET_OPTIONS_ID } from '../components/checkout-wallet-options'
 import { CheckoutMobileScreen } from './checkout-mobile-screen'
 import type { CheckoutFormValues } from '../helpers/checkout-schema'
 
@@ -49,6 +51,16 @@ export function CheckoutScreen() {
   const quote = useQuoteGuard(cart.data)
 
   const order = attempt.order
+
+  /**
+   * Fechar o diálogo com a compra pendente só o esconde. Antes descartava a
+   * tentativa, e o pedido seguia sendo confirmado sem ninguém para ver o
+   * resultado. Ele volta sozinho quando o desfecho chega.
+   */
+  const [hiddenPendingId, setHiddenPendingId] = useState<string>()
+  const isPendingHidden =
+    order?.status === 'pending' && hiddenPendingId === order.id
+  const visibleOrder = order && !isPendingHidden ? order : undefined
 
   const form = useForm<CheckoutFormValues>({
     resolver: checkoutResolver,
@@ -78,6 +90,19 @@ export function CheckoutScreen() {
     )
   }, [form, primaryWallet, user])
 
+  /**
+   * A carteira é escolhida por rádio, fora do `register` do react-hook-form,
+   * e ele não sabe focá-la. Quando ela é o único erro, o foco não ia a lugar
+   * nenhum — então vai para o primeiro rádio do grupo.
+   */
+  function focusWalletWhenOnlyError(errors: FieldErrors<CheckoutFormValues>) {
+    if (Object.keys(errors).length !== 1 || !errors.walletId) return
+
+    document
+      .querySelector<HTMLElement>(`#${WALLET_OPTIONS_ID} [role="radio"]`)
+      ?.focus()
+  }
+
   function handleSubmit(values: CheckoutFormValues) {
     /** Guarda de corrida: a cotação pode ter vencido entre o clique e aqui. */
     if (quote.isStale) return
@@ -92,6 +117,12 @@ export function CheckoutScreen() {
    * caminho de tentar de novo.
    */
   function handleCloseConfirmation() {
+    if (order?.status === 'pending') {
+      setHiddenPendingId(order.id)
+
+      return
+    }
+
     const wasConfirmed = order?.status === 'confirmed'
 
     attempt.dismiss()
@@ -142,9 +173,9 @@ export function CheckoutScreen() {
           onReviewQuote={quote.acceptCurrent}
         />
 
-        {order ? (
+        {visibleOrder ? (
           <OrderConfirmationDialog
-            order={order}
+            order={visibleOrder}
             onClose={handleCloseConfirmation}
           />
         ) : null}
@@ -179,6 +210,12 @@ export function CheckoutScreen() {
           <CheckoutQuoteNotice onReview={quote.acceptCurrent} />
         ) : null}
 
+        {isPendingHidden ? (
+          <p role="status" className="text-14 leading-5 text-text-secondary">
+            {CHECKOUT_COPY.pendingInBackground}
+          </p>
+        ) : null}
+
         {cart.data && cart.data.items.length > 0 ? (
           <div className={CHECKOUT_GRID}>
             <div className="flex flex-col gap-6">
@@ -189,7 +226,10 @@ export function CheckoutScreen() {
               <CheckoutForm
                 id={FORM_ID}
                 form={form}
-                onSubmit={form.handleSubmit(handleSubmit)}
+                onSubmit={form.handleSubmit(
+                  handleSubmit,
+                  focusWalletWhenOnlyError,
+                )}
               />
             </div>
 
@@ -212,9 +252,9 @@ export function CheckoutScreen() {
         ) : null}
       </div>
 
-      {order ? (
+      {visibleOrder ? (
         <OrderConfirmationDialog
-          order={order}
+          order={visibleOrder}
           onClose={handleCloseConfirmation}
         />
       ) : null}

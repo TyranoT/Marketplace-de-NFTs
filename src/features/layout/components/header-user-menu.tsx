@@ -26,7 +26,7 @@ export function HeaderUserMenu({ user }: HeaderUserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label={AUTH_COPY.accountMenuLabel}
+        aria-label={`${AUTH_COPY.accountMenuLabel} de ${user.displayName}`}
         className="flex max-w-56 items-center gap-3 rounded-md border border-line bg-card px-3 py-1.5 text-left transition-colors outline-none hover:border-line-soft focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:border-primary"
       >
         <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-brand">

@@ -1,5 +1,5 @@
+import { Checkbox } from '@/global/components/ui/checkbox'
 import { useState } from 'react'
-import { Radio, RadioGroup } from '@/global/components/ui/radio-group'
 import { Skeleton } from '@/global/components/ui/skeleton'
 import {
   useCreateWallet,
@@ -181,17 +181,27 @@ function WalletsPanels({ user, wallets, error }: WalletsPanelsProps) {
           </h2>
 
           <div className="flex items-center gap-3">
-            <RadioGroup
-              value={sameAsPrimary ? 'yes' : null}
-              onValueChange={() => openSecondaryDraft(true)}
-              aria-label={PROFILE_COPY.sameAsPrimary}
-              className="flex-row"
-            >
-              <label className="flex cursor-pointer items-center gap-3 text-15 leading-4 text-foreground">
-                <Radio value="yes" disabled={!primary} />
-                {PROFILE_COPY.sameAsPrimary}
-              </label>
-            </RadioGroup>
+            {/**
+             * Checkbox, e não um rádio sozinho num grupo: é um liga/desliga, e
+             * um rádio marcado não se desmarca. Sem principal ele não tem de
+             * onde copiar, e o motivo fica no próprio rótulo.
+             */}
+            <label className="flex cursor-pointer items-center gap-3 text-15 leading-4 text-foreground">
+              <Checkbox
+                checked={sameAsPrimary}
+                disabled={!primary}
+                onCheckedChange={(checked) => {
+                  if (checked) openSecondaryDraft(true)
+                  else setSameAsPrimary(false)
+                }}
+              />
+              {PROFILE_COPY.sameAsPrimary}
+              {primary ? null : (
+                <span className="text-12 text-brand-muted">
+                  (cadastre a principal primeiro)
+                </span>
+              )}
+            </label>
 
             <button
               type="button"

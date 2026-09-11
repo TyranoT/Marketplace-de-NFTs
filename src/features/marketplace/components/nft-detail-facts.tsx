@@ -6,12 +6,6 @@ type NftDetailFactsProps = {
 }
 
 export function NftDetailFacts({ nft }: NftDetailFactsProps) {
-  /**
-   * A ordem dos valores é intencional: o Figma exibe o texto de royalties
-   * sob o rótulo "Contrato:" e o endereço do contrato sob "Direitos
-   * autorais:". Os rótulos estão trocados no design e a tela mantém a
-   * fidelidade — os dados seguem nomeados corretamente em `@/global/type`.
-   */
   const facts = [
     { label: NFT_FACT_LABELS.network, value: nft.network },
     { label: NFT_FACT_LABELS.royalties, value: nft.royalties },

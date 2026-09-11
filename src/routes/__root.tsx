@@ -10,6 +10,8 @@ import appCss from '@/styles.css?url'
 import { Header, MobileTabBar } from '@/features/layout'
 import { SITE, absoluteUrl } from '@/global/config/site'
 import { RealtimeProvider } from '@/global/realtime'
+import { RouteFocus } from '@/global/components/route-focus'
+import { MAIN_CONTENT_ID } from '@/global/components/ui/container'
 import { useDeviceTier } from '@/global'
 import type { QueryClient } from '@tanstack/react-query'
 
@@ -81,12 +83,27 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="pb-32 md:pb-0">
+        {/**
+         * Primeiro elemento do Tab: o cabeçalho é fixo e tem quatro itens e
+         * três ações antes do conteúdo, e percorrê-los em toda página é o
+         * que o skip link evita.
+         */}
+        <a
+          href={`#${MAIN_CONTENT_ID}`}
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-14 focus:font-bold focus:text-ink"
+        >
+          Pular para o conteúdo
+        </a>
+
         <RealtimeProvider>
+          <RouteFocus />
           <Header />
           {children}
           <MobileTabBar />
         </RealtimeProvider>
-        {isMobile ? null : (
+
+        {/** Só em desenvolvimento: no deploy era um botão a mais no Tab. */}
+        {!import.meta.env.DEV || isMobile ? null : (
           <TanStackDevtools
             config={{ position: 'bottom-right' }}
             plugins={[
