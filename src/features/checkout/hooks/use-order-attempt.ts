@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCartScope } from '@/global/api/cart'
 import { useCheckout } from '@/global/api/checkout'
 import { useOrder } from '@/global/api/order'
 import {
@@ -19,58 +20,58 @@ import type { CheckoutInput, Order } from '@/global/api'
  * faz o cenário do enunciado funcionar: se a resposta se perder num timeout
  * e o colecionador tentar de novo, o servidor devolve o mesmo pedido em vez
  * de cobrar duas vezes.
+ *
+ * Tudo é **por conta**: trocar de usuário troca o pedido que se acompanha.
  */
 export function useOrderAttempt() {
   const checkout = useCheckout()
+  const scope = useCartScope()
 
   const [pendingId, setPendingId] = useState<string | undefined>(undefined)
   const keyRef = useRef<string | undefined>(undefined)
 
-  /** Retoma o que ficou em aberto ao montar a tela. */
+  /** Retoma o que ficou em aberto — e esquece o da conta anterior. */
   useEffect(() => {
-    const stored = readPendingOrder()
+    const stored = readPendingOrder(scope)
 
-    if (!stored) return
-
-    keyRef.current = stored.idempotencyKey
-    setPendingId(stored.orderId)
-  }, [])
+    keyRef.current = stored?.idempotencyKey
+    setPendingId(stored?.orderId)
+  }, [scope])
 
   const order = useOrder(pendingId)
 
   /**
-   * O pedido guardado não existe mais — o cenário foi restaurado. Manter a
-   * entrada deixaria a tela de pagamento tentando recuperar, a cada visita,
-   * uma compra que ninguém mais conhece.
+   * O pedido guardado não existe mais para esta conta — o cenário foi
+   * restaurado. Manter a entrada deixaria a tela de pagamento tentando
+   * recuperar, a cada visita, uma compra que ninguém mais conhece.
    */
   useEffect(() => {
     if (order.error?.kind !== 'not_found') return
 
-    clearPendingOrder()
+    clearPendingOrder(scope)
     keyRef.current = undefined
     setPendingId(undefined)
-  }, [order.error])
+  }, [order.error, scope])
 
   const submit = useCallback(
     (input: CheckoutInput, onSettled?: (order: Order) => void) => {
       /** Reusa a chave se já houve tentativa: retentar não é comprar de novo. */
       keyRef.current ??= crypto.randomUUID()
 
+      const idempotencyKey = keyRef.current
+
       checkout.mutate(
-        { ...input, idempotencyKey: keyRef.current },
+        { ...input, idempotencyKey },
         {
           onSuccess: (created) => {
-            savePendingOrder({
-              orderId: created.id,
-              idempotencyKey: keyRef.current!,
-            })
+            savePendingOrder(scope, { orderId: created.id, idempotencyKey })
             setPendingId(created.id)
             onSettled?.(created)
           },
         },
       )
     },
-    [checkout],
+    [checkout, scope],
   )
 
   /**
@@ -79,11 +80,11 @@ export function useOrderAttempt() {
    * como tentativa nova.
    */
   const dismiss = useCallback(() => {
-    clearPendingOrder()
+    clearPendingOrder(scope)
     keyRef.current = undefined
     setPendingId(undefined)
     checkout.reset()
-  }, [checkout])
+  }, [checkout, scope])
 
   return {
     submit,

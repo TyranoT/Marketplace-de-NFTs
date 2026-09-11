@@ -109,6 +109,59 @@ export class CartService {
     })
   }
 
+  /**
+   * O carrinho do visitante passa para a conta que acabou de entrar.
+   *
+   * O §3 pede para "preservar os itens do visitante ao autenticar". Os itens
+   * se somam aos que a conta já tinha, limitados à disponibilidade — juntar
+   * dois carrinhos não pode produzir uma quantidade que o estoque recusaria.
+   * O cupom do visitante só vale se a conta não tiver o seu.
+   *
+   * **Não abre transação**: roda dentro da do login ou do cadastro. Uma
+   * transação aninhada gravaria o carrinho juntado mesmo que a entrada fosse
+   * recusada depois.
+   */
+  adoptGuestCart(): void {
+    const guest = mockDb.cart.detachGuest()
+
+    if (!guest || guest.items.length === 0) return
+
+    for (const item of guest.items) {
+      const available = this.availableFor(item.nftId, item.editionId)
+      const existing = mockDb.cartItem.findFirst({
+        where: { nftId: item.nftId, editionId: item.editionId },
+      })
+      const quantity = Math.min(
+        (existing?.quantity ?? 0) + item.quantity,
+        available,
+      )
+
+      if (quantity <= 0) continue
+
+      if (existing) {
+        mockDb.cartItem.update({
+          where: { id: existing.id },
+          data: { quantity },
+        })
+      } else {
+        mockDb.cartItem.create({
+          data: { nftId: item.nftId, editionId: item.editionId, quantity },
+        })
+      }
+    }
+
+    const cart = this.currentCart()
+
+    mockDb.cart.update({
+      where: { id: cart.id },
+      data: {
+        couponCode: cart.couponCode ?? guest.couponCode ?? null,
+        version: cart.version + 1,
+        updatedAt: new Date().toISOString(),
+      },
+    })
+  }
+
   /** Toda escrita sobe a versão do carrinho e persiste uma vez só, no fim. */
   private commit(run: () => void): Cart {
     return mockDb.$transaction(() => {

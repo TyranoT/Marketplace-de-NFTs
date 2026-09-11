@@ -5,6 +5,7 @@ import type { WalletSnapshot } from './user-snapshot'
 const SEED_AT = new Date(0).toISOString()
 
 const SEED_USER_ID = 'user-kurio-01'
+const SECOND_USER_ID = 'user-kurio-02'
 
 /** Fixo, e não sorteado: a semente precisa ser idêntica a cada carga. */
 const SEED_SALT = 'kurio-seed-salt'
@@ -15,6 +16,16 @@ const SEED_SALT = 'kurio-seed-salt'
  */
 export const SEED_CREDENTIALS = {
   email: 'colecionador@kurio.art',
+  password: 'kurio2026',
+}
+
+/**
+ * Segunda conta, sem carteira. O §6 pede pelo menos dois usuários, e é com
+ * duas contas que se verifica que um não vê o carrinho nem os pedidos do
+ * outro.
+ */
+export const SECOND_CREDENTIALS = {
+  email: 'curadora@kurio.art',
   password: 'kurio2026',
 }
 
@@ -41,9 +52,26 @@ const SEED_WALLET: WalletSnapshot = {
 }
 
 export function buildSeedUsers(): Map<string, MockUser> {
-  const user = buildSeedUser()
+  const users = [buildSeedUser(), buildSecondUser()]
 
-  return new Map([[user.id, user]])
+  return new Map(users.map((user) => [user.id, user]))
+}
+
+function buildSecondUser(): MockUser {
+  return MockUser.create(
+    {
+      id: SECOND_USER_ID,
+      displayName: 'Ana Curadora',
+      username: 'ana',
+      email: SECOND_CREDENTIALS.email,
+      ensName: 'anacuradora',
+      ensSuffix: 'eth',
+      createdAt: SEED_AT,
+      updatedAt: SEED_AT,
+    },
+    SECOND_CREDENTIALS.password,
+    SEED_SALT,
+  )
 }
 
 function buildSeedUser(): MockUser {

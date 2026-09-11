@@ -5,6 +5,7 @@ import type { OrderSnapshot } from './order-snapshot'
 
 export type OrderWhere = {
   id?: string
+  ownerId?: string
   walletId?: string
 }
 
@@ -43,6 +44,7 @@ export class OrderDelegate extends ModelDelegate<MockOrder, OrderWhere> {
   protected matches(order: MockOrder, where: OrderWhere): boolean {
     return (
       (!where.id || order.id === where.id) &&
+      (!where.ownerId || order.ownerId === where.ownerId) &&
       (!where.walletId || order.walletId === where.walletId)
     )
   }

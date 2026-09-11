@@ -2,6 +2,7 @@ import { mockDb } from '../core'
 import { getScenario } from '../../scenario/config'
 import { orderContractMapper } from './order-contract-mapper'
 import { OrderRuleError } from './order-rule-error'
+import { currentOwnerId } from '../user/session-guard'
 import type { MockOrder } from './mock-order'
 import type { Order, OrderStatus } from '../../../api/contracts/order'
 
@@ -22,7 +23,13 @@ export class OrderService {
   readOrder(id: string): Order {
     this.settleDue()
 
-    const order = mockDb.order.findUnique({ where: { id } })
+    /**
+     * Pedido de outro dono responde 404, e não 403: dizer que ele existe já
+     * seria contar a quem não comprou que alguém comprou.
+     */
+    const order = mockDb.order.findUnique({
+      where: { id, ownerId: currentOwnerId() },
+    })
 
     if (!order) throw OrderRuleError.orderNotFound()
 
@@ -33,8 +40,22 @@ export class OrderService {
     this.settleDue()
 
     return mockDb.order
+      .findMany({ where: { ownerId: currentOwnerId() } })
+      .map((order) => orderContractMapper.toContract(order))
+  }
+
+  /** Todos os pedidos, de todos os donos. Só para o painel de simulação. */
+  listAllOrders(): Array<Order> {
+    this.settleDue()
+
+    return mockDb.order
       .findMany()
       .map((order) => orderContractMapper.toContract(order))
+  }
+
+  /** Dono do pedido, para o evento ir só a ele. */
+  ownerOf(id: string): string | undefined {
+    return mockDb.order.findUnique({ where: { id } })?.ownerId
   }
 
   /**
@@ -121,24 +142,20 @@ export class OrderService {
       order.toSnapshot().items.map((item) => `${item.nftId}:${item.editionId}`),
     )
 
-    for (const item of mockDb.cartItem.findMany()) {
-      if (bought.has(`${item.nftId}:${item.editionId}`)) {
-        mockDb.cartItem.delete({ where: { id: item.id } })
-      }
+    /**
+     * O carrinho de **quem comprou**. A liquidação é preguiçosa e pode rodar
+     * na leitura de outra conta, logada depois no mesmo navegador — pelo
+     * carrinho da sessão, a compra de um esvaziaria o carrinho do outro.
+     */
+    const cart = mockDb.cart.ownedBy(order.ownerId)
+
+    for (const item of [...cart.items]) {
+      if (bought.has(`${item.nftId}:${item.editionId}`)) cart.remove(item.id)
     }
 
-    const cart = mockDb.cart.findFirst()
-
-    if (!cart) return
-
-    mockDb.cart.update({
-      where: { id: cart.id },
-      data: {
-        couponCode: null,
-        version: cart.version + 1,
-        updatedAt: new Date().toISOString(),
-      },
-    })
+    cart.setCoupon(undefined)
+    cart.setVersion(cart.version + 1)
+    cart.setUpdatedAt(new Date().toISOString())
   }
 }
 

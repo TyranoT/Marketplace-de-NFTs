@@ -42,6 +42,8 @@ export type CollectorProfileSnapshot = {
 
 export type OrderSnapshot = {
   id: string
+  /** Quem comprou: id do usuário, ou `guest`. Pedido não é visível a outro dono. */
+  ownerId: string
   /** Hash simulado da transação, exibido e usado no link do explorador. */
   transactionHash: string
   status: OrderStatus

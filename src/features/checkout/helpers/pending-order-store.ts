@@ -10,16 +10,21 @@ export type PendingOrder = {
 }
 
 /**
- * O pedido em aberto, fora do React.
+ * O pedido em aberto, fora do React, **por conta**.
  *
- * Vivia em `useState`, e por isso desaparecia ao recarregar — o colecionador
- * ficava sem saber se a compra tinha acontecido, e o único caminho era
- * tentar de novo. É a chave da aplicação, e não do mock: descreve o que
- * *este navegador* estava fazendo, não o estado do servidor simulado.
+ * Vivia em `useState`, e por isso desaparecia ao recarregar. Guardado no
+ * `localStorage`, precisa de dono: sem o escopo na chave, quem entrasse
+ * depois no mesmo navegador tentaria recuperar a compra de outra pessoa.
+ * É a chave da aplicação, e não do mock: descreve o que este navegador
+ * estava fazendo, não o estado do servidor simulado.
  */
-export function readPendingOrder(): PendingOrder | undefined {
+function keyOf(scope: string): string {
+  return `${STORAGE_KEY}:${scope}`
+}
+
+export function readPendingOrder(scope: string): PendingOrder | undefined {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(keyOf(scope))
 
     return raw ? (JSON.parse(raw) as PendingOrder) : undefined
   } catch {
@@ -27,18 +32,18 @@ export function readPendingOrder(): PendingOrder | undefined {
   }
 }
 
-export function savePendingOrder(pending: PendingOrder): void {
+export function savePendingOrder(scope: string, pending: PendingOrder): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(pending))
+    localStorage.setItem(keyOf(scope), JSON.stringify(pending))
   } catch {
     /** Modo privado ou cota cheia: a sessão segue sem recuperação. */
   }
 }
 
 /** Só depois que o pedido chegou a um estado terminal e foi visto. */
-export function clearPendingOrder(): void {
+export function clearPendingOrder(scope: string): void {
   try {
-    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(keyOf(scope))
   } catch {
     /** Nada a limpar. */
   }

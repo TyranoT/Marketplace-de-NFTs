@@ -551,13 +551,41 @@ quando o id não é nenhuma delas.
 A carteira principal não é removível: sem ela não há para onde mandar o NFT
 comprado.
 
-### O escopo do carrinho passou a existir de verdade
+### Carrinho e pedidos têm dono
 
-`useCartScope()` devolve o id do usuário quando há sessão, e `guest` quando não
-há. Era o encaixe que `cart-keys.ts` documentava desde o início; os oito hooks
-do carrinho consomem essa função e nenhum deles mudou. Sair limpa o cache
-inteiro, não só as chaves de usuário: deixar no cache o que foi lido como
-autenticado mostraria dados da conta a quem já saiu dela.
+Até aqui, só a **chave do cache** tinha escopo: o banco simulado guardava um
+carrinho só, e os pedidos não sabiam de quem eram. Quem entrasse numa conta via
+o carrinho de quem tinha entrado antes, e um pedido podia ser lido por
+qualquer um — exposição de dados entre usuários, que o §11 trata como
+eliminatória.
+
+- `MockDb.carts` é um mapa por dono: o id do usuário, ou `guest` para o
+  visitante. `MockDb.cart` devolve o de quem tem a sessão, e os delegates
+  continuam lendo dali — nenhuma regra do carrinho precisou mudar.
+- **Entrar ou se cadastrar adota o carrinho do visitante**
+  (`CartService.adoptGuestCart`): os itens se somam aos da conta, limitados à
+  disponibilidade, e o cupom do visitante só vale se a conta não tiver o seu.
+  Roda dentro da transação do login, e o carrinho do visitante fica vazio.
+- Sair não mostra mais o carrinho da conta: o visitante volta ao dele, vazio.
+- **Todo pedido tem `ownerId`.** `GET /api/orders/:id` de outro dono responde
+  404, e não 403 — dizer que o pedido existe já contaria a quem não comprou
+  que alguém comprou. Uma chave de idempotência reusada por outra conta é
+  conflito (409), e não devolve o pedido alheio.
+- `order.updated` vai ao **dono do pedido**, e não a quem está logado quando o
+  pedido liquida.
+- O pedido pendente guardado no navegador tem a conta na chave
+  (`kurio.checkout.pending.v1:<escopo>`).
+- `SEED_VERSION` subiu para **7**.
+
+Há duas contas na semente, para dar para verificar isso: `colecionador@kurio.art`
+e `curadora@kurio.art`, as duas com a senha `kurio2026`. A segunda nasce sem
+carteira. `e2e/isolation.spec.ts` cobre a troca de conta.
+
+Sair zera o cache inteiro, e não só as chaves de usuário: deixar no cache o
+que foi lido como autenticado mostraria dados da conta a quem já saiu dela. É
+`resetQueries`, e não `clear` — `clear` tira as consultas sem avisar quem as
+observa, e o cabeçalho seguia mostrando a conta que tinha acabado de sair. O
+teste de isolamento pegou isso.
 
 ### Divergências e leituras dos frames
 
@@ -1162,12 +1190,10 @@ atrás de um botão que finge funcionar.
    que é o padrão do TanStack Router. Funciona e sobrevive ao refresh, mas o
    formato REST convencional seria `?collection=games&collection=music` — o
    cliente HTTP já monta assim; só a URL do navegador destoa.
-5. **O pedido pendente é guardado por navegador, não por conta.**
-   `kurio.checkout.pending.v1` não carrega o id do usuário: se alguém sair e
-   outra pessoa entrar no mesmo navegador com um pedido em aberto, a tela de
-   pagamento tentaria recuperá-lo. O servidor simulado também não filtra
-   `GET /api/orders/:id` por dono. Os dois precisam do escopo da sessão antes
-   de valer para mais de um colecionador por máquina.
+5. **O checkout aceita visitante.** O §3 diz que checkout, perfil,
+   carteiras, favoritos e pedidos exigem autenticação; hoje só perfil e
+   carteiras exigem. O pedido do visitante fica com `ownerId: guest`, isolado
+   das contas, mas o fluxo deveria pedir login antes de pagar.
 6. **Sem testes automatizados.** Playwright não está configurado, e tudo aqui
    foi verificado à mão no navegador. Os fluxos de tempo real são justamente
    os que mais precisam de teste, porque dependem de ordem e de tempo.

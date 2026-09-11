@@ -11,12 +11,11 @@ import { MockUser } from '../user/mock-user'
 import { MockWallet } from '../user/mock-wallet'
 import { buildSeedUsers, buildSeedWallets } from '../user/user-seed'
 import { seedFingerprint } from './seed-fingerprint'
+import { GUEST_OWNER } from './guest-owner'
 import { SEED_VERSION } from './snapshot'
 import type { IdempotencyRecord, MockDbSnapshot } from './snapshot'
 import type { NftRevisionRecord } from '../nft'
 import type { SessionSnapshot } from '../user/user-snapshot'
-
-const SEED_CART_ID = 'cart-guest'
 
 /**
  * Cenário conhecido do carrinho, idêntico ao frame do Figma: três itens com
@@ -36,7 +35,7 @@ const SEED_ITEMS = [
  */
 export class MockDb {
   constructor(
-    readonly cart: MockCart,
+    readonly carts: Map<string, MockCart>,
     readonly availability: Map<string, number>,
     readonly prices: Map<string, string>,
     readonly revisions: Map<string, NftRevisionRecord>,
@@ -57,7 +56,11 @@ export class MockDb {
     })
 
     return new MockDb(
-      MockCart.seeded(SEED_CART_ID, items),
+      /**
+       * O cenário do Figma é o carrinho do visitante: é o que aparece ao
+       * abrir a aplicação sem entrar, e é o baseline da regressão visual.
+       */
+      new Map([[GUEST_OWNER, MockCart.seeded(cartIdOf(GUEST_OWNER), items)]]),
       AvailabilityDelegate.seed(),
       PriceDelegate.seed(),
       NftRevisionDelegate.seed(),
@@ -70,7 +73,12 @@ export class MockDb {
 
   static fromSnapshot(snapshot: MockDbSnapshot): MockDb {
     return new MockDb(
-      MockCart.fromSnapshot(snapshot.cart),
+      new Map(
+        Object.entries(snapshot.carts).map(([owner, cart]) => [
+          owner,
+          MockCart.fromSnapshot(cart),
+        ]),
+      ),
       new Map(Object.entries(snapshot.availability)),
       new Map(Object.entries(snapshot.prices)),
       new Map(
@@ -103,6 +111,58 @@ export class MockDb {
     return this.currentSession
   }
 
+  /** Quem tem a sessão, ou o visitante. */
+  get owner(): string {
+    return this.currentSession?.userId ?? GUEST_OWNER
+  }
+
+  /**
+   * O carrinho de quem está usando a aplicação agora. Os delegates leem
+   * sempre daqui, então isolar por dono não exigiu mudar nenhuma regra do
+   * carrinho: o serviço continua falando com "o carrinho", e é esta linha
+   * que decide de quem ele é.
+   */
+  get cart(): MockCart {
+    return this.cartOf(this.owner)
+  }
+
+  /** Carrinho de um dono, criado vazio na primeira vez. */
+  cartOf(owner: string): MockCart {
+    const existing = this.carts.get(owner)
+
+    if (existing) return existing
+
+    const created = MockCart.seeded(cartIdOf(owner), [])
+    this.carts.set(owner, created)
+
+    return created
+  }
+
+  /**
+   * Tira os itens do carrinho do visitante e o deixa vazio — é o que acontece
+   * quando o visitante entra numa conta e o carrinho dele passa para ela.
+   * A versão sobe, e não volta a 1: uma consulta antiga ainda em cache não
+   * pode parecer atual.
+   */
+  detachGuestCart(): MockCart | undefined {
+    const guest = this.carts.get(GUEST_OWNER)
+
+    if (!guest) return undefined
+
+    this.carts.set(
+      GUEST_OWNER,
+      new MockCart(
+        cartIdOf(GUEST_OWNER),
+        [],
+        undefined,
+        guest.version + 1,
+        new Date().toISOString(),
+      ),
+    )
+
+    return guest
+  }
+
   setSession(session: SessionSnapshot | undefined): void {
     this.currentSession = session
   }
@@ -111,7 +171,9 @@ export class MockDb {
     return {
       seedVersion: SEED_VERSION,
       seedFingerprint: seedFingerprint(),
-      cart: this.cart.toSnapshot(),
+      carts: Object.fromEntries(
+        [...this.carts].map(([owner, cart]) => [owner, cart.toSnapshot()]),
+      ),
       availability: Object.fromEntries(this.availability),
       prices: Object.fromEntries(this.prices),
       nftRevisions: Object.fromEntries(
@@ -127,4 +189,8 @@ export class MockDb {
       session: this.currentSession,
     }
   }
+}
+
+function cartIdOf(owner: string): string {
+  return `cart-${owner}`
 }

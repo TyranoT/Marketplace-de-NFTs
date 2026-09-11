@@ -13,6 +13,7 @@ import { getScenario } from '../../scenario/config'
 import { CheckoutRuleError } from './checkout-rule-error'
 import { orderContractMapper } from './order-contract-mapper'
 import { OrderRuleError } from './order-rule-error'
+import { currentOwnerId } from '../user/session-guard'
 import { buildTransactionHash } from './transaction-hash'
 import type {
   CollectorProfileSnapshot,
@@ -118,6 +119,14 @@ export class CheckoutService {
     }
 
     const order = mockDb.order.findUnique({ where: { id: known.orderId } })
+
+    /**
+     * A chave é de outra conta: devolver o pedido dela seria mostrar a compra
+     * de outra pessoa. É conflito, como a chave reusada com outro conteúdo.
+     */
+    if (order && order.ownerId !== currentOwnerId()) {
+      throw OrderRuleError.idempotencyKeyReused()
+    }
 
     if (!order) return undefined
 
@@ -244,6 +253,7 @@ export class CheckoutService {
       profile: data.profile,
       walletId: data.walletId,
       walletLabel,
+      ownerId: currentOwnerId(),
       createdAt,
     }
   }

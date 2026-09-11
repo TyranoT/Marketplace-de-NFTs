@@ -27,7 +27,7 @@ function seedSignature(): string {
   const seed = MockDb.seed()
 
   return JSON.stringify({
-    cart: seed.cart.toSnapshot(),
+    carts: [...seed.carts].map(([owner, cart]) => [owner, cart.toSnapshot()]),
     availability: [...seed.availability],
     prices: [...seed.prices],
     revisions: [...seed.revisions],

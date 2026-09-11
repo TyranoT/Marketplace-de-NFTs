@@ -19,7 +19,8 @@ export type MockDbSnapshot = {
    * um dado da semente deixa o que está guardado derivado de outra.
    */
   seedFingerprint: string
-  cart: CartSnapshot
+  /** Um carrinho por dono: o id do usuário, ou `guest` para o visitante. */
+  carts: Record<string, CartSnapshot>
   /** Chave `${nftId}:${editionId}`. */
   availability: Record<string, number>
   /** Preço corrente por NFT, em string decimal. Muda com `nft.updated`. */
@@ -43,5 +44,5 @@ export type MockDbSnapshot = {
   session?: SessionSnapshot
 }
 
-/** 6: o pedido ganhou ciclo de vida e o checkout, chave de idempotência. */
-export const SEED_VERSION = 6
+/** 7: carrinho e pedido passaram a ter dono — antes o carrinho era um só. */
+export const SEED_VERSION = 7

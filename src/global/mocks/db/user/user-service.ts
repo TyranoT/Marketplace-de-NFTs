@@ -1,4 +1,5 @@
 import { ENS_SUFFIXES } from '../../../data'
+import { cartService } from '../cart/cart-service'
 import { mockDb } from '../core'
 import { MockUser } from './mock-user'
 import { requireUser } from './session-guard'
@@ -28,6 +29,7 @@ export class UserService {
       }
 
       mockDb.session.create({ data: { userId: user.id } })
+      cartService.adoptGuestCart()
 
       return this.toContract(user)
     })
@@ -64,6 +66,7 @@ export class UserService {
       })
 
       mockDb.session.create({ data: { userId: created.id } })
+      cartService.adoptGuestCart()
 
       return this.toContract(created)
     })

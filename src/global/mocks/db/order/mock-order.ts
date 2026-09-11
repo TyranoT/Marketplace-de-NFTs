@@ -35,6 +35,10 @@ export class MockOrder {
     return this.snapshot.walletId
   }
 
+  get ownerId(): string {
+    return this.snapshot.ownerId
+  }
+
   get status(): OrderStatus {
     return this.snapshot.status
   }

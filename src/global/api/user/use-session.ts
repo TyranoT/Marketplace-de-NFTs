@@ -31,15 +31,20 @@ export function useLogin() {
 }
 
 /**
- * Sair limpa o cache inteiro, e não só as chaves de usuário: o carrinho é
+ * Sair zera o cache inteiro, e não só as chaves de usuário: o carrinho é
  * consultado por escopo, e deixar no cache o que foi lido como autenticado
  * mostraria dados da conta a quem já saiu dela.
+ *
+ * `resetQueries`, e não `clear`: `clear` tira as consultas do cache sem
+ * avisar quem as observa, e o cabeçalho continuava mostrando a conta que
+ * tinha acabado de sair. O reset apaga os dados, notifica as telas montadas
+ * e busca de novo as ativas — `me` responde 401 e tudo volta a ser visitante.
  */
 export function useLogout() {
   const queryClient = useQueryClient()
 
   return useMutation<void, ApiError, void>({
     mutationFn: logout,
-    onSuccess: () => queryClient.clear(),
+    onSuccess: () => queryClient.resetQueries(),
   })
 }

@@ -1,26 +1,24 @@
-import { mockDb, orderService } from '../db'
+import { orderService } from '../db'
+import { GUEST_OWNER } from '../db/core/guest-owner'
 import { realtimeServer } from './realtime-server'
 import type { Order } from '../../api/contracts/order'
 
 /**
- * Escopo do pedido: quem o comprou.
+ * Emite `order.updated` para **o dono do pedido**.
  *
- * Um pedido tem dono, ao contrário do catálogo. Sem escopo, o desfecho de
- * uma compra chegaria a outro colecionador conectado — o que o enunciado
- * proíbe explicitamente.
+ * Antes o escopo era o da sessão no momento da emissão. Se a liquidação
+ * acontecesse depois de outra pessoa entrar no mesmo navegador, o desfecho
+ * da compra de um chegava ao socket do outro.
+ *
+ * Como `emitNftUpdated`: só depois que a transação fechou.
  */
-function scopeOf(): string {
-  return mockDb.session.findFirst()?.userId ?? 'guest'
-}
-
-/** Como `emitNftUpdated`: só depois que a transação fechou. */
-export function emitOrderUpdated(order: Order, scope = scopeOf()): void {
+export function emitOrderUpdated(order: Order): void {
   realtimeServer.emitOrderUpdated({
     id: crypto.randomUUID(),
     resource: `order:${order.id}`,
     version: order.version,
     emittedAt: new Date().toISOString(),
-    scope,
+    scope: orderService.ownerOf(order.id) ?? GUEST_OWNER,
     orderId: order.id,
     status: order.status,
     transactionHash: order.transactionHash,
@@ -36,12 +34,10 @@ const timers = new Map<string, ReturnType<typeof setTimeout>>()
  * É só conveniência: a fonte de verdade é o `settleAt` guardado no pedido, e
  * `OrderService.readOrder` liquida sozinho o que já venceu. Um temporizador
  * não sobrevive ao recarregar a página, e depender dele deixaria o pedido
- * presto em `pending` para sempre depois de um F5.
+ * preso em `pending` para sempre depois de um F5.
  */
 export function scheduleSettlement(order: Order, delayMs: number): void {
   if (order.status !== 'pending' || timers.has(order.id)) return
-
-  const scope = scopeOf()
 
   timers.set(
     order.id,
@@ -51,7 +47,7 @@ export function scheduleSettlement(order: Order, delayMs: number): void {
 
         /** Fora da transação: `settleDue` abre a sua. */
         for (const settled of orderService.settleDue()) {
-          emitOrderUpdated(settled, scope)
+          emitOrderUpdated(settled)
         }
       },
       Math.max(0, delayMs),

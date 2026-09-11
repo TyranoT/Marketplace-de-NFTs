@@ -83,7 +83,7 @@ export const devHandlers = [
     const response = await withScenario(() => {
       settled = orderService.settleDue()
 
-      return orderService.listOrders()
+      return orderService.listAllOrders()
     })
 
     for (const order of settled) emitOrderUpdated(order)
